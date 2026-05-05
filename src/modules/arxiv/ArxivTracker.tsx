@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { Fragment, useState, useEffect, useMemo, useRef } from "react";
 import {
   BookOpen,
   RefreshCw,
@@ -147,6 +147,21 @@ function getTrackedPaperDisplayId(paper: TrackedPaper): string {
     || meta.paper_id
     || paper.id.replace(/^followup-monitor:/, "").replace(/^source-paper:/, "").replace(/^arxiv-monitor:/, "")
   );
+}
+
+function isTrackedPaperSaved(paper: TrackedPaper, savedPaperIds: Set<string>): boolean {
+  return Boolean(
+    savedPaperIds.has(paper.id)
+    || paper.metadata?.saved_to_literature
+    || paper.metadata?.literature_path,
+  );
+}
+
+function getTrackedPaperBoundaryIndex(papers: TrackedPaper[], savedPaperIds: Set<string>): number {
+  return papers.findIndex((paper) => (
+    paper.metadata?.paper_tracking_role !== "source"
+    && isTrackedPaperSaved(paper, savedPaperIds)
+  ));
 }
 
 function parseOptionalPositiveInteger(input: string, maxValue: number): number | null {
@@ -658,6 +673,14 @@ export default function ArxivTracker() {
     });
     return papers;
   }, [s2Papers, semanticScholarSortBy]);
+  const arxivBoundaryIndex = useMemo(
+    () => getTrackedPaperBoundaryIndex(arxivAndPapers, savedPapers),
+    [arxivAndPapers, savedPapers],
+  );
+  const followupBoundaryIndex = useMemo(
+    () => getTrackedPaperBoundaryIndex(displayedS2Papers, _savedS2Papers),
+    [displayedS2Papers, _savedS2Papers],
+  );
 
   const isMonitorTab = arxivTrackerActiveTab === "monitors";
   const currentPapers = arxivTrackerActiveTab === "search"
@@ -1512,24 +1535,32 @@ export default function ArxivTracker() {
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {arxivTrackerActiveTab === "followups"
-                  ? displayedS2Papers.map((paper) => (
-                      <S2PaperCard
-                        key={paper.id}
-                        paper={paper}
-                        isSaved={_savedS2Papers.has(paper.id)}
-                        isSaving={savingS2PaperId === paper.id}
-                        onSave={() => saveS2ToLiterature(paper)}
-                        hasLiteraturePath={!!(config?.literature_path || config?.vault_path)}
-                      />
+                  ? displayedS2Papers.map((paper, index) => (
+                      <Fragment key={paper.id}>
+                        {index === followupBoundaryIndex && (
+                          <PaperFreshnessBoundary hasNewPapers={followupBoundaryIndex > 0} />
+                        )}
+                        <S2PaperCard
+                          paper={paper}
+                          isSaved={isTrackedPaperSaved(paper, _savedS2Papers)}
+                          isSaving={savingS2PaperId === paper.id}
+                          onSave={() => saveS2ToLiterature(paper)}
+                          hasLiteraturePath={!!(config?.literature_path || config?.vault_path)}
+                        />
+                      </Fragment>
                     ))
-                  : currentPapers.map((paper) => (
-                      <PaperCard
-                        key={paper.id}
-                        paper={paper}
-                        isSaved={savedPapers.has(paper.id)}
-                        onSave={() => saveToLiterature(paper)}
-                        hasLiteraturePath={!!(config?.literature_path || config?.vault_path)}
-                      />
+                  : currentPapers.map((paper, index) => (
+                      <Fragment key={paper.id}>
+                        {index === arxivBoundaryIndex && (
+                          <PaperFreshnessBoundary hasNewPapers={arxivBoundaryIndex > 0} />
+                        )}
+                        <PaperCard
+                          paper={paper}
+                          isSaved={isTrackedPaperSaved(paper, savedPapers)}
+                          onSave={() => saveToLiterature(paper)}
+                          hasLiteraturePath={!!(config?.literature_path || config?.vault_path)}
+                        />
+                      </Fragment>
                     ))}
               </div>
             )}
@@ -1575,6 +1606,36 @@ function TrackedPaperCard({
       hasLiteraturePath={hasLiteraturePath}
       onUpdatePaper={onUpdatePaper}
     />
+  );
+}
+
+function PaperFreshnessBoundary({ hasNewPapers }: { hasNewPapers: boolean }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "12px",
+        margin: "4px 0",
+      }}
+    >
+      <div style={{ flex: 1, height: "1px", background: "rgba(16, 185, 129, 0.2)" }} />
+      <div
+        style={{
+          padding: "8px 14px",
+          borderRadius: "var(--radius-full)",
+          background: "rgba(16, 185, 129, 0.08)",
+          border: "1px solid rgba(16, 185, 129, 0.18)",
+          color: "#0F766E",
+          fontSize: "0.8125rem",
+          fontWeight: 600,
+          whiteSpace: "nowrap",
+        }}
+      >
+        {hasNewPapers ? "新论文分界线：以下开始出现已入库论文" : "本次结果从这里开始就是已入库论文"}
+      </div>
+      <div style={{ flex: 1, height: "1px", background: "rgba(16, 185, 129, 0.2)" }} />
+    </div>
   );
 }
 

@@ -298,6 +298,176 @@ def _collect_saved_arxiv_ids(arxiv_root: Path) -> set[str]:
     return existing_ids
 
 
+def _collect_saved_arxiv_note_paths(lit_path: Path) -> dict[str, str]:
+    """Map saved arXiv IDs to existing literature note paths."""
+    note_paths: dict[str, str] = {}
+    candidate_roots = [
+        lit_path / "arxiv",
+        lit_path / "Literature" / "arXiv",
+    ]
+
+    for root in candidate_roots:
+        if not root.exists():
+            continue
+        for note_path in root.glob("**/*.md"):
+            try:
+                post = frontmatter.loads(note_path.read_text(encoding="utf-8"))
+                paper = {
+                    "metadata": post.metadata,
+                    "source_url": post.metadata.get("arxiv-url", ""),
+                }
+                arxiv_id = _extract_arxiv_id_from_paper_payload(paper)
+            except Exception:
+                arxiv_id = ""
+
+            if not arxiv_id or arxiv_id == "unknown":
+                match = re.search(
+                    r"([a-z\-]+/\d{7}|\d{4}\.\d{4,5})(?:v\d+)?",
+                    note_path.name,
+                    re.IGNORECASE,
+                )
+                arxiv_id = match.group(1) if match else ""
+
+            if arxiv_id and arxiv_id not in note_paths:
+                note_paths[arxiv_id] = str(note_path.relative_to(lit_path).as_posix())
+
+    return note_paths
+
+
+def _extract_s2_paper_id_from_paper_payload(paper: dict) -> str:
+    meta = paper.get("metadata", {}) or {}
+    candidates = [
+        paper.get("paper_id", ""),
+        meta.get("paper_id", ""),
+        meta.get("paper-id", ""),
+    ]
+
+    paper_id = str(paper.get("id", "")).strip()
+    if paper_id.startswith("followup-monitor:s2_"):
+        candidates.append(paper_id.split("followup-monitor:s2_", 1)[1])
+    elif paper_id.startswith("source-paper:s2_"):
+        candidates.append(paper_id.split("source-paper:s2_", 1)[1])
+    elif paper_id.startswith("s2_"):
+        candidates.append(paper_id[3:])
+
+    for candidate in candidates:
+        text = str(candidate or "").strip()
+        if not text:
+            continue
+        return text[3:] if text.startswith("s2_") else text
+    return ""
+
+
+def _relative_literature_path_exists(lit_path: Path, relative_path: str) -> bool:
+    rel_text = str(relative_path or "").strip()
+    if not rel_text:
+        return False
+    try:
+        return (lit_path / Path(rel_text)).exists()
+    except Exception:
+        return False
+
+
+def _find_saved_paper_record(
+    paper: dict,
+    *,
+    lit_path: Path | None = None,
+    arxiv_note_paths: dict[str, str] | None = None,
+) -> dict[str, Any] | None:
+    arxiv_id = _extract_arxiv_id_from_paper_payload(paper)
+    if arxiv_id == "unknown":
+        arxiv_id = ""
+    s2_paper_id = _extract_s2_paper_id_from_paper_payload(paper)
+
+    candidate_records: list[dict[str, Any] | None] = []
+    if arxiv_id:
+        candidate_records.append(_paper_store.get_by_arxiv_id(arxiv_id))
+    if s2_paper_id:
+        candidate_records.append(_paper_store.get_by_s2_paper_id(s2_paper_id))
+
+    for record in candidate_records:
+        if not record or not record.get("saved_to_literature"):
+            continue
+        literature_path = str(record.get("literature_path") or "").strip()
+        if not literature_path:
+            continue
+        if lit_path and not _relative_literature_path_exists(lit_path, literature_path):
+            continue
+        return record
+
+    if arxiv_note_paths and arxiv_id:
+        literature_path = str(arxiv_note_paths.get(arxiv_id) or "").strip()
+        if literature_path:
+            return {
+                "saved_to_literature": True,
+                "literature_path": literature_path,
+                "metadata": {
+                    "saved_to_literature": True,
+                    "literature_path": literature_path,
+                },
+            }
+
+    return None
+
+
+def _build_saved_paper_metadata_patch(record: dict[str, Any] | None) -> dict[str, Any]:
+    if not record:
+        return {}
+
+    metadata = dict(record.get("metadata") or {})
+    literature_path = str(record.get("literature_path") or metadata.get("literature_path") or "").strip()
+    if not record.get("saved_to_literature") and not literature_path:
+        return {}
+
+    patch: dict[str, Any] = {
+        "saved_to_literature": True,
+    }
+    if literature_path:
+        patch["literature_path"] = literature_path
+
+    for key in (
+        "pdf_path",
+        "figures_dir",
+        "source_paper_path",
+        "source_paper_pdf_path",
+        "abstract",
+        "introduction",
+        "formatted-digest",
+    ):
+        value = metadata.get(key)
+        if value not in (None, ""):
+            patch[key] = value
+
+    for key in ("local_figures", "figures"):
+        value = metadata.get(key)
+        if isinstance(value, list) and value:
+            patch[key] = value
+
+    return patch
+
+
+def _merge_saved_paper_metadata(
+    paper: dict[str, Any],
+    record: dict[str, Any] | None,
+) -> dict[str, Any]:
+    patch = _build_saved_paper_metadata_patch(record)
+    if not patch:
+        return paper
+
+    merged_metadata = {
+        **dict(paper.get("metadata") or {}),
+        **patch,
+    }
+    merged_paper = {
+        **paper,
+        "metadata": merged_metadata,
+        "saved_to_literature": True,
+    }
+    if patch.get("literature_path"):
+        merged_paper["literature_path"] = str(patch["literature_path"])
+    return merged_paper
+
+
 async def _prepare_paper_digest_payload(paper: dict, arxiv_id: str) -> dict[str, str]:
     """Collect abstract/introduction text and assemble a stable digest block."""
     from .tools.arxiv_api import ArxivAPITool, build_structured_digest_markdown
@@ -1712,17 +1882,13 @@ async def crawl_arxiv_live(data: dict = None):
     if days_back is not None:
         days_back = max(1, min(3650, days_back))
 
-    # Get existing arXiv IDs from literature library to avoid duplicates
-    existing_ids = set()
+    lit_path = get_literature_path() or get_vault_path()
+    saved_arxiv_note_paths: dict[str, str] = {}
     try:
-        lit_path = get_literature_path()
-        if not lit_path:
-            lit_path = get_vault_path()
         if lit_path:
-            arxiv_dir = lit_path / "arxiv"
-            existing_ids = _collect_saved_arxiv_ids(arxiv_dir)
+            saved_arxiv_note_paths = _collect_saved_arxiv_note_paths(lit_path)
     except Exception:
-        pass
+        saved_arxiv_note_paths = {}
 
     results = []
     session_id = _generate_crawl_session_id()
@@ -1794,7 +1960,7 @@ async def crawl_arxiv_live(data: dict = None):
                     )
                     for paper in group_papers:
                         paper_id = paper.get("id")
-                        if not paper_id or paper_id in seen or paper_id in existing_ids:
+                        if not paper_id or paper_id in seen:
                             continue
                         seen.add(paper_id)
                         merged.append(paper)
@@ -1811,10 +1977,17 @@ async def crawl_arxiv_live(data: dict = None):
                 days_back=days_back,
                 sort_by="submittedDate",
             )
-            return [
-                paper for paper in papers
-                if paper.get("id") and paper.get("id") not in existing_ids
-            ][:max_results]
+            deduped_papers: list[dict] = []
+            seen_ids: set[str] = set()
+            for paper in papers:
+                paper_id = str(paper.get("id", "")).strip()
+                if not paper_id or paper_id in seen_ids:
+                    continue
+                seen_ids.add(paper_id)
+                deduped_papers.append(paper)
+                if max_results is not None and len(deduped_papers) >= max_results:
+                    break
+            return deduped_papers
 
         async def paper_to_card_data(paper: dict) -> dict:
             item = tracker.item_from_api_result(paper)
@@ -1830,7 +2003,7 @@ async def crawl_arxiv_live(data: dict = None):
                 "paper_tracking_labels": [search_label] if search_label else [],
             })
             payload = await tracker.build_tracking_payload(item, prefs)
-            return {
+            tracked_paper = {
                 "id": item.id,
                 "title": payload["title"],
                 "summary": payload["summary"],
@@ -1839,6 +2012,14 @@ async def crawl_arxiv_live(data: dict = None):
                 "source_url": payload["source_url"],
                 "metadata": payload["metadata"],
             }
+            return _merge_saved_paper_metadata(
+                tracked_paper,
+                _find_saved_paper_record(
+                    tracked_paper,
+                    lit_path=lit_path,
+                    arxiv_note_paths=saved_arxiv_note_paths,
+                ),
+            )
 
         api_papers = await _await_with_crawl_cancel(
             search_with_arxiv_api(),
@@ -1882,12 +2063,17 @@ async def crawl_arxiv_live(data: dict = None):
         results.sort(key=lambda x: x.get("metadata", {}).get("published", ""), reverse=True)
 
         # Send completion
+        saved_matches = sum(
+            1 for result in results
+            if bool((result.get("metadata") or {}).get("saved_to_literature"))
+        )
+
         await broadcaster.send_event({
             "type": "crawl_complete",
             "papers": results,
             "count": len(results),
             "requested": max_results,
-            "skipped_duplicates": len(existing_ids)
+            "saved_matches": saved_matches,
         })
 
         # Clean up session on success
@@ -1897,7 +2083,7 @@ async def crawl_arxiv_live(data: dict = None):
             "papers": results,
             "count": len(results),
             "requested": max_results,
-            "skipped_duplicates": len(existing_ids)
+            "saved_matches": saved_matches,
         }
     except CrawlCancelledError:
         await broadcaster.send_event({
@@ -1999,6 +2185,25 @@ async def save_arxiv_to_literature(data: dict):
     title = paper.get("title", "untitled")
     meta = paper.get("metadata", {})
     arxiv_id = _extract_arxiv_id_from_paper_payload(paper)
+    existing_saved = _find_saved_paper_record(
+        paper,
+        lit_path=lit_path,
+        arxiv_note_paths=_collect_saved_arxiv_note_paths(lit_path),
+    )
+    existing_saved_patch = _build_saved_paper_metadata_patch(existing_saved)
+    existing_path = str(existing_saved_patch.get("literature_path") or "").strip()
+    if existing_path:
+        return {
+            "ok": True,
+            "already_saved": True,
+            "path": existing_path,
+            "folder": str(Path(existing_path).parent.as_posix()),
+            "figures": existing_saved_patch.get("local_figures") or existing_saved_patch.get("figures") or [],
+            "pdf": existing_saved_patch.get("pdf_path"),
+            "introduction": str(existing_saved_patch.get("introduction") or ""),
+            "formatted_digest": str(existing_saved_patch.get("formatted-digest") or ""),
+        }
+
     paper_relative_dir = build_arxiv_grouped_relative_dir(
         paper,
         root_folder=folder,
@@ -2749,6 +2954,22 @@ async def save_s2_to_literature(data: dict):
     title = paper.get("title", "untitled")
     paper_id = meta.get("paper_id", "unknown")
     paper_tracking_role = str(meta.get("paper_tracking_role") or "").strip()
+    existing_saved = _find_saved_paper_record(paper, lit_path=lit_path)
+    existing_saved_patch = _build_saved_paper_metadata_patch(existing_saved)
+    existing_path = str(existing_saved_patch.get("literature_path") or "").strip()
+    if existing_path:
+        return {
+            "ok": True,
+            "already_saved": True,
+            "path": existing_path,
+            "figures": existing_saved_patch.get("local_figures") or existing_saved_patch.get("figures") or [],
+            "pdf": existing_saved_patch.get("pdf_path"),
+            "introduction": str(existing_saved_patch.get("introduction") or ""),
+            "formatted_digest": str(existing_saved_patch.get("formatted-digest") or ""),
+            "source_paper_path": existing_saved_patch.get("source_paper_path"),
+            "source_paper_pdf_path": existing_saved_patch.get("source_paper_pdf_path"),
+            "folder": str(Path(existing_path).parent.as_posix()),
+        }
 
     if paper_tracking_role == "source":
         source_payload = _extract_source_paper_payload_from_source_card(paper)
@@ -3060,6 +3281,7 @@ async def crawl_semantic_scholar_tracker(data: dict = None):
     tracker = SemanticScholarTracker()
     results = []
     session_id = data.get("session_id") or _generate_crawl_session_id()
+    lit_path = get_literature_path() or get_vault_path()
     _register_crawl_session(session_id)
 
     try:
@@ -3157,6 +3379,10 @@ async def crawl_semantic_scholar_tracker(data: dict = None):
                             "source_url": source_card.source_url,
                             "metadata": source_card.metadata,
                         }
+                        source_data = _merge_saved_paper_metadata(
+                            source_data,
+                            _find_saved_paper_record(source_data, lit_path=lit_path),
+                        )
                         await broadcaster.send_event({
                             "type": "crawl_paper",
                             "module": "semantic-scholar-tracker",
@@ -3243,6 +3469,10 @@ async def crawl_semantic_scholar_tracker(data: dict = None):
                         "source_url": card.source_url,
                         "metadata": card.metadata,
                     }
+                    paper_data = _merge_saved_paper_metadata(
+                        paper_data,
+                        _find_saved_paper_record(paper_data, lit_path=lit_path),
+                    )
                     results.append(paper_data)
 
                     await broadcaster.send_event({
