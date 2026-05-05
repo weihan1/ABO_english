@@ -198,7 +198,7 @@ def build_arxiv_grouped_relative_dir(
     tracking_fallback: str = "General",
     paper_fallback: str = "untitled",
 ) -> PurePosixPath:
-    """Return arXiv grouped directory like arxiv/<YYYY-MM-DD tracking>/<paper-title>/."""
+    """Return arXiv grouped directory like arxiv/<tracking>/<YYYY-MM-DD paper-title>/."""
     title = str(paper.get("title") or "").strip()
     arxiv_id = str(
         paper.get("id")
@@ -207,8 +207,9 @@ def build_arxiv_grouped_relative_dir(
         or ((paper.get("metadata") or {}) if isinstance(paper.get("metadata"), Mapping) else {}).get("arxiv-id")
         or ""
     ).strip()
-    note_name = sanitize_paper_title_for_path(
+    note_name = build_dated_paper_title_for_path(
         title,
+        paper,
         fallback=arxiv_id or paper_fallback,
         max_length=120,
     )
@@ -217,10 +218,4 @@ def build_arxiv_grouped_relative_dir(
         fallback=tracking_fallback,
         max_length=80,
     )
-    dated_tracking_label = build_dated_path_label(
-        tracking_label,
-        paper,
-        fallback=tracking_fallback,
-        max_length=100,
-    )
-    return PurePosixPath(root_folder) / dated_tracking_label / note_name
+    return PurePosixPath(root_folder) / tracking_label / note_name
