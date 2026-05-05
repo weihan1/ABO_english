@@ -207,7 +207,8 @@ export default function ArxivTracker() {
   // 通用状态
   const [savedPapers, setSavedPapers] = useState<Set<string>>(new Set());
   const [_savedS2Papers, _setSavedS2Papers] = useState<Set<string>>(new Set());
-  const [savingS2PaperId, setSavingS2PaperId] = useState<string | null>(null);
+  const [savingPaperIds, setSavingPaperIds] = useState<Set<string>>(new Set());
+  const [savingS2PaperIds, setSavingS2PaperIds] = useState<Set<string>>(new Set());
   const [autoSave, setAutoSave] = useState(false);
   const [csOnly, setCsOnly] = useState(true);
   const [searchMaxResultsInput, setSearchMaxResultsInput] = useState("50");
@@ -221,6 +222,8 @@ export default function ArxivTracker() {
   const saveSingleS2PaperRef = useRef<((paper: SemanticScholarPaper) => Promise<void>) | null>(null);
   const savedPapersRef = useRef<Set<string>>(new Set());
   const savedS2PapersRef = useRef<Set<string>>(new Set());
+  const savingPaperIdsRef = useRef<Set<string>>(new Set());
+  const savingS2PaperIdsRef = useRef<Set<string>>(new Set());
 
   // WebSocket 连接 - 使用 ref 来避免依赖问题，确保事件处理始终可用
   const autoSaveRef = useRef(autoSave);
@@ -260,6 +263,14 @@ export default function ArxivTracker() {
   useEffect(() => {
     savedS2PapersRef.current = _savedS2Papers;
   }, [_savedS2Papers]);
+
+  useEffect(() => {
+    savingPaperIdsRef.current = savingPaperIds;
+  }, [savingPaperIds]);
+
+  useEffect(() => {
+    savingS2PaperIdsRef.current = savingS2PaperIds;
+  }, [savingS2PaperIds]);
 
   // Track which mode is currently crawling using a crawling ID
   const crawlingIdRef = useRef<string | null>(null);
@@ -447,6 +458,18 @@ export default function ArxivTracker() {
   }, [])
 
   async function saveSinglePaper(paper: ArxivPaper) {
+    if (
+      savingPaperIdsRef.current.has(paper.id)
+      || savedPapersRef.current.has(paper.id)
+      || paper.metadata?.saved_to_literature
+    ) {
+      return;
+    }
+
+    const nextSavingPaperIds = new Set(savingPaperIdsRef.current);
+    nextSavingPaperIds.add(paper.id);
+    savingPaperIdsRef.current = nextSavingPaperIds;
+    setSavingPaperIds(nextSavingPaperIds);
     try {
       const result = await api.post<{
         ok: boolean;
@@ -478,6 +501,11 @@ export default function ArxivTracker() {
       }
     } catch (e) {
       console.error(`Failed to save paper ${paper.id}:`, e);
+    } finally {
+      const nextSavingPaperIdsAfterSave = new Set(savingPaperIdsRef.current);
+      nextSavingPaperIdsAfterSave.delete(paper.id);
+      savingPaperIdsRef.current = nextSavingPaperIdsAfterSave;
+      setSavingPaperIds(nextSavingPaperIdsAfterSave);
     }
   }
 
@@ -487,6 +515,18 @@ export default function ArxivTracker() {
   }, []);
 
   async function saveSingleS2Paper(paper: SemanticScholarPaper) {
+    if (
+      savingS2PaperIdsRef.current.has(paper.id)
+      || savedS2PapersRef.current.has(paper.id)
+      || paper.metadata?.saved_to_literature
+    ) {
+      return;
+    }
+
+    const nextSavingS2PaperIds = new Set(savingS2PaperIdsRef.current);
+    nextSavingS2PaperIds.add(paper.id);
+    savingS2PaperIdsRef.current = nextSavingS2PaperIds;
+    setSavingS2PaperIds(nextSavingS2PaperIds);
     try {
       const result = await api.post<{
         ok: boolean;
@@ -519,6 +559,11 @@ export default function ArxivTracker() {
       }
     } catch (err) {
       console.error(`Failed to auto-save follow-up paper ${paper.id}:`, err);
+    } finally {
+      const nextSavingS2PaperIdsAfterSave = new Set(savingS2PaperIdsRef.current);
+      nextSavingS2PaperIdsAfterSave.delete(paper.id);
+      savingS2PaperIdsRef.current = nextSavingS2PaperIdsAfterSave;
+      setSavingS2PaperIds(nextSavingS2PaperIdsAfterSave);
     }
   }
 
@@ -605,6 +650,18 @@ export default function ArxivTracker() {
   }
 
   async function saveToLiterature(paper: ArxivPaper) {
+    if (
+      savingPaperIdsRef.current.has(paper.id)
+      || savedPapersRef.current.has(paper.id)
+      || paper.metadata?.saved_to_literature
+    ) {
+      return;
+    }
+
+    const nextSavingPaperIds = new Set(savingPaperIdsRef.current);
+    nextSavingPaperIds.add(paper.id);
+    savingPaperIdsRef.current = nextSavingPaperIds;
+    setSavingPaperIds(nextSavingPaperIds);
     try {
       const result = await api.post<{
         ok: boolean;
@@ -645,6 +702,11 @@ export default function ArxivTracker() {
       );
     } catch (err) {
       toast.error("保存失败", err instanceof Error ? err.message : "请检查文献库路径");
+    } finally {
+      const nextSavingPaperIdsAfterSave = new Set(savingPaperIdsRef.current);
+      nextSavingPaperIdsAfterSave.delete(paper.id);
+      savingPaperIdsRef.current = nextSavingPaperIdsAfterSave;
+      setSavingPaperIds(nextSavingPaperIdsAfterSave);
     }
   }
 
@@ -815,7 +877,18 @@ export default function ArxivTracker() {
   }
 
   async function saveS2ToLiterature(paper: SemanticScholarPaper) {
-    setSavingS2PaperId(paper.id);
+    if (
+      savingS2PaperIdsRef.current.has(paper.id)
+      || savedS2PapersRef.current.has(paper.id)
+      || paper.metadata?.saved_to_literature
+    ) {
+      return;
+    }
+
+    const nextSavingS2PaperIds = new Set(savingS2PaperIdsRef.current);
+    nextSavingS2PaperIds.add(paper.id);
+    savingS2PaperIdsRef.current = nextSavingS2PaperIds;
+    setSavingS2PaperIds(nextSavingS2PaperIds);
     try {
       const result = await api.post<{
         ok: boolean;
@@ -862,7 +935,10 @@ export default function ArxivTracker() {
     } catch (err) {
       toast.error("保存失败", err instanceof Error ? err.message : "请检查文献库路径");
     } finally {
-      setSavingS2PaperId(null);
+      const nextSavingS2PaperIdsAfterSave = new Set(savingS2PaperIdsRef.current);
+      nextSavingS2PaperIdsAfterSave.delete(paper.id);
+      savingS2PaperIdsRef.current = nextSavingS2PaperIdsAfterSave;
+      setSavingS2PaperIds(nextSavingS2PaperIdsAfterSave);
     }
   }
 
@@ -1543,7 +1619,7 @@ export default function ArxivTracker() {
                         <S2PaperCard
                           paper={paper}
                           isSaved={isTrackedPaperSaved(paper, _savedS2Papers)}
-                          isSaving={savingS2PaperId === paper.id}
+                          isSaving={savingS2PaperIds.has(paper.id)}
                           onSave={() => saveS2ToLiterature(paper)}
                           hasLiteraturePath={!!(config?.literature_path || config?.vault_path)}
                         />
@@ -1557,6 +1633,7 @@ export default function ArxivTracker() {
                         <PaperCard
                           paper={paper}
                           isSaved={isTrackedPaperSaved(paper, savedPapers)}
+                          isSaving={savingPaperIds.has(paper.id)}
                           onSave={() => saveToLiterature(paper)}
                           hasLiteraturePath={!!(config?.literature_path || config?.vault_path)}
                         />
@@ -1642,11 +1719,13 @@ function PaperFreshnessBoundary({ hasNewPapers }: { hasNewPapers: boolean }) {
 function PaperCard({
   paper,
   isSaved,
+  isSaving,
   onSave,
   hasLiteraturePath,
 }: {
   paper: ArxivPaper;
   isSaved: boolean;
+  isSaving: boolean;
   onSave: () => void;
   hasLiteraturePath: boolean;
 }) {
@@ -1656,6 +1735,7 @@ function PaperCard({
     <TrackedPaperCard
       paper={paper}
       isSaved={isSaved}
+      isSaving={isSaving}
       onSave={onSave}
       hasLiteraturePath={hasLiteraturePath}
       onUpdatePaper={(updatedPaper) => {
