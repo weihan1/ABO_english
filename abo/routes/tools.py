@@ -5661,9 +5661,11 @@ async def api_arxiv_save(req: ArxivSaveRequest):
         {
             "id": req.arxiv_id,
             "title": req.title,
+            "published": req.published,
             "metadata": {
                 "paper_tracking_label": req.tracking_label,
                 "primary_category": req.primary_category,
+                "published": req.published,
             },
         },
         root_folder="arxiv",

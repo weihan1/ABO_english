@@ -9,7 +9,7 @@ from typing import Literal
 import httpx
 
 from abo.config import is_paper_ai_scoring_enabled
-from abo.paper_paths import sanitize_paper_title_for_path
+from abo.paper_paths import build_dated_paper_title_for_path, sanitize_paper_title_for_path
 from abo.paper_tracking import load_module_preferences, normalize_followup_monitors
 from abo.sdk import Module, Item, Card, agent_json
 from abo.store.cards import CardStore
@@ -605,8 +605,9 @@ class SemanticScholarTracker(Module):
                     print(f"[s2] Agent error for {item.id}: {e}")
 
             # Build metadata
-            note_name = sanitize_paper_title_for_path(
+            note_name = build_dated_paper_title_for_path(
                 p["title"],
+                p,
                 fallback=item.id,
                 max_length=120,
             )

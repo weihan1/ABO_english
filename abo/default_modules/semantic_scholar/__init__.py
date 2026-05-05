@@ -2,7 +2,7 @@ import asyncio
 import httpx
 
 from abo.config import is_paper_ai_scoring_enabled
-from abo.paper_paths import sanitize_paper_title_for_path
+from abo.paper_paths import build_dated_paper_title_for_path, sanitize_paper_title_for_path
 from abo.sdk import Module, Item, Card, agent_json
 
 
@@ -332,8 +332,9 @@ class SemanticScholarTracker(Module):
                     result = {}
 
             authors = p.get("authors", [])
-            safe_title = sanitize_paper_title_for_path(
+            safe_title = build_dated_paper_title_for_path(
                 p["title"],
+                p,
                 fallback=item.id,
                 max_length=120,
             )

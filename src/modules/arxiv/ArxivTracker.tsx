@@ -1590,7 +1590,7 @@ export default function ArxivTracker() {
                       style={{ width: "18px", height: "18px", cursor: "pointer" }}
                     />
                     <span style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}>
-                      自动保存到文献库/{arxivTrackerActiveTab === "followups" ? "FollowUps/源论文/论文名" : "arxiv/追踪标签/论文名"}
+                      自动保存到文献库/{arxivTrackerActiveTab === "followups" ? "FollowUps/源论文/日期 论文名" : "arxiv/日期 追踪标签/论文名"}
                     </span>
                   </label>
                 </div>

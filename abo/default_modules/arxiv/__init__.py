@@ -592,10 +592,14 @@ class ArxivTracker(Module):
             {
                 "id": item.id,
                 "title": p["title"],
+                "published": p.get("published", ""),
+                "year": year,
                 "metadata": {
                     "paper_tracking_label": tracking_label,
                     "paper_tracking_labels": tracking_labels,
                     "primary_category": primary_cat,
+                    "published": p.get("published", ""),
+                    "year": year,
                 },
             },
             root_folder="Literature/arXiv",

@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 import os
 import re
-from typing import Any, Awaitable
+from typing import Any, Awaitable, Mapping
 
 import frontmatter
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
@@ -37,7 +37,11 @@ from .rss import rss_router
 from .routes.tools import router as tools_router
 from .modules.routes import router as modules_router
 from .paper_tracking import normalize_followup_monitors, normalize_keyword_monitors
-from .paper_paths import build_arxiv_grouped_relative_dir, sanitize_paper_title_for_path
+from .paper_paths import (
+    build_arxiv_grouped_relative_dir,
+    build_dated_paper_title_for_path,
+    sanitize_paper_title_for_path,
+)
 from .paper_cards import sanitize_feed_card_payload
 from .runtime.broadcaster import broadcaster
 from .runtime.bundled_idle import (
@@ -658,14 +662,19 @@ def _extract_source_paper_payload_from_source_card(paper: dict) -> dict:
     }
 
 
-def _resolve_source_paper_storage_paths(lit_path: Path, title: str) -> tuple[Path, Path, Path]:
+def _resolve_source_paper_storage_paths(
+    lit_path: Path,
+    title: str,
+    paper: Mapping[str, Any] | None = None,
+) -> tuple[Path, Path, Path]:
     folder_name = sanitize_paper_title_for_path(
         title,
         fallback="Unknown",
         max_length=80,
     )
-    note_name = sanitize_paper_title_for_path(
+    note_name = build_dated_paper_title_for_path(
         title,
+        paper,
         fallback="Unknown",
         max_length=120,
     )
@@ -715,7 +724,7 @@ def _find_existing_saved_source_paper(lit_path: Path, source_payload: dict) -> d
     if not title:
         return {}
 
-    _, target_path, pdf_full_path = _resolve_source_paper_storage_paths(lit_path, title)
+    _, target_path, pdf_full_path = _resolve_source_paper_storage_paths(lit_path, title, source_payload)
     if target_path.exists():
         result = {"path": str(target_path.relative_to(lit_path).as_posix())}
         if pdf_full_path.exists():
@@ -778,7 +787,7 @@ async def _ensure_source_paper_note_from_payload(
         return {}
 
     lit_path = lit_path.resolve()
-    _, target_path, _ = _resolve_source_paper_storage_paths(lit_path, title)
+    _, target_path, _ = _resolve_source_paper_storage_paths(lit_path, title, source_payload)
     meta = source_payload.get("metadata", {}) or {}
     existing_saved = _find_existing_saved_source_paper(lit_path, source_payload)
     if existing_saved and existing_saved.get("path") != str(target_path.relative_to(lit_path).as_posix()):
@@ -2977,6 +2986,7 @@ async def save_s2_to_literature(data: dict):
         base_dir, _, _ = _resolve_source_paper_storage_paths(
             lit_path,
             str(source_payload.get("title", "")),
+            source_payload,
         )
         base_dir.mkdir(parents=True, exist_ok=True)
         source_note_result = await _ensure_source_paper_note_from_payload(
@@ -3028,8 +3038,9 @@ async def save_s2_to_literature(data: dict):
         max_length=80,
     )
 
-    paper_folder_name = sanitize_paper_title_for_path(
+    paper_folder_name = build_dated_paper_title_for_path(
         title,
+        paper,
         fallback=paper_id,
         max_length=120,
     )
