@@ -79,11 +79,52 @@ def strip_alias(text: str) -> str:
     return text.split("|", 1)[0].strip()
 
 
-def detect_source_markdown(root: Path) -> Path | None:
-    candidate = root / f"{root.name}.md"
-    if candidate.is_file():
-        return candidate
+_LEADING_DATE_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"^\s*20\d{2}[._-]\d{1,2}[._-]\d{1,2}\s*[-_ ]\s*"),
+    re.compile(r"^\s*20\d{2}[._-]\d{1,2}\s*[-_ ]\s*"),
+    re.compile(r"^\s*20\d{2}\s*[-_ ]\s*"),
+    re.compile(r"^\s*2[0-9](0[1-9]|1[0-2])\s*[-_ ]\s*"),
+)
+
+
+def _strip_leading_date(stem: str) -> str | None:
+    for pattern in _LEADING_DATE_PATTERNS:
+        match = pattern.match(stem)
+        if match:
+            return stem[match.end():].strip()
     return None
+
+
+def detect_source_markdown(root: Path) -> Path | None:
+    """Find the root-level markdown that anchors the corpus.
+
+    Accepts either `<folder>.md` or `<date_prefix> <folder>.md`. The date-prefix
+    form is now common when the user wants the source paper itself to carry a
+    publication date. Both date-aware scripts in this skill use the same
+    convention.
+    """
+    canonical = root / f"{root.name}.md"
+    if canonical.is_file():
+        return canonical
+
+    name_norm = root.name.casefold()
+    candidates: list[Path] = []
+    try:
+        for path in root.iterdir():
+            if not path.is_file() or path.suffix.lower() != ".md":
+                continue
+            if path.name.startswith("."):
+                continue
+            stripped = _strip_leading_date(path.stem)
+            if stripped is not None and stripped.casefold() == name_norm:
+                candidates.append(path)
+    except OSError:
+        return None
+
+    if not candidates:
+        return None
+    candidates.sort(key=lambda p: p.name.casefold())
+    return candidates[0]
 
 
 def choose_note_files(root: Path) -> list[Path]:

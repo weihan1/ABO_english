@@ -651,6 +651,11 @@ export default function Feed() {
       .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
   }, [scopedCards, feedContext]);
 
+  const paperCards = useMemo(
+    () => scopedCards.filter((card) => getCardPlatform(card).scope === "papers"),
+    [scopedCards],
+  );
+
   const cardsByScope = useMemo(
     () => scopeFilter === "all"
       ? scopedCards
@@ -699,17 +704,17 @@ export default function Feed() {
 
   const paperTypeCounts = useMemo(
     () => ({
-      keyword: cardsByScope.filter((card) => getPaperTrackingType(card) === "keyword").length,
-      followup: cardsByScope.filter((card) => getPaperTrackingType(card) === "followup").length,
+      keyword: paperCards.filter((card) => getPaperTrackingType(card) === "keyword").length,
+      followup: paperCards.filter((card) => getPaperTrackingType(card) === "followup").length,
     }),
-    [cardsByScope],
+    [paperCards],
   );
 
   const cardsByPaperType = useMemo(
     () => !usesPaperFilters || paperTypeFilter === "all"
-      ? cardsByScope
-      : cardsByScope.filter((card) => getPaperTrackingType(card) === paperTypeFilter),
-    [cardsByScope, paperTypeFilter, usesPaperFilters],
+      ? paperCards
+      : paperCards.filter((card) => getPaperTrackingType(card) === paperTypeFilter),
+    [paperCards, paperTypeFilter, usesPaperFilters],
   );
 
   const paperDetailOptions = useMemo(() => {

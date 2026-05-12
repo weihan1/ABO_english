@@ -439,3 +439,214 @@ ABO 不是。对它来说，保存只是下一轮工作的开始。
 `顺着已有主链，把输入接进来，把沉淀做稳定，把后续调用变顺。`
 
 做到这三点，你写出来的东西通常就会和这个产品长在一起，而不是贴在外面。
+
+---
+
+## 13. 如何维护三种桌面版本支持
+
+这里默认说的三目标是：
+
+- `mac x64` -> `x86_64-apple-darwin`
+- `win x64` -> `x86_64-pc-windows-msvc`
+- `win arm64` -> `aarch64-pc-windows-msvc`
+
+### 13.1 先统一心智
+
+ABO 应该维护的是：
+
+- `一套代码`
+- `一个主分支`
+- `一个发布矩阵`
+
+而不是三套分支、三套页面、三套业务逻辑。
+
+前端 `src/`、Rust 桌面壳 `src-tauri/src/`、Python 后端 `abo/` 继续共用一套实现。平台差异只应该收口在：
+
+- `构建 runner`
+- `打包脚本`
+- `少量平台分支`
+
+研究链、注意力链、成长链都不应该因为平台不同而分叉实现。
+
+### 13.2 当前仓库的真实状态
+
+当前仓库离“三目标可维护”还差几步，原因不是前端，而是 `Tauri + Python sidecar` 的构建链。
+
+先看现在已有的现实：
+
+- `src-tauri/tauri.conf.json` 的 `beforeDevCommand` / `beforeBuildCommand` 会先执行 `python3 scripts/build_tauri_sidecar.py`
+- `scripts/build_tauri_sidecar.py` 现在会按当前宿主机 Python 环境构建 sidecar
+- sidecar 构建结果会直接覆盖写入 `src-tauri/resources/abo-backend`
+- `scripts/build_macos_app.sh`、`scripts/build_macos_release.sh`、`Casks/` 目前基本只覆盖 mac 发布链
+- `src-tauri/src/lib.rs`、`scripts/dev_abo.py`、`scripts/tauri_fresh_dev.sh` 里还有 `lsof`、`ps`、`kill` 这类 Unix 风格依赖
+
+这意味着当前仓库本质上更接近：
+
+- `一次构建一个当前宿主平台包`
+
+而不是：
+
+- `在同一套工作流里稳定维护三份目标产物`
+
+所以不要误以为现在只差一个 `tauri build --target` 就够了。真正的分叉点在 sidecar 和发布脚本。
+
+### 13.3 正确的维护策略
+
+推荐做法不是让每个开发者本地同时维护三套环境，而是：
+
+1. 日常开发只跑自己当前宿主机目标
+2. 合并前或发版时跑三目标构建矩阵
+3. 平台 bug 再到对应原生平台调试
+
+也就是说：
+
+- 开发支持：`当前宿主平台优先`
+- 发布支持：`CI / 原生 runner 负责三目标`
+- 业务逻辑：`保持单一事实来源，不做平台分叉`
+
+### 13.4 推荐的 runner / target matrix
+
+建议按原生 runner 维护：
+
+- `mac x64` -> `macos-15-intel` -> `x86_64-apple-darwin`
+- `win x64` -> `windows-latest` -> `x86_64-pc-windows-msvc`
+- `win arm64` -> `windows-11-arm` -> `aarch64-pc-windows-msvc`
+
+这里优先强调“原生 runner”，不是因为 Tauri 前端不能跨目标，而是因为当前仓库的 Python sidecar 不应该建立在“跨平台 sidecar 打包一定可用”的假设上。
+
+对 ABO 来说，最稳的方式是：
+
+- mac 产物在 mac runner 上打
+- win x64 产物在 Windows x64 runner 上打
+- win arm64 产物在 Windows ARM64 runner 上打
+
+### 13.5 这个仓库最少要补的工程改造
+
+#### A. 让 sidecar 构建脚本有目标意识
+
+`scripts/build_tauri_sidecar.py` 现在只知道“当前机器”，不知道“我要为哪个目标打包”。
+
+至少要补这些能力：
+
+1. 增加 `--target-triple` 参数，或统一读取 `ABO_BUILD_TARGET`
+2. 构建前打印当前 `host` 和目标 `target`
+3. 如果当前宿主机不能可靠产出目标 sidecar，就直接失败，不要静默产错架构
+4. 输出文件名、日志和中间目录带上 target，避免混淆
+
+最重要的一条是：
+
+- `不能让 Tauri 打的是 x86_64 包，但 sidecar 还是当前宿主机架构`
+
+#### B. 拆出平台发布脚本
+
+当前只有 mac 发布脚本是不够的。
+
+建议最少补到：
+
+- `scripts/build_macos_release.sh`
+- `scripts/build_windows_release.ps1` 或等价的 Python 脚本
+
+并在 `package.json` 增加明确入口，例如：
+
+- `build:release:mac-x64`
+- `build:release:win-x64`
+- `build:release:win-arm64`
+
+这些脚本只负责：
+
+- 设置目标 triple
+- 构建 sidecar
+- 调用 `tauri build --target ...`
+- 收集 release 产物
+
+不要把业务逻辑塞进发布脚本。
+
+#### C. 把 Windows 不兼容的进程 / 端口处理收口
+
+现在这些地方带有明显 Unix 假设：
+
+- `src-tauri/src/lib.rs`
+- `scripts/dev_abo.py`
+- `scripts/tauri_fresh_dev.sh`
+
+维护三目标前，要把这类逻辑改成：
+
+- 平台分支实现
+
+或者：
+
+- 在 Windows 上退化为更保守但可工作的路径
+
+重点不是“所有平台都要有完全一样的清理逻辑”，而是：
+
+- `Windows 不能因为缺少 lsof / ps / kill 就让开发或 release 链直接失效`
+
+#### D. 建 release matrix，不建多套仓库
+
+推荐把发版责任放到一个 CI 工作流里，而不是手工切来切去：
+
+1. 读取统一版本号
+2. 三个 job 分别构建三目标
+3. 每个 job 在自己的独立 workspace 里生成 sidecar 和安装包
+4. 汇总到同一个 GitHub Release
+
+这样可以避免在同一个工作树里反复覆盖 `src-tauri/resources/abo-backend`。
+
+### 13.6 发版时推荐的顺序
+
+建议以后按这个顺序维护：
+
+1. 更新 `src-tauri/tauri.conf.json` 里的版本号
+2. 触发三目标 release workflow
+3. 每个目标分别完成：前端构建、sidecar 构建、Tauri 打包、产物上传
+4. 检查 GitHub Release 里是否同时有三份目标产物
+5. 只在 mac 产物链里继续维护 `Homebrew Cask`
+
+这里要注意：
+
+- `Homebrew` 只解决 mac 分发，不负责 Windows
+- Windows 产物先走 GitHub Release 最直接
+- 以后如果要接 `winget`，也应该是 Windows 分发层的事，不要反向污染主业务链
+
+### 13.7 代理在做三目标支持时最容易犯的错
+
+1. `误把多目标支持做成多套代码`
+   正确做法是一套业务链，多个构建目标。
+
+2. `误以为 tauri 能跨目标，sidecar 也一定能跨目标`
+   ABO 目前真正需要谨慎对待的是 Python sidecar。
+
+3. `为了 Windows 另写一套工具页 / 保存链 / 定时链`
+   这是违反 ABO 主链原则的。
+
+4. `把平台差异放进业务层`
+   平台差异应该尽量只停留在打包、路径、进程管理、Shell 调用这一层。
+
+5. `只验证安装包生成，不验证 sidecar 真实启动`
+   对 ABO 来说，能打开壳不算成功；本地后端 sidecar 能被拉起、前端能连上，才算成功。
+
+### 13.8 三目标最低验证标准
+
+每个目标最少验证：
+
+1. 应用能启动
+2. sidecar 能被拉起
+3. 前端能连到本地后端
+4. 配置目录能正确创建
+5. 至少一条真实链路能跑通
+
+这里的“真实链路”优先选最薄的一条，例如：
+
+- 打开桌面应用
+- 后端启动成功
+- 进入一个已有主动工具页
+- 拉到一批结果
+- 能正常预览或保存
+
+不要只做空壳 smoke test。
+
+### 13.9 一句话原则
+
+如果以后真的要长期支持 `mac x64 + win x64 + win arm64`，最稳的路线不是“三个平台分别养一套 ABO”，而是：
+
+`一套 ABO 代码 + 三目标原生构建矩阵 + sidecar 按目标严格打包验证。`
