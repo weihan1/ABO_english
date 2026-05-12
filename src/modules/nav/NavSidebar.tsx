@@ -673,7 +673,10 @@ export default function NavSidebar() {
           </span>
         </button>
 
-        {/* ArXiv API Tool */}
+        {/* [DISABLED 2026-05] arXiv API 侧边栏入口已下线，统一并入「论文追踪」。
+            如需恢复，去掉下面的注释，并同步恢复 store.ts 的 "arxiv-api" 联合分支与
+            MainContent.tsx 里的 <ArxivAPITool /> 渲染。 */}
+        {/*
         <button
           onClick={() => {
             setActiveTab("arxiv-api");
@@ -725,6 +728,7 @@ export default function NavSidebar() {
             arXiv API
           </span>
         </button>
+        */}
 
         <button
           onClick={() => {

@@ -70,14 +70,21 @@ def normalize_keyword_monitors(config: dict[str, Any]) -> list[dict[str, Any]]:
 
     monitors: list[dict[str, Any]] = []
     for entry in monitors_source:
+        advanced_raw: Any = None
         if isinstance(entry, dict):
-            query = str(entry.get("query") or entry.get("keywords") or entry.get("label") or "").strip()
-            if not query:
+            advanced_raw = entry.get("advanced")
+            raw_query_candidate = entry.get("query") or entry.get("keywords")
+            query = str(raw_query_candidate or "").strip()
+            has_advanced = isinstance(advanced_raw, dict) and bool(
+                advanced_raw.get("conditions") or advanced_raw.get("categories") or advanced_raw.get("date_range")
+            )
+            if not query and not has_advanced:
                 continue
-            label = str(entry.get("label") or entry.get("name") or query).strip() or query
+            label = str(entry.get("label") or entry.get("name") or query or "advanced").strip()
             categories = _normalize_string_list(entry.get("categories")) or list(_DEFAULT_ARXIV_MONITOR_CATEGORIES)
             enabled = bool(entry.get("enabled", True))
-            monitor_id = str(entry.get("id") or _stable_monitor_id("keyword", label, query))
+            id_seed = query or json.dumps(advanced_raw, sort_keys=True, ensure_ascii=False)
+            monitor_id = str(entry.get("id") or _stable_monitor_id("keyword", label, id_seed))
         else:
             query = str(entry).strip()
             if not query:
@@ -87,15 +94,23 @@ def normalize_keyword_monitors(config: dict[str, Any]) -> list[dict[str, Any]]:
             enabled = True
             monitor_id = _stable_monitor_id("keyword", label, query)
 
-        monitors.append(
-            {
-                "id": monitor_id,
-                "label": label,
-                "query": query,
-                "categories": categories,
-                "enabled": enabled,
-            }
-        )
+        monitor: dict[str, Any] = {
+            "id": monitor_id,
+            "label": label,
+            "query": query,
+            "categories": categories,
+            "enabled": enabled,
+        }
+
+        if isinstance(advanced_raw, dict):
+            # Normalize lazily here to avoid an import cycle at module load.
+            from abo.tools.arxiv_api import normalize_advanced_query
+
+            normalized_advanced = normalize_advanced_query(advanced_raw)
+            if normalized_advanced:
+                monitor["advanced"] = normalized_advanced
+
+        monitors.append(monitor)
 
     return monitors
 

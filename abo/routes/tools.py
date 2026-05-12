@@ -3559,13 +3559,14 @@ class ZhihuTrendsRequest(BaseModel):
 
 
 class ArxivAPISearchRequest(BaseModel):
-    keywords: list[str]
+    keywords: list[str] = []
     categories: Optional[list[str]] = None
     mode: str = "OR"
     max_results: int = 50
     days_back: Optional[int] = None
     sort_by: str = "submittedDate"
     sort_order: str = "descending"
+    advanced: Optional[dict] = None
 
 
 class ArxivAPISearchResponse(BaseModel):
@@ -5568,12 +5569,22 @@ async def api_arxiv_search(req: ArxivAPISearchRequest):
             days_back=req.days_back,
             sort_by=req.sort_by,
             sort_order=req.sort_order,
+            advanced=req.advanced,
         )
         search_time_ms = (time.time() - start_time) * 1000
+        query_label = (
+            " ".join(
+                f"{c.get('field', 'all')}:{c.get('value', '')}"
+                for c in (req.advanced or {}).get("conditions", [])
+                if c.get("value")
+            )
+            if req.advanced
+            else " ".join(req.keywords)
+        )
         return {
             "total": len(papers),
             "papers": papers,
-            "query": " ".join(req.keywords),
+            "query": query_label,
             "search_time_ms": round(search_time_ms, 2),
         }
     except Exception as e:

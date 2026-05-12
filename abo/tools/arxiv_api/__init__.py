@@ -13,12 +13,16 @@ from urllib.parse import urlsplit
 import arxiv
 import httpx
 
+from .query_builder import compile_advanced_query, normalize_advanced_query
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
     "ArxivAPITool",
     "ArxivPaper",
     "arxiv_api_search",
+    "compile_advanced_query",
+    "normalize_advanced_query",
     "extract_introduction_from_arxiv_html",
     "extract_introduction_from_pdf_text",
     "build_structured_digest_markdown",
@@ -354,7 +358,7 @@ class ArxivAPITool:
 
     async def search(
         self,
-        keywords: list[str],
+        keywords: list[str] | None = None,
         categories: Optional[list[str]] = None,
         mode: Literal["AND", "OR"] = "OR",
         max_results: int | None = 50,
@@ -363,6 +367,7 @@ class ArxivAPITool:
         sort_order: Literal["descending", "ascending"] = "descending",
         author: Optional[str] = None,
         title: Optional[str] = None,
+        advanced: dict | None = None,
     ) -> list[ArxivPaper]:
         """Search arXiv for papers matching the given criteria.
 
@@ -380,7 +385,20 @@ class ArxivAPITool:
         Returns:
             List of ArxivPaper objects matching the search criteria
         """
-        query = self._build_query(keywords, categories, mode, author, title)
+        if advanced:
+            normalized = normalize_advanced_query(advanced)
+            if normalized:
+                query = compile_advanced_query(normalized)
+                if normalized.get("sort_by"):
+                    sort_by = normalized["sort_by"]
+                if normalized.get("sort_order"):
+                    sort_order = normalized["sort_order"]
+                if normalized.get("max_results"):
+                    max_results = normalized["max_results"]
+            else:
+                query = self._build_query(keywords or [], categories, mode, author, title)
+        else:
+            query = self._build_query(keywords or [], categories, mode, author, title)
 
         sort_map = {
             "submittedDate": arxiv.SortCriterion.SubmittedDate,
@@ -543,7 +561,7 @@ class ArxivAPITool:
 
 
 async def arxiv_api_search(
-    keywords: list[str],
+    keywords: list[str] | None = None,
     categories: Optional[list[str]] = None,
     mode: Literal["AND", "OR"] = "OR",
     max_results: int | None = 50,
@@ -552,6 +570,7 @@ async def arxiv_api_search(
     sort_order: Literal["descending", "ascending"] = "descending",
     author: Optional[str] = None,
     title: Optional[str] = None,
+    advanced: dict | None = None,
 ) -> list[dict]:
     """Convenience function to search arXiv and return results as dictionaries.
 
@@ -571,7 +590,7 @@ async def arxiv_api_search(
     """
     tool = ArxivAPITool()
     papers = await tool.search(
-        keywords=keywords,
+        keywords=keywords or [],
         categories=categories,
         mode=mode,
         max_results=max_results,
@@ -580,5 +599,6 @@ async def arxiv_api_search(
         sort_order=sort_order,
         author=author,
         title=title,
+        advanced=advanced,
     )
     return [tool.to_dict(p) for p in papers]

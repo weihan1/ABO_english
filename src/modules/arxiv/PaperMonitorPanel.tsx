@@ -14,6 +14,12 @@ import ToggleSwitch from "../../components/ToggleSwitch";
 import { useToast } from "../../components/Toast";
 import { api } from "../../core/api";
 import { ArxivCategorySelector, type ArxivCategory } from "./ArxivCategorySelector";
+import {
+  AdvancedQueryBuilder,
+  createEmptyAdvancedQuery,
+  previewAdvancedQuery,
+  type ArxivAdvancedQuery,
+} from "./AdvancedQueryBuilder";
 
 type KeywordMonitor = {
   id: string;
@@ -21,6 +27,7 @@ type KeywordMonitor = {
   query: string;
   categories: string[];
   enabled: boolean;
+  advanced?: ArxivAdvancedQuery | null;
 };
 
 type FollowUpMonitor = {
@@ -182,6 +189,10 @@ export default function PaperMonitorPanel() {
   const [keywordLabelDraft, setKeywordLabelDraft] = useState("");
   const [keywordQueryDraft, setKeywordQueryDraft] = useState("");
   const [keywordSelectedCategories, setKeywordSelectedCategories] = useState<string[]>([]);
+  const [advancedLabelDraft, setAdvancedLabelDraft] = useState("");
+  const [keywordAdvancedDraft, setKeywordAdvancedDraft] = useState<ArxivAdvancedQuery>(() =>
+    createEmptyAdvancedQuery(),
+  );
   const [followupLabelDraft, setFollowupLabelDraft] = useState("");
   const [followupQueryDraft, setFollowupQueryDraft] = useState("");
   const [arxivMaxResultsInput, setArxivMaxResultsInput] = useState(String(DEFAULT_MONITOR_MAX_RESULTS));
@@ -343,6 +354,50 @@ export default function PaperMonitorPanel() {
     });
   }
 
+  async function addAdvancedKeywordMonitor() {
+    const hasSignal =
+      keywordAdvancedDraft.conditions.some((c) => c.value.trim()) ||
+      keywordAdvancedDraft.categories.length > 0 ||
+      Boolean(keywordAdvancedDraft.date_range);
+    if (!hasSignal) {
+      toast.error("请至少填一个高级条件 / 分类 / 日期范围");
+      return;
+    }
+
+    const preview = previewAdvancedQuery(keywordAdvancedDraft);
+    const label = advancedLabelDraft.trim() || preview;
+
+    const nextMonitor: KeywordMonitor = {
+      id: makeLocalId("keyword"),
+      label,
+      query: "",
+      categories:
+        keywordAdvancedDraft.categories.length > 0
+          ? keywordAdvancedDraft.categories
+          : ["cs.*"],
+      enabled: true,
+      advanced: keywordAdvancedDraft,
+    };
+
+    const advancedKey = JSON.stringify(keywordAdvancedDraft);
+    if (
+      arxivConfig.keyword_monitors.some(
+        (monitor) => monitor.advanced && JSON.stringify(monitor.advanced) === advancedKey,
+      )
+    ) {
+      toast.error("相同的高级监控已存在", "可以直接开关，或删除后重新添加");
+      return;
+    }
+
+    const nextConfig = {
+      ...arxivConfig,
+      keyword_monitors: [...arxivConfig.keyword_monitors, nextMonitor],
+    };
+    await persistArxivConfig(nextConfig, `新增 ${label}`);
+    setAdvancedLabelDraft("");
+    setKeywordAdvancedDraft(createEmptyAdvancedQuery());
+  }
+
   async function addKeywordMonitor() {
     const query = keywordQueryDraft.trim();
     if (!query) {
@@ -398,7 +453,7 @@ export default function PaperMonitorPanel() {
       resolvedTitle = resolved.paper?.title?.trim() || query;
 
       if (!resolved.found || !resolvedTitle) {
-        toast.error("没有找到源论文", "请换成更完整的论文标题或 arXiv ID 后再添加");
+        toast.error("没有找到源论文", "请换成更完整的论文标题后再添加");
         return;
       }
       setFollowupLabelDraft((current) => current.trim() ? current : resolvedTitle);
@@ -686,6 +741,12 @@ export default function PaperMonitorPanel() {
             </div>
 
             <div style={{ display: "grid", gap: "10px" }}>
+              <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-secondary)" }}>
+                简单关键词监控
+                <span style={{ fontSize: "0.72rem", fontWeight: 400, color: "var(--text-muted)", marginLeft: 8 }}>
+                  字符串：逗号 = AND，<code>|</code> = OR；匹配标题 + 摘要
+                </span>
+              </div>
               <input
                 type="text"
                 value={keywordLabelDraft}
@@ -1068,6 +1129,100 @@ export default function PaperMonitorPanel() {
             </div>
           </section>
         </div>
+
+        <section
+          style={{
+            border: "1px solid var(--border-light)",
+            borderRadius: "8px",
+            padding: "18px",
+            background: "var(--bg-card)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "16px",
+          }}
+        >
+          <div style={sectionHeaderStyle()}>
+            <Search style={{ width: "18px", height: "18px", color: "var(--color-primary)" }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--text-main)" }}>
+                高级条件监控
+              </div>
+              <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
+                按字段限定条件（Title / Abstract / Author / Category …），对齐 arXiv 官方高级搜索语法
+              </div>
+            </div>
+            <span
+              style={{
+                fontSize: "0.75rem",
+                color: "var(--text-muted)",
+                padding: "2px 8px",
+                borderRadius: 999,
+                border: "1px solid var(--border-light)",
+              }}
+            >
+              {arxivConfig.keyword_monitors.filter((m) => m.advanced).length} 条
+            </span>
+          </div>
+
+          <div style={{ display: "grid", gap: "10px" }}>
+            <input
+              type="text"
+              value={advancedLabelDraft}
+              onChange={(event) => setAdvancedLabelDraft(event.target.value)}
+              placeholder="显示名称，可留空（留空则用编译后的 search_query 作为名字）"
+              style={{
+                height: "40px",
+                padding: "0 12px",
+                borderRadius: "8px",
+                border: "1px solid var(--border-light)",
+                background: "var(--bg-app)",
+                color: "var(--text-main)",
+                fontSize: "0.875rem",
+                outline: "none",
+              }}
+            />
+            <AdvancedQueryBuilder
+              value={keywordAdvancedDraft}
+              onChange={setKeywordAdvancedDraft}
+              availableCategories={availableCategories}
+              expandedMainCategories={expandedMainCategories}
+              onToggleMainCategoryExpanded={(main) =>
+                setExpandedMainCategories((current) => {
+                  const next = new Set(current);
+                  if (next.has(main)) next.delete(main);
+                  else next.add(main);
+                  return next;
+                })
+              }
+              showRuntimeKnobs={false}
+              disabled={savingKey === "arxiv"}
+            />
+          </div>
+
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={addAdvancedKeywordMonitor}
+              disabled={savingKey === "arxiv"}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "10px 14px",
+                borderRadius: "8px",
+                border: "none",
+                background: "linear-gradient(135deg, var(--color-primary), var(--color-secondary))",
+                color: "white",
+                fontSize: "0.875rem",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              <Plus style={{ width: "16px", height: "16px" }} />
+              添加高级监控
+            </button>
+          </div>
+        </section>
 
         <div
           style={{

@@ -783,3 +783,585 @@ Tauri 官方文档特别提醒过，GUI 应用在 macOS / Linux 下不继承 she
   - https://v2.tauri.app/distribute/macos-application-bundle/
 - Linux AppImage 兼容性说明：
   - https://v2.tauri.app/distribute/appimage/
+
+### 10.15 勘误与补充（针对 §10）
+
+落地到真实项目前，下面这些点需要按目前 Tauri v2 与 PyInstaller 的实际行为修正：
+
+1. **`rustc --print host-tuple` 需要较新的 Rust。**
+   - 该子命令是 Rust 1.85 (2025) 才稳定的别名，旧版本叫 `host-triple` 或没有这个子命令。
+   - 通用写法用 `rustc -vV | sed -n 's/^host: //p'`，跨版本都成立。CI 里若 toolchain 不固定，请用这种方式拿 target triple。
+
+2. **`externalBin` 不是唯一可发布路径，对 Python sidecar 反而经常不是最佳选择。**
+   - `externalBin` 适合"单个可执行文件 + 极少附带资源"的二进制（典型场景：Go/Rust 编译出来的 sidecar）。
+   - PyInstaller `--onedir` 产物是"一个可执行 + 一堆 `.so/.dll/.pyd` + `_internal/` 目录"，整体几十到几百 MB。把整个目录塞进 `externalBin` 路径里不被官方支持；硬塞 `--onefile` 又会带来启动慢、首次解压到 `/tmp` 的副作用，对长驻 FastAPI 服务体验不好。
+   - **真正适合 Python sidecar 的两种主流做法：**
+     - **(A) Resource 模式**：把 PyInstaller `--onedir` 目录整体作为 `bundle.resources` 打进去，Rust 侧用 `std::process::Command::new(resource_dir.join(...))` 自己 spawn。优点：完全控制启动参数、环境变量、日志重定向、生命周期；缺点：要自己写 spawn 和清理。ABO 当前用的就是这条路（见 `src-tauri/src/lib.rs` 和 `scripts/build_tauri_sidecar.py`）。
+     - **(B) externalBin + onefile 模式**：把 sidecar 编成 `--onefile` 单文件，命名带 target triple，让 Tauri shell plugin 管理。优点：声明式、权限模型清楚；缺点：onefile 启动每次都解压、依赖 `--add-data` 的资源在运行时定位要走 `sys._MEIPASS`，对动辄 100MB+ 的 FastAPI/uvicorn 体验差。
+   - §10 默认推荐的是 (B)，但本仓库实际跑通的是 (A)，并且对 ABO 这种"后端常驻 + 大量 Python 依赖 + 需要把日志写到 `~/Library/Application Support/...`"的场景，(A) 更稳。下一节 §11 的执行计划完全围绕 (A) 展开。
+
+3. **`shell:allow-spawn` 与 `shell:allow-execute` 的区别。**
+   - §10.6 给的 capability 例子是对的，但需要明确：`Command.sidecar(...).spawn()`（前端持续读取 stdout/stderr 的方式）要 `shell:allow-spawn`；`Command.sidecar(...).execute()`（一次性收集输出）要 `shell:allow-execute`。两个权限的 scope 都用 `{name, sidecar: true}` 这种结构。
+   - 如果你像 ABO 一样**只在 Rust 侧 spawn**、前端不通过 shell plugin 调 sidecar，那 capability 里 **完全不需要**写 `shell:allow-spawn`，也不需要 `externalBin`。
+
+4. **"`prepareBundledBun` 按 `process.arch` 准备" 这条问题在 ABO 里不存在。**
+   - §7.3 说的是 AionUi 的脚本。ABO 没有 bundled-bun，但**同类问题在 ABO 这里换了个形式**：PyInstaller 永远只能打"当前宿主机架构"的 sidecar——在 arm64 Mac 上跑 PyInstaller，出的就是 arm64 二进制。所以 ABO 想做 macOS Intel/Apple Silicon 两个包，必须分别在两台机器（或两个 runner）上跑，不能靠 `cargo tauri build --target x86_64-apple-darwin` 一条命令搞定（那只决定 Rust 侧 target，不影响 sidecar）。这是 §11 计划里反复强调的点。
+
+5. **`--onefile` ≠ "最省事"。**
+   - §10.3 写"优先用 `--onefile`，最省事"。对纯 CLI 工具确实是；但对带大量原生扩展（`pdfminer`、`watchdog`、`websockets`、`pdf2image` 这些）的 FastAPI 应用，`--onefile` 每次启动都要解压到临时目录，冷启动 1~3s，并且某些反病毒软件会因临时目录里的可执行文件触发误报。**ABO 选 `--onedir` 是有意为之，不是疏忽。**
+
+6. **macOS Gatekeeper 与 ad-hoc 签名。**
+   - §5.3 只提到"未签名包用户会遇到 Gatekeeper 提示"。补一条更准确的说法：在 Apple Silicon 上，**未做任何签名的可执行文件根本不会执行**（macOS 11+ 强制要求至少 ad-hoc 签名）。
+   - ABO 当前的 `scripts/build_macos_app.sh` 已经做了 `codesign --force --deep --sign -`（ad-hoc），所以 .app 能在打包机上跑；但**用户从 DMG 拖出后仍会被 quarantine 标记**——这就是脚本里那张"先拖到 Applications 再打开"的纸条存在的原因。要真正消除"右键打开"才能启动的体验，必须 Developer ID + notarization。
+
+---
+
+## 11. ABO 跨平台打包完整执行计划（可自动执行 + 自带测试）
+
+下面这一节是为 ABO 仓库当前现状量身写的可执行计划。任何一个新加入的开发者（或 Claude/Codex 代理）可以**按顺序逐条执行**，最终拿到 macOS arm64 / macOS x64 / Windows x64 / Linux x64 四个平台的可分发安装包，并通过自带的冒烟测试。
+
+### 11.1 现状盘点（先看清楚才动手）
+
+✅ 已具备：
+
+- `scripts/build_tauri_sidecar.py`：用 PyInstaller `--onedir` 把 FastAPI 后端打成 `src-tauri/resources/abo-backend/abo-backend(.exe)`。
+- `scripts/build_macos_app.sh`：调 `npm run tauri:build`，做 ad-hoc 签名，生成 .app + .dmg 到 `release/`。
+- `src-tauri/tauri.conf.json` 已经把 `resources/abo-backend` 写进 `bundle.resources`。
+- `src-tauri/src/lib.rs` 在 release 构建里负责 spawn `abo-backend`、写日志到 `~/Library/Application Support/ABO App/logs/bundled-backend.log`、占用端口 8766、提供端口存活探测和"杀掉残留 bundled backend"逻辑。
+- `abo/main.py` 暴露 `GET /api/health`，是天然的健康检查锚点。
+
+❌ 缺失：
+
+- 没有 Linux 打包脚本；`bundle.targets: "all"` 会让 Tauri 试着出 deb/AppImage/rpm，但没有人验证过 `abo-backend` 在 Linux 资源目录下的相对路径是否正确。
+- 没有 Windows 打包脚本；Rust 那边 `lsof` / `kill -TERM` 是 Unix-only，需要补 Windows 分支。
+- 没有 CI；目前所有打包都靠开发者本机跑。
+- 没有任何"打完包以后实际启动一遍、验证 `/api/health` 可达"的自动化测试。**这是这次计划要补的最关键一环。**
+- `scripts/build_tauri_sidecar.py` 假设 venv 路径 `.venv-packaging/bin/python` 在 Windows 是 `Scripts/python.exe`——这一条已经处理了，但 PyInstaller `--hidden-import` 列表只在当前业务模块下验证过，新加 Python 依赖时容易漏。
+
+### 11.2 目标与边界
+
+**目标**：执行完本节计划，可以做到：
+
+1. 在 macOS（arm64 或 x64）上跑 `python3 scripts/package.py --target host` → 拿到当前宿主机架构的 .app + .dmg + 通过冒烟测试。
+2. 在 Windows / Linux runner 上跑同一条命令 → 拿到对应平台的 .msi / .deb + 通过冒烟测试。
+3. 推 tag 后 GitHub Actions 自动 matrix 出全四份产物并上传到 Release。
+
+**边界**：
+
+- 不做 Apple Developer ID 公证（仓库没有证书；CI 里走 ad-hoc，跟当前 `build_macos_app.sh` 行为一致）。要真正消除 Gatekeeper 警告需要单独补 Developer Account 与 secrets，不在本计划范围。
+- 不做 Windows 代码签名（同上，没有 EV 证书）。
+- 不做 macOS Universal Binary。Apple Silicon / Intel 分别出包，由 runner 决定架构。
+- ARM Linux 不打入第一版（GitHub Actions 免费 runner 没有原生 ARM Linux，且 ABO 用户预期是开发者主机环境，arm64 Linux 优先级低）。
+
+### 11.3 阶段 A：把 sidecar 构建脚本变成"目标平台感知"
+
+`scripts/build_tauri_sidecar.py` 当前已经基本跨平台了，但有两件事需要补：
+
+**A1. 输出 target triple 信息到一个 manifest 文件**，便于后续测试脚本核对自己测的到底是哪个架构的产物，避免"在 arm64 机器上误测了 x64 sidecar"这种事故。
+
+在 `install_sidecar` 函数最后追加：
+
+```python
+import json, platform
+manifest = {
+    "target_arch": platform.machine().lower(),
+    "target_os": sys.platform,
+    "executable": str(executable.relative_to(TAURI_RESOURCE_DIR)),
+    "built_at": __import__("datetime").datetime.utcnow().isoformat() + "Z",
+}
+(TAURI_RESOURCE_DIR / "sidecar.manifest.json").write_text(
+    json.dumps(manifest, indent=2), encoding="utf-8"
+)
+```
+
+**A2. 暴露 `--check-only` 与 `--force`**，让 CI / 测试脚本可以分别"只校验产物是否在""强制重建产物"：
+
+```python
+def main() -> None:
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--force", action="store_true")
+    parser.add_argument("--check-only", action="store_true")
+    args = parser.parse_args()
+
+    output = TAURI_RESOURCE_DIR
+    exe_name = f"{BACKEND_NAME}.exe" if sys.platform == "win32" else BACKEND_NAME
+
+    if args.check_only:
+        ok = (output / exe_name).exists()
+        print(f"[sidecar-build] check-only: {'present' if ok else 'missing'} -> {output}")
+        sys.exit(0 if ok else 1)
+
+    if not args.force and is_sidecar_current(output):
+        print(f"[sidecar-build] up to date: {output}")
+        return
+
+    ensure_venv()
+    install_build_dependencies()
+    bundle_dir = build_sidecar()
+    install_sidecar(bundle_dir)
+```
+
+### 11.4 阶段 B：Rust 侧补全 Windows 与 Linux 分支
+
+当前 `src-tauri/src/lib.rs` 里有几处是 Unix 写死的（`lsof`、`kill -TERM`、`~/Library/Application Support/...`）。Windows / Linux 上要么编不过，要么运行时找不到资源。
+
+新建 `src-tauri/src/backend_supervisor.rs`，把 spawn / stale-cleanup / data-dir 解析三件事拆出来，用 `cfg` 分平台实现。简化版本骨架：
+
+```rust
+use std::{path::{Path, PathBuf}, process::Command};
+
+pub fn listening_pids(port: u16) -> Vec<u32> {
+    #[cfg(unix)] {
+        let out = Command::new("lsof")
+            .args(["-ti", &format!("TCP:{port}"), "-sTCP:LISTEN"])
+            .output().ok();
+        out.map(|o| String::from_utf8_lossy(&o.stdout).lines()
+            .filter_map(|l| l.trim().parse().ok()).collect())
+            .unwrap_or_default()
+    }
+    #[cfg(windows)] {
+        // netstat -ano | findstr :PORT  → parse PID
+        let out = Command::new("cmd")
+            .args(["/C", &format!("netstat -ano -p tcp | findstr :{port}")])
+            .output().ok();
+        out.map(|o| String::from_utf8_lossy(&o.stdout).lines()
+            .filter(|l| l.contains("LISTENING"))
+            .filter_map(|l| l.split_whitespace().last()?.parse().ok())
+            .collect())
+            .unwrap_or_default()
+    }
+}
+
+pub fn kill_pid(pid: u32) {
+    #[cfg(unix)] {
+        let _ = Command::new("kill").args(["-TERM", &pid.to_string()]).status();
+    }
+    #[cfg(windows)] {
+        let _ = Command::new("taskkill").args(["/F", "/PID", &pid.to_string()]).status();
+    }
+}
+
+pub fn app_data_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    use tauri::Manager;
+    #[cfg(target_os = "macos")] {
+        let home = app.path().home_dir().map_err(|e| e.to_string())?;
+        Ok(home.join("Library/Application Support/ABO App"))
+    }
+    #[cfg(not(target_os = "macos"))] {
+        app.path().app_data_dir().map_err(|e| e.to_string())
+    }
+}
+```
+
+然后把 `lib.rs` 里原来直接调 `lsof`/`kill` 的地方换成 `backend_supervisor::listening_pids/kill_pid`。`is_bundled_backend_command` 在 Windows 上也要改：路径片段不再是 `ABO.app/Contents/`，而是 `\ABO\` 或 resource_dir 自身。最稳的做法是直接拿 `current_backend` 的绝对路径去匹配，不要再用平台特有的字符串特征。
+
+把 `is_bundled_backend_command` 整个删掉，统一用 `command_matches_backend_path`：
+
+```rust
+#[cfg(not(debug_assertions))]
+fn stop_stale_bundled_backends(current_backend: &Path) {
+    let target = current_backend.to_string_lossy().to_string();
+    for pid in backend_supervisor::listening_pids(BUNDLED_BACKEND_PORT) {
+        let command = command_for_pid(pid);
+        if !command.contains(&target) { continue; }
+        // ... 原来的 kill 逻辑
+    }
+}
+```
+
+这条改动副作用：不再清理"路径已经不存在但还占着 8766 的旧版本 ABO"。补偿做法是在 `launch_backend` 一开头先无差别探测 8766，如果有人占着且 30s 内不放，回退到 8767 并把端口写到 `~/.abo/runtime.json` 给前端读。这一条工程上更长，**第一版可以先不做**，但要在 issue 里登记。
+
+### 11.5 阶段 C：统一打包入口 `scripts/package.py`
+
+新建 `scripts/package.py`，作为所有平台的单一入口。内容：
+
+```python
+#!/usr/bin/env python3
+"""ABO 跨平台打包统一入口。
+
+用法:
+    python3 scripts/package.py --target host        # 当前宿主机
+    python3 scripts/package.py --target host --skip-test
+    python3 scripts/package.py --target host --bundles dmg,app
+"""
+from __future__ import annotations
+import argparse, os, platform, subprocess, sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+
+def host_triple() -> str:
+    out = subprocess.check_output(["rustc", "-vV"], text=True)
+    for line in out.splitlines():
+        if line.startswith("host:"):
+            return line.split(":", 1)[1].strip()
+    raise RuntimeError("cannot determine host triple")
+
+def run(cmd, **kw):
+    print(f"[package] $ {' '.join(cmd) if isinstance(cmd, list) else cmd}")
+    subprocess.run(cmd, check=True, cwd=ROOT, **kw)
+
+def build_sidecar(force: bool):
+    args = [sys.executable, "scripts/build_tauri_sidecar.py"]
+    if force: args.append("--force")
+    run(args)
+
+def build_tauri(target: str, bundles: str | None):
+    cmd = ["npm", "run", "tauri", "--", "build", "--target", target]
+    if bundles:
+        cmd.extend(["--bundles", bundles])
+    run(cmd)
+
+def default_bundles_for(target: str) -> str:
+    if "apple-darwin" in target: return "app,dmg"
+    if "windows" in target: return "msi,nsis"
+    if "linux" in target: return "deb,appimage"
+    raise ValueError(target)
+
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("--target", default="host",
+                   help="rust target triple 或 'host'")
+    p.add_argument("--bundles", default=None,
+                   help="逗号分隔的 bundle 类型；默认按平台选")
+    p.add_argument("--skip-sidecar", action="store_true")
+    p.add_argument("--skip-test", action="store_true")
+    p.add_argument("--force-sidecar", action="store_true")
+    args = p.parse_args()
+
+    target = host_triple() if args.target == "host" else args.target
+    bundles = args.bundles or default_bundles_for(target)
+    print(f"[package] target={target} bundles={bundles}")
+
+    # 防呆：sidecar 只能打宿主机架构
+    host = host_triple()
+    if target != host and not args.skip_sidecar:
+        print(f"[package] FATAL: sidecar can only be built for host ({host}); "
+              f"requested {target}. Run this on a matching runner, or pass --skip-sidecar "
+              f"if you know what you're doing.", file=sys.stderr)
+        sys.exit(2)
+
+    if not args.skip_sidecar:
+        build_sidecar(args.force_sidecar)
+
+    build_tauri(target, bundles)
+
+    if not args.skip_test:
+        run([sys.executable, "scripts/test_bundle.py", "--target", target])
+
+if __name__ == "__main__":
+    main()
+```
+
+### 11.6 阶段 D：冒烟测试 `scripts/test_bundle.py`（这是整个计划的灵魂）
+
+这一步是真正"自带测试"的部分。它的职责：
+
+1. 找到刚才构建出的 `abo-backend` 可执行文件（**不是从源码运行 uvicorn，而是从打包产物里挑出来执行**，这样能验证 PyInstaller 没漏 hidden import、没漏数据文件）。
+2. 用一个随机空闲端口启动它，**完全模拟 Tauri release 模式的环境变量**（`ABO_RUNNING_BUNDLED_APP=1`、`ABO_BACKEND_PORT=...`、`ABO_APP_DATA_DIR=<tmpdir>`）。
+3. 在最多 30s 内轮询 `GET /api/health`，验证 200 OK + JSON 字段。
+4. 再调 `GET /api/modules` 验证模块发现链路。
+5. 关掉进程，验证退出码合理（PyInstaller `--onedir` 上 SIGTERM 应该是 0 或 -15）。
+6. 如果 `--target` 传了 triple，对照 `sidecar.manifest.json` 校验架构匹配。
+7. **额外**：跑一次 `cargo tauri build --target ... --no-bundle` 的轻量验证（不重新打包，只验证 Rust 端编译能过）。
+
+完整脚本：
+
+```python
+#!/usr/bin/env python3
+"""ABO 打包产物冒烟测试。"""
+from __future__ import annotations
+import argparse, json, os, platform, signal, socket, subprocess, sys, tempfile, time
+from pathlib import Path
+from urllib import request, error
+
+ROOT = Path(__file__).resolve().parents[1]
+SIDECAR_DIR = ROOT / "src-tauri" / "resources" / "abo-backend"
+BACKEND_NAME = "abo-backend.exe" if sys.platform == "win32" else "abo-backend"
+
+def free_port() -> int:
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        return s.getsockname()[1]
+
+def http_get(url: str, timeout: float = 2.0):
+    try:
+        with request.urlopen(url, timeout=timeout) as r:
+            return r.status, json.loads(r.read().decode("utf-8"))
+    except (error.URLError, error.HTTPError, ConnectionError, TimeoutError, socket.timeout):
+        return None, None
+
+def wait_health(port: int, timeout: float = 30.0) -> dict:
+    deadline = time.time() + timeout
+    last_err = "no response"
+    while time.time() < deadline:
+        status, body = http_get(f"http://127.0.0.1:{port}/api/health")
+        if status == 200 and isinstance(body, dict):
+            return body
+        last_err = f"status={status}"
+        time.sleep(0.5)
+    raise TimeoutError(f"backend did not become healthy within {timeout}s: {last_err}")
+
+def check_manifest(expected_target: str | None):
+    manifest_path = SIDECAR_DIR / "sidecar.manifest.json"
+    if not manifest_path.exists():
+        print("[test] WARN: sidecar.manifest.json missing; skipping arch check")
+        return
+    m = json.loads(manifest_path.read_text())
+    print(f"[test] sidecar manifest: {m}")
+    if expected_target:
+        host_arch = platform.machine().lower()
+        manifest_arch = m.get("target_arch", "")
+        # 粗匹配：arm64/aarch64 互通；x86_64/amd64 互通
+        normalize = lambda a: {"aarch64": "arm64", "amd64": "x86_64", "x64": "x86_64"}.get(a, a)
+        if normalize(manifest_arch) != normalize(host_arch):
+            raise SystemExit(f"[test] arch mismatch: manifest={manifest_arch} host={host_arch}")
+
+def smoke_test(expected_target: str | None) -> int:
+    exe = SIDECAR_DIR / BACKEND_NAME
+    if not exe.exists():
+        print(f"[test] FATAL: backend exe not found at {exe}", file=sys.stderr)
+        return 2
+
+    check_manifest(expected_target)
+
+    port = free_port()
+    with tempfile.TemporaryDirectory(prefix="abo-smoketest-") as td:
+        env = os.environ.copy()
+        env.update({
+            "ABO_RUNNING_BUNDLED_APP": "1",
+            "ABO_BACKEND_HOST": "127.0.0.1",
+            "ABO_BACKEND_PORT": str(port),
+            "ABO_APP_DATA_DIR": td,
+            "ABO_DISABLE_LEGACY_MIGRATION": "1",
+            "ABO_BUNDLED_IDLE_EXIT_SECONDS": "300",
+        })
+        print(f"[test] launching {exe} on port {port}, data_dir={td}")
+        log_path = Path(td) / "backend.log"
+        with open(log_path, "w") as logf:
+            proc = subprocess.Popen(
+                [str(exe)], env=env, stdout=logf, stderr=subprocess.STDOUT,
+                cwd=td,
+            )
+        try:
+            health = wait_health(port, timeout=45.0)
+            print(f"[test] /api/health OK: {health}")
+            # 验证模块发现链路
+            status, modules = http_get(f"http://127.0.0.1:{port}/api/modules", timeout=5.0)
+            assert status == 200, f"/api/modules status={status}"
+            assert isinstance(modules, (list, dict)), f"unexpected modules payload: {type(modules)}"
+            print(f"[test] /api/modules OK: {len(modules) if hasattr(modules, '__len__') else '?'} entries")
+        except Exception as e:
+            print(f"[test] FAILED: {e}", file=sys.stderr)
+            print("---- backend log ----", file=sys.stderr)
+            try:
+                print(log_path.read_text(), file=sys.stderr)
+            except Exception:
+                pass
+            return 1
+        finally:
+            if sys.platform == "win32":
+                proc.terminate()
+            else:
+                proc.send_signal(signal.SIGTERM)
+            try:
+                proc.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait(timeout=5)
+            print(f"[test] backend exited rc={proc.returncode}")
+    return 0
+
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("--target", default=None)
+    args = p.parse_args()
+    sys.exit(smoke_test(args.target))
+
+if __name__ == "__main__":
+    main()
+```
+
+**为什么这个测试是充分的**：
+
+- 它直接跑打包产物里的 `abo-backend(.exe)`，不走源码——只要 PyInstaller 漏了 hidden import 或数据文件，第 1 步 spawn 后 `/api/health` 就拿不到 200。
+- 它用 `ABO_RUNNING_BUNDLED_APP=1` + 临时数据目录，跟 Tauri release 路径下 Rust spawn 时给的环境严格对齐（见 `lib.rs` 第 235-244 行）。
+- 它顺手验了 `/api/modules`，这个端点会触发 `abo/runtime/discovery.py` 加载所有默认模块——也就是说，如果哪个 default module 的 import 链有问题，测试也会挂。
+- 在 CI matrix 里每个 runner 各跑一遍，等价于"每个平台都验过这个具体的二进制可以原地启动"。
+
+### 11.7 阶段 E：Linux 与 Windows 平台脚本
+
+**Linux**（`scripts/build_linux_app.sh`）：
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# 系统依赖（GitHub Actions ubuntu-22.04 / 24.04 通用）
+if command -v apt-get >/dev/null; then
+  sudo apt-get update
+  sudo apt-get install -y \
+    libwebkit2gtk-4.1-dev libssl-dev libayatana-appindicator3-dev \
+    librsvg2-dev patchelf libgtk-3-dev build-essential \
+    python3-dev python3-venv pkg-config file
+fi
+
+cd "$ROOT"
+python3 scripts/package.py --target host --bundles deb,appimage
+echo "Linux artifacts under: src-tauri/target/release/bundle/"
+```
+
+**Windows**（`scripts/build_windows_app.ps1`）：
+
+```powershell
+$ErrorActionPreference = "Stop"
+$ROOT = Resolve-Path "$PSScriptRoot\.."
+Set-Location $ROOT
+
+# 假设 runner 已经装好 VS Build Tools 2022（windows-latest 默认就有）
+# 假设 Python 3.12+ 已在 PATH
+
+python scripts\package.py --target host --bundles msi,nsis
+Write-Host "Windows artifacts under: src-tauri\target\release\bundle\"
+```
+
+注意 `tauri.conf.json` 里 `bundle.targets` 当前是 `"all"`。这会让 Tauri 在每个平台尝试出所有可能的格式，CI 上会失败（macOS 上没人能出 deb）。把它改成：
+
+```json
+"targets": ["app", "dmg", "msi", "nsis", "deb", "appimage"]
+```
+
+然后由 `cargo tauri build --bundles xxx` 在命令行筛。tauri-bundler 会自动只生成当前平台支持的那些。
+
+### 11.8 阶段 F：GitHub Actions matrix
+
+新建 `.github/workflows/build.yml`：
+
+```yaml
+name: Build & Test Cross-Platform
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "abo/**"
+      - "src-tauri/**"
+      - "scripts/build_tauri_sidecar.py"
+      - "scripts/package.py"
+      - "scripts/test_bundle.py"
+      - ".github/workflows/build.yml"
+
+jobs:
+  build:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: macos-arm64
+            os: macos-14
+            target: aarch64-apple-darwin
+            bundles: app,dmg
+          - label: macos-x64
+            os: macos-13
+            target: x86_64-apple-darwin
+            bundles: app,dmg
+          - label: windows-x64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            bundles: msi,nsis
+          - label: linux-x64
+            os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            bundles: deb,appimage
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Linux system deps
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libssl-dev \
+            libayatana-appindicator3-dev librsvg2-dev patchelf \
+            libgtk-3-dev build-essential python3-dev pkg-config file
+
+      - name: Install JS deps
+        run: npm ci
+
+      - name: Build sidecar + Tauri + smoke test
+        shell: bash
+        run: python scripts/package.py --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
+
+      - name: Collect artifacts
+        if: always()
+        run: |
+          mkdir -p dist-ci
+          find src-tauri/target/${{ matrix.target }}/release/bundle -maxdepth 3 \
+            \( -name "*.dmg" -o -name "*.app" -o -name "*.msi" -o -name "*.exe" \
+               -o -name "*.deb" -o -name "*.AppImage" \) -exec cp -R {} dist-ci/ \;
+        shell: bash
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: abo-${{ matrix.label }}
+          path: dist-ci/
+          if-no-files-found: error
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: ./artifacts }
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+          generate_release_notes: true
+```
+
+### 11.9 阶段 G：执行顺序与验证清单
+
+按顺序做下面这串动作，每一步都必须等上一步绿了再走：
+
+| # | 动作 | 命令 | 通过判据 |
+|---|------|------|----------|
+| 1 | 给 sidecar 脚本加 `--check-only/--force` + manifest | 改 `scripts/build_tauri_sidecar.py` | `python3 scripts/build_tauri_sidecar.py --force` 成功且 `src-tauri/resources/abo-backend/sidecar.manifest.json` 存在 |
+| 2 | 拆分 `backend_supervisor.rs`，Rust 全部交叉编译过 | `cargo check --target aarch64-apple-darwin && cargo check --target x86_64-pc-windows-msvc --features ""`（后者需 mingw 或在 Windows runner 上） | 本地至少宿主机 target 编译过 |
+| 3 | 写 `scripts/package.py` 与 `scripts/test_bundle.py` | 见 §11.5 / §11.6 | `python3 scripts/package.py --target host --bundles app,dmg` 在本机出 .app + .dmg 并通过冒烟测试 |
+| 4 | 调整 `tauri.conf.json` 的 `bundle.targets` | 见 §11.7 | macOS 上 `cargo tauri build --bundles dmg` 不再尝试出 deb |
+| 5 | 加 Linux / Windows 平台脚本 | 见 §11.7 | 在对应平台上人工或临时 runner 跑一次能出包 |
+| 6 | 加 `.github/workflows/build.yml` | 见 §11.8 | 推一次 `workflow_dispatch`，四个 job 全绿 |
+| 7 | 推 `v0.x.y` tag 验证 release job | `git tag v0.x.y && git push origin v0.x.y` | GitHub Releases 页面出现 4 个平台的安装包 |
+
+### 11.10 失败模式与排查指南（先写在这里，省得到时候慌）
+
+| 症状 | 最可能原因 | 排查动作 |
+|------|------------|----------|
+| `scripts/test_bundle.py` 在 `/api/health` 超时 | PyInstaller 漏了某个 hidden import | 看 `backend.log`，找 `ModuleNotFoundError`；在 `build_tauri_sidecar.py` 的 `--hidden-import` 列表里补 |
+| Windows runner 上 sidecar exe 启动后立刻退出 | 路径里有空格 / Defender 拦截 / 缺 VC++ Redistributable | 本地用 `Procmon` 看 spawn 失败原因；如果是 Defender，把构建目录排除 |
+| Linux deb 装好后启动闪退 | WebKit2GTK 版本不匹配（22.04 vs 24.04） | 用 ubuntu-22.04 runner 出包，向后兼容更好；目标用户必须 ≥22.04 |
+| macOS 用户首次打开报"已损坏" | DMG 没做 ad-hoc 签名 / quarantine flag | 确认 `build_macos_app.sh` 那段 `xattr -cr` 和 `codesign --force --deep --sign -` 跑过；DMG 内 .app 也要单独签 |
+| `cargo tauri build` 报 "resource not found: resources/abo-backend" | 阶段 A 没执行 / sidecar 没生成 | 先单独跑 `python3 scripts/build_tauri_sidecar.py --check-only` 确认产物在位 |
+| CI 上 sidecar 构建慢（每次 5+ 分钟） | 没缓存 PyInstaller venv | 给 `.venv-packaging` 加 `actions/cache`，key 用 `requirements.txt` 的 hash |
+
+### 11.11 一句话总结这一节
+
+ABO 的跨平台打包路径是：**每个平台的 runner 上，先用 PyInstaller `--onedir` 把 FastAPI 后端打成"当前架构的可执行目录"放进 `src-tauri/resources/`，再让 Tauri 把它当资源打进安装包，最后用一个不依赖源码、只跑产物里那个二进制的冒烟测试证明这个安装包真的能启动**——CI matrix 把这一套在 4 个 (OS × arch) 上各跑一遍，全绿即可发布。
+

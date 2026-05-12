@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Card } from "../../components/Layout";
 import { api, API_BASE_URL } from "../../core/api";
+import { useStore } from "../../core/store";
 import { fetchArxivPaperIntroduction } from "./arxivPaperApi";
 
 export type PaperFigureAsset = {
@@ -455,7 +456,14 @@ export default function PaperTrackingCard({
             : "论文追踪");
   const figureCount = figures.length;
   const hasFigures = figureCount > 0;
-  const canLoadFigures = Boolean(arxivId);
+  // S2 follow-up cards hide the figure UI entirely when the user opted out of figure crawling.
+  // Source papers and arXiv-tracker papers always allow figures.
+  const semanticScholarFetchFigures = useStore((s) => s.semanticScholarFetchFigures);
+  const isS2FollowupCard =
+    metadataString(meta, "abo-type") === "semantic-scholar-paper"
+    && paperTrackingRole !== "source";
+  const figuresEnabled = !(isS2FollowupCard && !semanticScholarFetchFigures);
+  const canLoadFigures = Boolean(arxivId) && figuresEnabled;
   const canToggleIntroduction = Boolean(arxivId || introduction);
 
   useEffect(() => {
@@ -714,7 +722,7 @@ export default function PaperTrackingCard({
           </div>
         )}
 
-        {hasFigures && (
+        {hasFigures && figuresEnabled && (
           <PaperFigureStrip
             figures={figures}
             fallbackUrl={archiveUrl || paper.source_url}

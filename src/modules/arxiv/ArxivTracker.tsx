@@ -4,7 +4,6 @@ import {
   RefreshCw,
   Search,
   FileText,
-  Cpu,
   GitBranch,
   Square,
 } from "lucide-react";
@@ -18,6 +17,11 @@ import { useStore } from "../../core/store";
 import PaperMonitorPanel from "./PaperMonitorPanel";
 import SharedPaperTrackingCard from "./PaperTrackingCard";
 import { ArxivCategorySelector, type ArxivCategory } from "./ArxivCategorySelector";
+import {
+  AdvancedQueryBuilder,
+  createEmptyAdvancedQuery,
+  type ArxivAdvancedQuery,
+} from "./AdvancedQueryBuilder";
 
 type PaperFigureAsset = {
   url?: string;
@@ -189,6 +193,7 @@ export default function ArxivTracker() {
     semanticScholarMaxResultsInput,
     semanticScholarDaysBackInput,
     semanticScholarSortBy,
+    semanticScholarFetchFigures,
     setArxivAndPapers,
     setArxivAndCrawling,
     setArxivAndProgress,
@@ -201,6 +206,7 @@ export default function ArxivTracker() {
     setSemanticScholarMaxResultsInput,
     setSemanticScholarDaysBackInput,
     setSemanticScholarSortBy,
+    setSemanticScholarFetchFigures,
   } = useStore();
   const s2Papers = storedSemanticScholarPapers as SemanticScholarPaper[];
 
@@ -210,12 +216,13 @@ export default function ArxivTracker() {
   const [savingPaperIds, setSavingPaperIds] = useState<Set<string>>(new Set());
   const [savingS2PaperIds, setSavingS2PaperIds] = useState<Set<string>>(new Set());
   const [autoSave, setAutoSave] = useState(false);
-  const [csOnly, setCsOnly] = useState(true);
+  const [searchInputMode, setSearchInputMode] = useState<"simple" | "advanced">("simple");
+  const [advancedQuery, setAdvancedQuery] = useState<ArxivAdvancedQuery>(() => createEmptyAdvancedQuery());
   const [searchMaxResultsInput, setSearchMaxResultsInput] = useState("50");
   const [searchDaysBackInput, setSearchDaysBackInput] = useState("180");
   const [searchCategories, setSearchCategories] = useState<string[]>([]);
   const [availableCategories, setAvailableCategories] = useState<ArxivCategory[]>([]);
-  const [expandedMainCategories, setExpandedMainCategories] = useState<Set<string>>(() => new Set(["cs"]));
+  const [expandedMainCategories, setExpandedMainCategories] = useState<Set<string>>(() => new Set());
 
   const toast = useToast();
   const saveSinglePaperRef = useRef<((paper: ArxivPaper) => Promise<void>) | null>(null);
@@ -404,7 +411,10 @@ export default function ArxivTracker() {
               if (paper.metadata?.saved_to_literature) {
                 _setSavedS2Papers((prev) => new Set(prev).add(paper.id));
               }
+              // Defer auto-save until enrichment finishes (figures/intro/agent merged in).
+              const enrichmentPending = Boolean(paper.metadata?.enrichment_pending);
               if (
+                !enrichmentPending &&
                 shouldAutoSave &&
                 hasLiteraturePath &&
                 saveSingleS2PaperRef.current &&
@@ -413,6 +423,23 @@ export default function ArxivTracker() {
               ) {
                 void saveSingleS2PaperRef.current(paper);
               }
+            }
+          } else if (data.type === "crawl_paper_update") {
+            const paper = data.paper as SemanticScholarPaper | undefined;
+            if (!paper) return;
+            store.updateSemanticScholarPaper(paper);
+            if (paper.metadata?.saved_to_literature) {
+              _setSavedS2Papers((prev) => new Set(prev).add(paper.id));
+            }
+            // Enriched card is final — auto-save now if eligible.
+            if (
+              shouldAutoSave &&
+              hasLiteraturePath &&
+              saveSingleS2PaperRef.current &&
+              !paper.metadata?.saved_to_literature &&
+              !savedS2PapersRef.current.has(paper.id)
+            ) {
+              void saveSingleS2PaperRef.current(paper);
             }
           } else if (data.type === "crawl_complete") {
             setSemanticScholarCrawling(false);
@@ -540,6 +567,7 @@ export default function ArxivTracker() {
         paper,
         save_pdf: true,
         max_figures: 5,
+        fetch_figures: useStore.getState().semanticScholarFetchFigures,
       });
 
       _setSavedS2Papers((prev) => new Set(prev).add(paper.id));
@@ -572,25 +600,34 @@ export default function ArxivTracker() {
   }, []);
 
   async function runCrawl() {
+    const useAdvanced = searchInputMode === "advanced";
+    const advancedReady =
+      useAdvanced &&
+      (advancedQuery.conditions.some((c) => c.value.trim()) ||
+        advancedQuery.categories.length > 0 ||
+        Boolean(advancedQuery.date_range));
+
     const keywords = arxivAndKeywords;
     const mode: "AND" | "AND_OR" = keywords.includes("|") ? "AND_OR" : "AND";
 
-    // For AND_OR mode, pass the raw keywords string (with | separator) as a single item
-    // For other modes, split by comma
     const keywordList = mode === "AND_OR"
-      ? [keywords.trim()]  // Pass raw string with | separators
-      : keywords.split(",").map(k => k.trim()).filter(Boolean);
+      ? [keywords.trim()]
+      : keywords.split(",").map((k) => k.trim()).filter(Boolean);
 
-    if (keywordList.length === 0 || (mode === "AND_OR" && !keywords.trim())) {
+    if (!useAdvanced && (keywordList.length === 0 || (mode === "AND_OR" && !keywords.trim()))) {
       toast.error("请输入关键词", "至少输入一个关键词进行搜索");
       return;
     }
+    if (useAdvanced && !advancedReady) {
+      toast.error("高级模式至少需要一个条件 / 分类 / 日期范围");
+      return;
+    }
 
-    const selectedCategories = csOnly ? [] : searchCategories;
+    const selectedCategories = searchCategories;
 
-    // Set crawling ID before starting - both in ref and state
-    crawlingIdRef.current = mode;
-    setCrawlingMode(mode);
+    const crawlTag = useAdvanced ? "ADVANCED" : mode;
+    crawlingIdRef.current = crawlTag;
+    setCrawlingMode(crawlTag);
 
     setArxivAndCrawling(true);
     setArxivAndPapers([]);
@@ -604,16 +641,25 @@ export default function ArxivTracker() {
     });
 
     try {
-      // 启动爬取，结果会通过 WebSocket 推送
-      console.log("[arXiv] Starting crawl API call with mode:", mode);
-      await api.post("/api/modules/arxiv-tracker/crawl", {
-        keywords: keywordList,
-        max_results: resolvedSearchMaxResults,
-        mode: mode,
-        cs_only: csOnly,
-        days_back: resolvedSearchDaysBack,
-        categories: selectedCategories,
-      });
+      console.log("[arXiv] Starting crawl API call with mode:", crawlTag);
+      const body: Record<string, unknown> = useAdvanced
+        ? {
+            keywords: [],
+            advanced: advancedQuery,
+            max_results: resolvedSearchMaxResults,
+            cs_only: false,
+            days_back: resolvedSearchDaysBack,
+            categories: selectedCategories,
+          }
+        : {
+            keywords: keywordList,
+            max_results: resolvedSearchMaxResults,
+            mode: mode,
+            cs_only: false,
+            days_back: resolvedSearchDaysBack,
+            categories: selectedCategories,
+          };
+      await api.post("/api/modules/arxiv-tracker/crawl", body);
       console.log("[arXiv] Crawl API call completed");
     } catch (err) {
       console.error("[arXiv] Crawl API error:", err);
@@ -813,7 +859,7 @@ export default function ArxivTracker() {
   // Fetch follow-up papers from Semantic Scholar
   async function fetchS2FollowUps() {
     if (!semanticScholarQuery.trim()) {
-      toast.error("请输入 arXiv ID 或论文标题", "例如：2501.12345 或 VGGT");
+      toast.error("请输入论文标题", "例如：VGGT");
       return;
     }
 
@@ -837,23 +883,35 @@ export default function ArxivTracker() {
         : "正在查询 Semantic Scholar（全量）...",
     });
 
-    try {
-      // Generate session ID for cancellation
-      const sessionId = Math.random().toString(36).substring(2, 10);
-      s2SessionIdRef.current = sessionId;
+    // Generate session ID for cancellation
+    const sessionId = Math.random().toString(36).substring(2, 10);
+    s2SessionIdRef.current = sessionId;
 
+    // 后端是长阻塞请求，进度/完成/错误都走 WebSocket。
+    // 如果 webview 在长时间爬取后断开了这个 fetch 连接（TypeError 等传输层错误），
+    // 后端其实仍在运行，WS 会照常推送 crawl_paper/crawl_complete。
+    // 所以传输层失败不要清掉爬取状态——让 WS 作为唯一真相源。
+    // 只有服务端真的返回了错误响应（API 4xx/5xx）才视为致命错误。
+    try {
       await api.post("/api/modules/semantic-scholar-tracker/crawl", {
         query: semanticScholarQuery.trim(),
         max_results: resolvedMaxResults,
         days_back: resolvedDaysBack,
         sort_by: semanticScholarSortBy,
+        fetch_figures: semanticScholarFetchFigures,
         session_id: sessionId,
       });
     } catch (err) {
-      toast.error("获取失败", err instanceof Error ? err.message : "请稍后重试");
-      setSemanticScholarCrawling(false);
-      setSemanticScholarProgress(null);
-      s2SessionIdRef.current = null;
+      const message = err instanceof Error ? err.message : "";
+      const isServerError = /^API \d+/.test(message);
+      if (isServerError) {
+        toast.error("获取失败", message || "请稍后重试");
+        setSemanticScholarCrawling(false);
+        setSemanticScholarProgress(null);
+        s2SessionIdRef.current = null;
+      } else {
+        console.warn("[s2] crawl POST 传输层中断，由 WS 继续接管完成事件:", err);
+      }
     }
   }
 
@@ -902,6 +960,7 @@ export default function ArxivTracker() {
         paper,
         save_pdf: true,
         max_figures: 5,
+        fetch_figures: useStore.getState().semanticScholarFetchFigures,
       });
 
       _setSavedS2Papers(prev => new Set(prev).add(paper.id));
@@ -1087,7 +1146,7 @@ export default function ArxivTracker() {
                         fetchS2FollowUps();
                       }
                     }}
-                    placeholder="输入论文标题或 arXiv ID，如：VGGT 或 2501.12345"
+                    placeholder="输入论文标题，如：VGGT"
                     disabled={semanticScholarCrawling}
                     style={{
                       flex: 1,
@@ -1162,7 +1221,7 @@ export default function ArxivTracker() {
                       max={5000}
                       value={semanticScholarMaxResultsInput}
                       onChange={(e) => setSemanticScholarMaxResultsInput(e.target.value)}
-                      placeholder="留空=全量"
+                      placeholder="默认 50，留空=全量"
                       disabled={semanticScholarCrawling}
                       style={{
                         height: "38px",
@@ -1245,10 +1304,35 @@ export default function ArxivTracker() {
                       </button>
                     </div>
                   </div>
+
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-end",
+                      gap: "8px",
+                      cursor: semanticScholarCrawling ? "not-allowed" : "pointer",
+                      userSelect: "none",
+                      height: "38px",
+                      paddingBottom: "10px",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={semanticScholarFetchFigures}
+                      disabled={semanticScholarCrawling}
+                      onChange={(e) => setSemanticScholarFetchFigures(e.target.checked)}
+                      style={{ width: "16px", height: "16px", accentColor: "var(--color-primary)" }}
+                    />
+                    <span style={{ fontSize: "0.875rem", color: "var(--text-secondary)", fontWeight: 600 }}>
+                      爬取图片
+                    </span>
+                  </label>
                 </div>
 
                 <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
                   提示：默认会把引用该论文的后续研究全量翻页抓完；如果填写最近 N 天，会在抓取结果里按时间过滤并按你选的排序展示。
+                  Semantic Scholar 只提供 abstract（外加 TLDR 一句话），Introduction 仍需从 arXiv 拉取；卡片初次出现使用 S2 元数据 + TLDR，
+                  随后并发补上 Introduction + AI 分析。「爬取图片」仅决定是否额外抓取并展示论文配图。
                 </div>
               </>
             ) : (
@@ -1260,21 +1344,43 @@ export default function ArxivTracker() {
                     AI领域论文
                   </span>
                   <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "12px" }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
-                      <Cpu style={{ width: "14px", height: "14px", color: "var(--text-muted)" }} />
-                      <input
-                        type="checkbox"
-                        checked={csOnly}
-                        onChange={(e) => setCsOnly(e.target.checked)}
-                        disabled={isCrawling}
-                        style={{ cursor: "pointer" }}
-                      />
-                      <span style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-                        仅 CS 领域
-                      </span>
-                    </label>
+                    <div style={{ display: "flex", gap: 4 }}>
+                      {(["simple", "advanced"] as const).map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => setSearchInputMode(m)}
+                          disabled={isCrawling}
+                          style={{
+                            padding: "4px 10px",
+                            borderRadius: 6,
+                            border: "1px solid var(--border-light)",
+                            background: searchInputMode === m ? "var(--color-primary)" : "transparent",
+                            color: searchInputMode === m ? "white" : "var(--text-secondary)",
+                            fontSize: "0.75rem",
+                            fontWeight: 600,
+                            cursor: isCrawling ? "not-allowed" : "pointer",
+                          }}
+                        >
+                          {m === "simple" ? "简单" : "高级"}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
+
+                {searchInputMode === "advanced" && (
+                  <AdvancedQueryBuilder
+                    value={advancedQuery}
+                    onChange={setAdvancedQuery}
+                    availableCategories={availableCategories}
+                    expandedMainCategories={expandedMainCategories}
+                    onToggleMainCategoryExpanded={toggleSearchMainCategoryExpanded}
+                    showRuntimeKnobs={false}
+                    compact
+                    disabled={isCrawling}
+                  />
+                )}
 
                 <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
                   <label style={{ display: "flex", flexDirection: "column", gap: "6px", width: "120px" }}>
@@ -1328,33 +1434,32 @@ export default function ArxivTracker() {
                   </label>
                 </div>
 
-                {!csOnly && (
-                  <div
-                    style={{
-                      padding: "14px 16px",
-                      borderRadius: "var(--radius-lg)",
-                      background: "var(--bg-hover)",
-                      border: "1px solid var(--border-light)",
-                    }}
-                  >
-                    <ArxivCategorySelector
-                      availableCategories={availableCategories}
-                      selectedCategories={searchCategories}
-                      expandedMainCategories={expandedMainCategories}
-                      onToggleCategory={toggleSearchCategory}
-                      onToggleMainCategory={toggleSearchMainCategory}
-                      onToggleMainCategoryExpanded={toggleSearchMainCategoryExpanded}
-                      disabled={isCrawling}
-                      label="领域筛选"
-                      helperText={searchCategories.length > 0
-                        ? "当前会只搜索你勾选的子类。点击大类按钮可一键全选或取消该大类。"
-                        : "未勾选任何子类时，将和 arXiv API 一样按全领域搜索；如果只想放开部分学科，请在这里激活对应子类。"}
-                      maxHeight="240px"
-                    />
-                  </div>
-                )}
+                <div
+                  style={{
+                    padding: "14px 16px",
+                    borderRadius: "var(--radius-lg)",
+                    background: "var(--bg-hover)",
+                    border: "1px solid var(--border-light)",
+                  }}
+                >
+                  <ArxivCategorySelector
+                    availableCategories={availableCategories}
+                    selectedCategories={searchCategories}
+                    expandedMainCategories={expandedMainCategories}
+                    onToggleCategory={toggleSearchCategory}
+                    onToggleMainCategory={toggleSearchMainCategory}
+                    onToggleMainCategoryExpanded={toggleSearchMainCategoryExpanded}
+                    disabled={isCrawling}
+                    label="领域筛选"
+                    helperText={searchCategories.length > 0
+                      ? "当前会只搜索你勾选的子类。点击大类按钮可一键全选或取消该大类。"
+                      : "未勾选任何子类时，将和 arXiv API 一样按全领域搜索；点击大类标题展开后再勾选具体子类。"}
+                    maxHeight="240px"
+                  />
+                </div>
 
                 <div style={{ display: "flex", gap: "12px", alignItems: "stretch" }}>
+                  {searchInputMode === "simple" && (
                   <input
                     type="text"
                     value={arxivAndKeywords}
@@ -1379,6 +1484,7 @@ export default function ArxivTracker() {
                       transition: "all 0.2s ease",
                     }}
                   />
+                  )}
                   {isCrawling ? (
                     <button
                       onClick={stopCrawl}
@@ -1435,7 +1541,7 @@ export default function ArxivTracker() {
                 </div>
 
                 {/* AND-OR Mode Help Text */}
-                {!isCrawling && (
+                {!isCrawling && searchInputMode === "simple" && (
                   <div style={{
                     marginTop: "12px",
                     padding: "12px 16px",
@@ -1604,7 +1710,7 @@ export default function ArxivTracker() {
                 title="暂无论文"
                 description={
                   arxivTrackerActiveTab === "followups"
-                    ? "输入 arXiv ID 点击「查找后续论文」开始搜索"
+                    ? "输入论文标题点击「查找后续论文」开始搜索"
                     : "输入关键词点击「立即爬取」开始搜索"
                 }
               />

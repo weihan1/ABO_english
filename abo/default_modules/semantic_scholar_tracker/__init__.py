@@ -122,7 +122,7 @@ class SemanticScholarTracker(Module):
         url = f"{self.BASE_URL}/paper/search"
         params = {
             "query": title,
-            "fields": "paperId,title,authors,year,citationCount,referenceCount,abstract,fieldsOfStudy,publicationDate,venue,externalIds,url",
+            "fields": "paperId,title,authors,year,citationCount,referenceCount,abstract,tldr,openAccessPdf,fieldsOfStudy,publicationDate,venue,externalIds,url",
             "limit": 5
         }
 
@@ -150,7 +150,7 @@ class SemanticScholarTracker(Module):
         url = f"{self.BASE_URL}/paper/search"
         params = {
             "query": f"arxiv:{arxiv_id_clean}",
-            "fields": "paperId,title,authors,year,citationCount,referenceCount,abstract,fieldsOfStudy,publicationDate,venue,externalIds,url",
+            "fields": "paperId,title,authors,year,citationCount,referenceCount,abstract,tldr,openAccessPdf,fieldsOfStudy,publicationDate,venue,externalIds,url",
             "limit": 3
         }
 
@@ -252,9 +252,19 @@ class SemanticScholarTracker(Module):
         s2_url = paper.get("url", "") or (f"https://www.semanticscholar.org/paper/{paper_id}" if paper_id else "")
         arxiv_url = f"https://arxiv.org/abs/{arxiv_id}" if arxiv_id else ""
 
+        tldr_field = paper.get("tldr")
+        if isinstance(tldr_field, dict):
+            tldr_text = str(tldr_field.get("text") or "").strip()
+        else:
+            tldr_text = str(tldr_field or paper.get("tldr_text") or "").strip()
+        open_access = paper.get("openAccessPdf") or paper.get("open_access_pdf") or {}
+        open_access_pdf = str((open_access or {}).get("url") or "").strip() if isinstance(open_access, dict) else ""
+
         return {
             "title": paper.get("title", "Unknown"),
             "abstract": paper.get("abstract", ""),
+            "tldr": tldr_text,
+            "open_access_pdf": open_access_pdf,
             "authors": authors,
             "year": paper.get("year"),
             "venue": paper.get("venue", ""),
@@ -303,7 +313,9 @@ class SemanticScholarTracker(Module):
                 break
 
             params = {
-                "fields": "paperId,title,authors,year,citationCount,referenceCount,abstract,fieldsOfStudy,publicationDate,venue,externalIds,url",
+                # Note: S2 /paper/{id}/citations does NOT support tldr field (400 otherwise).
+                # tldr is only available on /paper/search and /paper/{id}.
+                "fields": "paperId,title,authors,year,citationCount,referenceCount,abstract,openAccessPdf,fieldsOfStudy,publicationDate,venue,externalIds,url",
                 "offset": offset,
                 "limit": page_size if remaining is None else min(page_size, remaining),
             }
@@ -449,6 +461,13 @@ class SemanticScholarTracker(Module):
         reference_count = paper.get("referenceCount", 0)
         pub_date = paper.get("publicationDate", "")
         fields = paper.get("fieldsOfStudy", [])
+        tldr_field = paper.get("tldr")
+        if isinstance(tldr_field, dict):
+            tldr_text = str(tldr_field.get("text") or "").strip()
+        else:
+            tldr_text = ""
+        open_access = paper.get("openAccessPdf") or {}
+        open_access_pdf = str(open_access.get("url") or "").strip() if isinstance(open_access, dict) else ""
 
         # 构建 URL
         s2_url = f"https://www.semanticscholar.org/paper/{paper_id}"
@@ -469,6 +488,8 @@ class SemanticScholarTracker(Module):
             raw={
                 "title": title,
                 "abstract": abstract,
+                "tldr": tldr_text,
+                "open_access_pdf": open_access_pdf,
                 "authors": authors,
                 "author_count": len(authors),
                 "year": year,
@@ -537,45 +558,152 @@ class SemanticScholarTracker(Module):
 
         return await self.fetch_followups(**kwargs)
 
-    async def process(self, items: list[Item], prefs: dict) -> list[Card]:
-        """Process papers into Cards with agent analysis"""
+    PROCESS_CONCURRENCY = 6
+
+    def _assemble_card(
+        self,
+        item: Item,
+        figures: list[dict],
+        introduction: str,
+        agent_result: dict,
+    ) -> Card:
+        """Shared card assembly used by both basic (no enrichment) and enriched cards."""
+        p = item.raw
+        arxiv_id = p.get("arxiv_id", "")
+        paper_role = p.get("paper_tracking_role", "followup")
+        monitor_matches = p.get("monitor_matches", [])
+        monitor_labels = [match.get("label", "") for match in monitor_matches if match.get("label")]
+        source_title = p.get("source_paper_title", p.get("title", ""))
+
+        note_name = build_dated_paper_title_for_path(
+            p["title"],
+            p,
+            fallback=item.id,
+            max_length=120,
+        )
+        year = p.get("year", datetime.now().year)
+        source_folder = sanitize_paper_title_for_path(
+            source_title,
+            fallback="Unknown",
+            max_length=80,
+        )
+
+        metadata = {
+            "abo-type": "semantic-scholar-paper",
+            "authors": p["authors"],
+            "author_count": p.get("author_count", len(p["authors"])),
+            "paper_id": p.get("paper_id", ""),
+            "arxiv_id": arxiv_id,
+            "year": year,
+            "venue": p.get("venue", ""),
+            "published": p.get("published", ""),
+            "citation_count": p.get("citation_count", 0),
+            "reference_count": p.get("reference_count", 0),
+            "fields_of_study": p.get("fields_of_study", []),
+            "source_paper_title": source_title,
+            "source_paper": p.get("source_paper", {}),
+            "contribution": agent_result.get("contribution", ""),
+            "abstract": p.get("abstract", ""),
+            "tldr": p.get("tldr", ""),
+            "open_access_pdf": p.get("open_access_pdf", ""),
+            "introduction": introduction,
+            "keywords": agent_result.get("tags", []),
+            "s2_url": p.get("s2_url", ""),
+            "arxiv_url": p.get("arxiv_url", ""),
+            "pdf-url": f"https://arxiv.org/pdf/{arxiv_id}.pdf" if arxiv_id else "",
+            "html-url": f"https://arxiv.org/html/{arxiv_id}" if arxiv_id else "",
+            "figures": figures,
+            "paper_tracking_type": "source" if paper_role == "source" else "followup",
+            "paper_tracking_role": paper_role,
+            "paper_tracking_label": p["title"] if paper_role == "source" else (monitor_labels[0] if monitor_labels else source_title),
+            "paper_tracking_labels": monitor_labels,
+            "paper_tracking_matches": monitor_matches,
+            "relationship_label": "源论文" if paper_role == "source" else "Follow Up 追踪",
+        }
+
+        role_tags = ["source-paper"] if paper_role == "source" else ["follow-up"]
+        card_tags = list(dict.fromkeys([
+            *agent_result.get("tags", []),
+            *role_tags,
+            *(p.get("fields_of_study", [])[:1]),
+            *monitor_labels[:2],
+        ]))
+        # Basic-card summary fallback order: agent summary → S2 tldr → abstract truncation.
+        summary_fallback = p.get("tldr") or (p.get("abstract", "") or "")[:150]
+        return Card(
+            id=f"{'source-paper' if paper_role == 'source' else 'followup-monitor'}:{item.id}",
+            title=p["title"],
+            summary=agent_result.get("summary") or summary_fallback,
+            score=min(agent_result.get("score", 5), 10) / 10,
+            tags=card_tags,
+            source_url=p.get("url", p.get("s2_url", "")),
+            obsidian_path=(
+                f"Literature/FollowUps/{source_folder}/{note_name}.md"
+                if paper_role == "source"
+                else f"Literature/FollowUps/{source_folder}/{note_name}/{note_name}.md"
+            ),
+            metadata=metadata,
+        )
+
+    def build_basic_card(self, item: Item) -> Card:
+        """Build a card purely from Semantic Scholar metadata, without any slow enrichment.
+
+        没有 figures / introduction / agent_json 结果。前端用此卡片立刻展示初始信息，
+        若用户启用了「爬取图片」再用 enrich_item 产生的更新卡片替换。
+        """
+        return self._assemble_card(item, figures=[], introduction="", agent_result={})
+
+    async def enrich_item(
+        self,
+        item: Item,
+        prefs: dict,
+        arxiv_api,
+        semaphore,
+        ai_scoring_enabled: bool,
+        *,
+        fetch_figures: bool = True,
+    ) -> Card:
+        """Enrich a basic card with intro / agent analysis (always) and figures (optional).
+
+        S2 API 不提供 introduction，只有 abstract 和 tldr，所以 intro 仍要走 arXiv。
+        fetch_figures=False 时只跳过图片，intro 和 agent 仍然并发跑。
+        """
         import asyncio
-        from abo.tools.arxiv_api import ArxivAPITool
 
-        cards = []
-        arxiv_api = ArxivAPITool()
-        ai_scoring_enabled = is_paper_ai_scoring_enabled()
-
-        for item in items:
+        async with semaphore:
             p = item.raw
             arxiv_id = p.get("arxiv_id", "")
             paper_role = p.get("paper_tracking_role", "followup")
-            figures: list[dict] = []
-            introduction = ""
-            monitor_matches = p.get("monitor_matches", [])
-            monitor_labels = [match.get("label", "") for match in monitor_matches if match.get("label")]
+            source_title = p.get("source_paper_title", p.get("title", ""))
 
-            if arxiv_id:
+            async def _safe_fetch_figures() -> list[dict]:
+                if not arxiv_id or not fetch_figures:
+                    return []
                 try:
-                    figures = await asyncio.wait_for(arxiv_api.fetch_figures(arxiv_id), timeout=15)
+                    return await asyncio.wait_for(arxiv_api.fetch_figures(arxiv_id), timeout=15)
                 except asyncio.TimeoutError:
                     print(f"[s2] arXiv figure fetch timeout for {arxiv_id}")
                 except Exception as e:
                     print(f"[s2] arXiv figure fetch error for {arxiv_id}: {e}")
+                return []
+
+            async def _safe_fetch_introduction() -> str:
+                if not arxiv_id:
+                    return ""
                 try:
-                    introduction = await asyncio.wait_for(arxiv_api.fetch_introduction(arxiv_id), timeout=20)
+                    return await asyncio.wait_for(arxiv_api.fetch_introduction(arxiv_id), timeout=20)
                 except asyncio.TimeoutError:
                     print(f"[s2] arXiv introduction fetch timeout for {arxiv_id}")
                 except Exception as e:
                     print(f"[s2] arXiv introduction fetch error for {arxiv_id}: {e}")
+                return ""
 
-            # Build prompt for follow-up papers (强调这是后续研究)
-            source_title = p.get("source_paper_title", p.get("title", ""))
-            result = {}
-            if ai_scoring_enabled:
+            async def _safe_agent_json() -> dict:
+                if not ai_scoring_enabled:
+                    return {}
                 fields_str = ", ".join(p.get("fields_of_study", [])[:3])
                 citation_info = f"被引用 {p['citation_count']} 次" if p.get("citation_count") else ""
-
+                abstract_snippet = p["abstract"][:800] if p.get("abstract") else "No abstract available"
                 if paper_role == "source":
                     prompt = (
                         f'分析以下源论文，返回 JSON（不要有其他文字）：\n'
@@ -584,7 +712,7 @@ class SemanticScholarTracker(Module):
                         f"标题：{p['title']}\n"
                         f"领域：{fields_str}\n"
                         f"{citation_info}\n"
-                        f"摘要：{p['abstract'][:800] if p.get('abstract') else 'No abstract available'}"
+                        f"摘要：{abstract_snippet}"
                     )
                 else:
                     prompt = (
@@ -594,83 +722,54 @@ class SemanticScholarTracker(Module):
                         f"标题：{p['title']}\n"
                         f"领域：{fields_str}\n"
                         f"{citation_info}\n"
-                        f"摘要：{p['abstract'][:800] if p.get('abstract') else 'No abstract available'}"
+                        f"摘要：{abstract_snippet}"
                     )
-
                 try:
-                    result = await asyncio.wait_for(agent_json(prompt, prefs=prefs), timeout=30)
+                    return await asyncio.wait_for(agent_json(prompt, prefs=prefs), timeout=30)
                 except asyncio.TimeoutError:
                     print(f"[s2] Agent timeout for {item.id}, using fallback")
                 except Exception as e:
                     print(f"[s2] Agent error for {item.id}: {e}")
+                return {}
 
-            # Build metadata
-            note_name = build_dated_paper_title_for_path(
-                p["title"],
-                p,
-                fallback=item.id,
-                max_length=120,
+            figures, introduction, agent_result = await asyncio.gather(
+                _safe_fetch_figures(),
+                _safe_fetch_introduction(),
+                _safe_agent_json(),
             )
-            year = p.get("year", datetime.now().year)
-            source_folder = sanitize_paper_title_for_path(
-                source_title,
-                fallback="Unknown",
-                max_length=80,
-            )
+            return self._assemble_card(item, figures, introduction, agent_result)
 
-            metadata = {
-                "abo-type": "semantic-scholar-paper",
-                "authors": p["authors"],
-                "author_count": p.get("author_count", len(p["authors"])),
-                "paper_id": p.get("paper_id", ""),
-                "arxiv_id": arxiv_id,
-                "year": year,
-                "venue": p.get("venue", ""),
-                "published": p.get("published", ""),
-                "citation_count": p.get("citation_count", 0),
-                "reference_count": p.get("reference_count", 0),
-                "fields_of_study": p.get("fields_of_study", []),
-                "source_paper_title": source_title,
-                "source_paper": p.get("source_paper", {}),
-                "contribution": result.get("contribution", ""),
-                "abstract": p.get("abstract", ""),
-                "introduction": introduction,
-                "keywords": result.get("tags", []),
-                "s2_url": p.get("s2_url", ""),
-                "arxiv_url": p.get("arxiv_url", ""),
-                "pdf-url": f"https://arxiv.org/pdf/{arxiv_id}.pdf" if arxiv_id else "",
-                "html-url": f"https://arxiv.org/html/{arxiv_id}" if arxiv_id else "",
-                "figures": figures,
-                "paper_tracking_type": "source" if paper_role == "source" else "followup",
-                "paper_tracking_role": paper_role,
-                "paper_tracking_label": p["title"] if paper_role == "source" else (monitor_labels[0] if monitor_labels else source_title),
-                "paper_tracking_labels": monitor_labels,
-                "paper_tracking_matches": monitor_matches,
-                "relationship_label": "源论文" if paper_role == "source" else "Follow Up 追踪",
-            }
+    async def process(self, items: list[Item], prefs: dict) -> list[Card]:
+        """Process papers into Cards with agent analysis (full enrichment).
 
-            role_tags = ["source-paper"] if paper_role == "source" else ["follow-up"]
-            card_tags = list(dict.fromkeys([
-                *result.get("tags", []),
-                *role_tags,
-                *(p.get("fields_of_study", [])[:1]),
-                *monitor_labels[:2],
-            ]))
-            cards.append(Card(
-                id=f"{'source-paper' if paper_role == 'source' else 'followup-monitor'}:{item.id}",
-                title=p["title"],
-                summary=result.get("summary", p.get("abstract", "")[:150]),
-                score=min(result.get("score", 5), 10) / 10,
-                tags=card_tags,
-                source_url=p.get("url", p.get("s2_url", "")),
-                obsidian_path=(
-                    f"Literature/FollowUps/{source_folder}/{note_name}.md"
-                    if paper_role == "source"
-                    else f"Literature/FollowUps/{source_folder}/{note_name}/{note_name}.md"
-                ),
-                metadata=metadata,
-            ))
+        Backward compatible 入口：对每个 item 跑完整 enrichment（figures + intro + agent_json），
+        通过 Semaphore(PROCESS_CONCURRENCY) 控制并发。/crawl 路由内部使用 build_basic_card +
+        enrich_item 实现两阶段渲染。
+        """
+        import asyncio
+        from abo.tools.arxiv_api import ArxivAPITool
 
+        if not items:
+            return []
+
+        arxiv_api = ArxivAPITool()
+        ai_scoring_enabled = is_paper_ai_scoring_enabled()
+        semaphore = asyncio.Semaphore(self.PROCESS_CONCURRENCY)
+
+        results = await asyncio.gather(
+            *[
+                self.enrich_item(item, prefs, arxiv_api, semaphore, ai_scoring_enabled)
+                for item in items
+            ],
+            return_exceptions=True,
+        )
+
+        cards: list[Card] = []
+        for item, outcome in zip(items, results):
+            if isinstance(outcome, Exception):
+                print(f"[s2] process item failed for {item.id}: {outcome}")
+                continue
+            cards.append(outcome)
         return cards
 
 

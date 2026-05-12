@@ -12,7 +12,8 @@ import { ModuleManagementPanel } from "./modules/ModuleManagementPanel";
 import { XiaohongshuTool } from "./xiaohongshu/XiaohongshuTool";
 import { BilibiliTool } from "./bilibili/BilibiliTool";
 import { BilibiliFavoritesPage } from "./bilibili/BilibiliFavoritesPage";
-import { ArxivAPITool } from "./arxiv/ArxivAPITool";
+// [DISABLED 2026-05] ArxivAPITool 侧边栏入口已下线；保留组件源码与 import 注释。
+// import { ArxivAPITool } from "./arxiv/ArxivAPITool";
 import Dashboard from "./dashboard/Dashboard";
 import Wiki from "./wiki/Wiki";
 import AssistantWorkspace from "./assistant/AssistantWorkspace";
@@ -71,7 +72,7 @@ export default function MainContent() {
       </div>
       {activeTab === "bilibili" && <BilibiliTool />}
       {activeTab === "bilibili-favorites" && <BilibiliFavoritesPage />}
-      {activeTab === "arxiv-api" && <ArxivAPITool />}
+      {/* [DISABLED 2026-05] {activeTab === "arxiv-api" && <ArxivAPITool />} */}
       {activeTab === "wiki"      && <Wiki />}
       {activeTab === "dashboard" && <Dashboard />}
     </main>

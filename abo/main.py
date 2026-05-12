@@ -23,6 +23,7 @@ from .config import (
     normalize_daily_time,
     save as save_config,
     is_demo_mode,
+    is_paper_ai_scoring_enabled,
 )
 from .demo.data import get_demo_cards, DEMO_UNREAD_COUNTS, DEMO_KEYWORD_PREFS, get_demo_activities, get_demo_modules_dashboard
 from .assistant.routes import router as assistant_router
@@ -414,7 +415,11 @@ def _find_saved_paper_record(
     return None
 
 
-def _build_saved_paper_metadata_patch(record: dict[str, Any] | None) -> dict[str, Any]:
+def _build_saved_paper_metadata_patch(
+    record: dict[str, Any] | None,
+    *,
+    include_figures: bool = True,
+) -> dict[str, Any]:
     if not record:
         return {}
 
@@ -442,10 +447,11 @@ def _build_saved_paper_metadata_patch(record: dict[str, Any] | None) -> dict[str
         if value not in (None, ""):
             patch[key] = value
 
-    for key in ("local_figures", "figures"):
-        value = metadata.get(key)
-        if isinstance(value, list) and value:
-            patch[key] = value
+    if include_figures:
+        for key in ("local_figures", "figures"):
+            value = metadata.get(key)
+            if isinstance(value, list) and value:
+                patch[key] = value
 
     return patch
 
@@ -453,8 +459,10 @@ def _build_saved_paper_metadata_patch(record: dict[str, Any] | None) -> dict[str
 def _merge_saved_paper_metadata(
     paper: dict[str, Any],
     record: dict[str, Any] | None,
+    *,
+    include_figures: bool = True,
 ) -> dict[str, Any]:
-    patch = _build_saved_paper_metadata_patch(record)
+    patch = _build_saved_paper_metadata_patch(record, include_figures=include_figures)
     if not patch:
         return paper
 
@@ -462,6 +470,11 @@ def _merge_saved_paper_metadata(
         **dict(paper.get("metadata") or {}),
         **patch,
     }
+    if not include_figures:
+        # Defensive: ensure any pre-existing figure fields are also wiped from the basic card,
+        # so the UI doesn't show old figures when the user opted out of figure crawling.
+        for key in ("local_figures", "figures"):
+            merged_metadata.pop(key, None)
     merged_paper = {
         **paper,
         "metadata": merged_metadata,
@@ -472,15 +485,25 @@ def _merge_saved_paper_metadata(
     return merged_paper
 
 
-async def _prepare_paper_digest_payload(paper: dict, arxiv_id: str) -> dict[str, str]:
-    """Collect abstract/introduction text and assemble a stable digest block."""
+async def _prepare_paper_digest_payload(
+    paper: dict,
+    arxiv_id: str,
+    *,
+    fetch_introduction: bool = True,
+) -> dict[str, str]:
+    """Collect abstract/introduction text and assemble a stable digest block.
+
+    When fetch_introduction is False, we only use whatever introduction is already
+    on the payload and never reach out to arXiv. This is the contract the S2
+    follow-up flow uses when the user opted out of figure/intro crawling.
+    """
     from .tools.arxiv_api import ArxivAPITool, build_structured_digest_markdown
 
     meta = paper.get("metadata", {}) or {}
     abstract = _normalize_saved_text_block(meta.get("abstract") or paper.get("summary", ""))
     introduction = _normalize_saved_text_block(meta.get("introduction", ""))
 
-    if arxiv_id and not introduction:
+    if arxiv_id and not introduction and fetch_introduction:
         tool = ArxivAPITool()
         introduction = _normalize_saved_text_block(await tool.fetch_introduction(arxiv_id))
 
@@ -808,7 +831,12 @@ async def _ensure_source_paper_note_from_payload(
             result["pdf_path"] = pdf_path
         return result
 
-    digest_payload = await _prepare_paper_digest_payload(source_payload, arxiv_id)
+    fetch_figures_flag = bool(source_payload.get("fetch_figures", True))
+    digest_payload = await _prepare_paper_digest_payload(
+        source_payload,
+        arxiv_id,
+        fetch_introduction=fetch_figures_flag,
+    )
     abstract_text = digest_payload["abstract"]
     introduction_text = digest_payload["introduction"]
     formatted_digest = digest_payload["formatted_digest"]
@@ -1876,6 +1904,9 @@ async def crawl_arxiv_live(data: dict = None):
     cs_only = data.get("cs_only", True)  # Default to CS only
     requested_categories = data.get("categories", [])
 
+    from .tools.arxiv_api import normalize_advanced_query
+    advanced = normalize_advanced_query(data.get("advanced"))
+
     try:
         max_results = int(raw_max_results) if raw_max_results not in (None, "", 0, "0") else None
     except (TypeError, ValueError):
@@ -1946,9 +1977,47 @@ async def crawl_arxiv_live(data: dict = None):
         tracking_label_parts = [" ".join(str(kw).strip() for kw in keywords if str(kw).strip())]
         if not cs_only and requested_categories:
             tracking_label_parts.append(", ".join(str(category).strip() for category in requested_categories if str(category).strip()))
+        if advanced:
+            adv_summary = " · ".join(
+                f"{c['field']}:{c['value']}" for c in advanced["conditions"]
+            )
+            if adv_summary:
+                tracking_label_parts.append(adv_summary)
         search_label = " · ".join(part for part in tracking_label_parts if part)
 
         async def search_with_arxiv_api() -> list[dict]:
+            if advanced:
+                # When the caller supplies an advanced-query payload, it owns
+                # the field-level semantics and categories; we still respect
+                # the top-level cs_only / requested_categories selection by
+                # merging into the advanced payload's categories.
+                adv = dict(advanced)
+                merged_categories = list(adv.get("categories") or [])
+                if not merged_categories:
+                    merged_categories = (
+                        expand_arxiv_categories(["cs.*"]) if cs_only
+                        else expand_arxiv_categories(requested_categories)
+                    )
+                adv["categories"] = merged_categories
+                api_papers = await arxiv_api_search(
+                    advanced=adv,
+                    max_results=max_results,
+                    days_back=days_back,
+                    sort_by=adv.get("sort_by") or "submittedDate",
+                    sort_order=adv.get("sort_order") or "descending",
+                )
+                deduped_papers: list[dict] = []
+                seen_ids: set[str] = set()
+                for paper in api_papers:
+                    paper_id = str(paper.get("id", "")).strip()
+                    if not paper_id or paper_id in seen_ids:
+                        continue
+                    seen_ids.add(paper_id)
+                    deduped_papers.append(paper)
+                    if max_results is not None and len(deduped_papers) >= max_results:
+                        break
+                return deduped_papers
+
             if search_mode == "AND_OR":
                 raw_query = " ".join(str(kw) for kw in keywords).strip()
                 groups = [group.strip() for group in raw_query.split("|") if group.strip()]
@@ -2466,6 +2535,9 @@ async def crawl_arxiv_by_category(data: dict = None):
     sort_by = data.get("sort_by", "submittedDate")
     sort_order = data.get("sort_order", "descending")
 
+    from .tools.arxiv_api import normalize_advanced_query
+    advanced = normalize_advanced_query(data.get("advanced"))
+
     # Get existing arXiv IDs for deduplication
     existing_ids = set()
     try:
@@ -2518,15 +2590,27 @@ async def crawl_arxiv_by_category(data: dict = None):
         })
 
         api_categories = expand_arxiv_categories(categories)
-        api_papers = await arxiv_api_search(
-            categories=api_categories,
-            keywords=keywords,
-            max_results=max_results,
-            days_back=days_back,
-            sort_by=sort_by,
-            sort_order=sort_order,
-            mode="AND" if keywords else "OR",
-        )
+        if advanced:
+            adv = dict(advanced)
+            if not adv.get("categories"):
+                adv["categories"] = api_categories
+            api_papers = await arxiv_api_search(
+                advanced=adv,
+                max_results=max_results,
+                days_back=days_back,
+                sort_by=adv.get("sort_by") or sort_by,
+                sort_order=adv.get("sort_order") or sort_order,
+            )
+        else:
+            api_papers = await arxiv_api_search(
+                categories=api_categories,
+                keywords=keywords,
+                max_results=max_results,
+                days_back=days_back,
+                sort_by=sort_by,
+                sort_order=sort_order,
+                mode="AND" if keywords else "OR",
+            )
         api_papers = [
             paper for paper in api_papers
             if paper.get("id") and paper.get("id") not in existing_ids
@@ -2950,6 +3034,7 @@ async def save_s2_to_literature(data: dict):
     paper = data.get("paper", {})
     save_pdf = data.get("save_pdf", True)
     max_figures = data.get("max_figures", 5)
+    fetch_figures = bool(data.get("fetch_figures", True))
 
     # Get literature path
     lit_path = get_literature_path()
@@ -2983,6 +3068,7 @@ async def save_s2_to_literature(data: dict):
     if paper_tracking_role == "source":
         source_payload = _extract_source_paper_payload_from_source_card(paper)
         source_payload["save_pdf"] = save_pdf
+        source_payload["fetch_figures"] = fetch_figures
         base_dir, _, _ = _resolve_source_paper_storage_paths(
             lit_path,
             str(source_payload.get("title", "")),
@@ -3058,15 +3144,19 @@ async def save_s2_to_literature(data: dict):
     target_path = paper_folder / md_filename
 
     arxiv_id = _extract_arxiv_id_from_paper_payload(paper)
-    digest_payload = await _prepare_paper_digest_payload(paper, arxiv_id)
+    digest_payload = await _prepare_paper_digest_payload(
+        paper,
+        arxiv_id,
+        fetch_introduction=fetch_figures,
+    )
     abstract_text = digest_payload["abstract"]
     introduction_text = digest_payload["introduction"]
     formatted_digest = digest_payload["formatted_digest"]
 
-    # Try to fetch figures from arXiv if arxiv_id exists
+    # Try to fetch figures from arXiv if arxiv_id exists and the user opted in.
     local_figures = []
 
-    if arxiv_id:
+    if arxiv_id and fetch_figures:
         try:
             local_figures = await fetch_paper_figures(arxiv_id, figures_dir, max_figures)
             print(f"[s2-save] Fetched {len(local_figures)} figures for {arxiv_id}")
@@ -3274,6 +3364,7 @@ async def crawl_semantic_scholar_tracker(data: dict = None):
     raw_max_results = data.get("max_results")
     raw_days_back = data.get("days_back")
     sort_by = data.get("sort_by", "recency")
+    fetch_figures = bool(data.get("fetch_figures", True))
 
     try:
         max_results = int(raw_max_results) if raw_max_results not in (None, "", 0, "0") else None
@@ -3294,6 +3385,17 @@ async def crawl_semantic_scholar_tracker(data: dict = None):
     session_id = data.get("session_id") or _generate_crawl_session_id()
     lit_path = get_literature_path() or get_vault_path()
     _register_crawl_session(session_id)
+
+    def _card_to_paper_data(card) -> dict:
+        return {
+            "id": card.id,
+            "title": card.title,
+            "summary": card.summary,
+            "score": card.score,
+            "tags": card.tags,
+            "source_url": card.source_url,
+            "metadata": dict(card.metadata or {}),
+        }
 
     try:
         # Send session ID to client
@@ -3335,7 +3437,9 @@ async def crawl_semantic_scholar_tracker(data: dict = None):
                 session_id=session_id,
             )
 
-        if source_paper and hasattr(tracker, "source_paper_to_item") and hasattr(tracker, "process"):
+        # ---- Source paper (basic card now, enrich later if fetch_figures) ----
+        source_item = None
+        if source_paper and hasattr(tracker, "source_paper_to_item"):
             try:
                 source_external_ids = source_paper.get("externalIds", {}) or {}
                 source_arxiv_id = str(source_external_ids.get("ArXiv") or "").strip()
@@ -3364,49 +3468,29 @@ async def crawl_semantic_scholar_tracker(data: dict = None):
                     })
                 else:
                     source_item = tracker.source_paper_to_item(source_paper)
+                    basic_source_card = tracker.build_basic_card(source_item)
+                    source_data = _card_to_paper_data(basic_source_card)
+                    # Source paper always wants figures, regardless of follow-up toggle.
+                    source_data = _merge_saved_paper_metadata(
+                        source_data,
+                        _find_saved_paper_record(source_data, lit_path=lit_path),
+                        include_figures=True,
+                    )
+                    # Phase 2 always runs (for intro+agent), so basic cards always have a follow-up update.
+                    source_data["metadata"]["enrichment_pending"] = True
                     await broadcaster.send_event({
-                        "type": "crawl_progress",
+                        "type": "crawl_paper",
                         "module": "semantic-scholar-tracker",
                         "session_id": session_id,
-                        "phase": "processing",
+                        "paper": source_data,
                         "current": 0,
                         "total": max_results or 0,
-                        "message": f"正在整理源论文卡片: {str(source_paper.get('title', ''))[:50]}...",
                     })
-
-                    source_cards = await _await_with_crawl_cancel(
-                        tracker.process([source_item], prefs),
-                        session_id=session_id,
-                        timeout=60,
-                    )
-                    if source_cards:
-                        source_card = source_cards[0]
-                        source_data = {
-                            "id": source_card.id,
-                            "title": source_card.title,
-                            "summary": source_card.summary,
-                            "score": source_card.score,
-                            "tags": source_card.tags,
-                            "source_url": source_card.source_url,
-                            "metadata": source_card.metadata,
-                        }
-                        source_data = _merge_saved_paper_metadata(
-                            source_data,
-                            _find_saved_paper_record(source_data, lit_path=lit_path),
-                        )
-                        await broadcaster.send_event({
-                            "type": "crawl_paper",
-                            "module": "semantic-scholar-tracker",
-                            "session_id": session_id,
-                            "paper": source_data,
-                            "current": 0,
-                            "total": max_results or 0,
-                        })
-            except asyncio.TimeoutError:
-                print("[s2-tracker] Timeout processing source paper, continuing with follow-ups")
             except Exception as e:
-                print(f"[s2-tracker] Error processing source paper: {e}")
+                print(f"[s2-tracker] Error preparing source paper: {e}")
+                source_item = None
 
+        # ---- Fetch follow-up items ----
         try:
             followup_coro = tracker.fetch_followups(
                 query=query,
@@ -3428,7 +3512,7 @@ async def crawl_semantic_scholar_tracker(data: dict = None):
             session_id=session_id,
         )
 
-        if not items:
+        if not items and not source_item:
             await broadcaster.send_event({
                 "type": "crawl_complete",
                 "module": "semantic-scholar-tracker",
@@ -3440,66 +3524,121 @@ async def crawl_semantic_scholar_tracker(data: dict = None):
             _cleanup_crawl_session(session_id)
             return {"papers": [], "count": 0}
 
-        # Process each paper
+        # ---- Phase 1: emit basic cards for all follow-up items immediately ----
         for i, item in enumerate(items):
             if _should_cancel_crawl(session_id):
                 await broadcaster.send_event({
                     "type": "crawl_cancelled",
                     "module": "semantic-scholar-tracker",
                     "session_id": session_id,
-                    "message": f"爬取已取消，已处理 {i}/{len(items)} 篇论文"
+                    "message": f"爬取已取消，已发出 {i}/{len(items)} 张初始卡片"
                 })
                 _cleanup_crawl_session(session_id)
                 return {"papers": results, "count": len(results), "cancelled": True}
 
-            paper_title = item.raw.get('title', '')
+            try:
+                basic_card = tracker.build_basic_card(item)
+            except Exception as e:
+                print(f"[s2-tracker] Failed to build basic card for {item.id}: {e}")
+                continue
+
+            paper_data = _card_to_paper_data(basic_card)
+            paper_data = _merge_saved_paper_metadata(
+                paper_data,
+                _find_saved_paper_record(paper_data, lit_path=lit_path),
+                include_figures=fetch_figures,
+            )
+            paper_data["metadata"]["enrichment_pending"] = True
+            results.append(paper_data)
+
             await broadcaster.send_event({
-                "type": "crawl_progress",
+                "type": "crawl_paper",
                 "module": "semantic-scholar-tracker",
                 "session_id": session_id,
-                "phase": "processing",
+                "paper": paper_data,
                 "current": i + 1,
                 "total": len(items),
-                "message": f"正在处理第 {i+1}/{len(items)} 篇: {paper_title[:50]}..."
             })
 
-            try:
-                card_list = await _await_with_crawl_cancel(
-                    tracker.process([item], prefs),
-                    session_id=session_id,
-                    timeout=60,
-                )
-                if card_list:
-                    card = card_list[0]
-                    paper_data = {
-                        "id": card.id,
-                        "title": card.title,
-                        "summary": card.summary,
-                        "score": card.score,
-                        "tags": card.tags,
-                        "source_url": card.source_url,
-                        "metadata": card.metadata,
-                    }
-                    paper_data = _merge_saved_paper_metadata(
-                        paper_data,
-                        _find_saved_paper_record(paper_data, lit_path=lit_path),
-                    )
-                    results.append(paper_data)
+        await broadcaster.send_event({
+            "type": "crawl_progress",
+            "module": "semantic-scholar-tracker",
+            "session_id": session_id,
+            "phase": "processing",
+            "current": len(items),
+            "total": len(items),
+            "message": (
+                f"已找到 {len(items)} 篇后续论文，正在并发抓取 Introduction + AI 分析"
+                + ("和图片..." if fetch_figures else "（未启用图片爬取）...")
+            ),
+        })
 
-                    await broadcaster.send_event({
-                        "type": "crawl_paper",
-                        "module": "semantic-scholar-tracker",
-                        "session_id": session_id,
-                        "paper": paper_data,
-                        "current": i + 1,
-                        "total": len(items)
-                    })
-            except asyncio.TimeoutError:
-                print(f"[s2-tracker] Timeout processing {item.id}, skipping")
-                continue
-            except Exception as e:
-                print(f"[s2-tracker] Error processing {item.id}: {e}")
-                continue
+        # ---- Phase 2: always enrich with intro+agent; figures only if fetch_figures ----
+        if items or source_item:
+            from .tools.arxiv_api import ArxivAPITool
+            arxiv_api = ArxivAPITool()
+            ai_scoring_enabled = is_paper_ai_scoring_enabled()
+            enrich_sem = asyncio.Semaphore(tracker.PROCESS_CONCURRENCY)
+            enrich_total = len(items) + (1 if source_item else 0)
+            enrich_counter = {"done": 0}
+
+            async def _enrich_one(it, *, is_source: bool = False):
+                if _should_cancel_crawl(session_id):
+                    return
+                # Source paper always pulls figures; follow-ups respect the user toggle.
+                effective_fetch_figures = True if is_source else fetch_figures
+                try:
+                    enriched_card = await tracker.enrich_item(
+                        it,
+                        prefs,
+                        arxiv_api,
+                        enrich_sem,
+                        ai_scoring_enabled,
+                        fetch_figures=effective_fetch_figures,
+                    )
+                except Exception as e:
+                    print(f"[s2-tracker] Enrich failed for {it.id}: {e}")
+                    return
+
+                paper_data = _card_to_paper_data(enriched_card)
+                paper_data = _merge_saved_paper_metadata(
+                    paper_data,
+                    _find_saved_paper_record(paper_data, lit_path=lit_path),
+                    include_figures=effective_fetch_figures,
+                )
+                paper_data["metadata"]["enrichment_pending"] = False
+
+                # Replace basic entry in results (by id) so the final POST return is enriched too.
+                for idx, existing in enumerate(results):
+                    if existing.get("id") == paper_data["id"]:
+                        results[idx] = paper_data
+                        break
+
+                enrich_counter["done"] += 1
+                await broadcaster.send_event({
+                    "type": "crawl_paper_update",
+                    "module": "semantic-scholar-tracker",
+                    "session_id": session_id,
+                    "paper": paper_data,
+                    "current": enrich_counter["done"],
+                    "total": enrich_total,
+                })
+
+            tasks = []
+            if source_item:
+                tasks.append(_enrich_one(source_item, is_source=True))
+            tasks.extend(_enrich_one(item) for item in items)
+            await asyncio.gather(*tasks, return_exceptions=True)
+
+            if _should_cancel_crawl(session_id):
+                await broadcaster.send_event({
+                    "type": "crawl_cancelled",
+                    "module": "semantic-scholar-tracker",
+                    "session_id": session_id,
+                    "message": f"爬取已取消，已富化 {enrich_counter['done']}/{enrich_total} 篇论文"
+                })
+                _cleanup_crawl_session(session_id)
+                return {"papers": results, "count": len(results), "cancelled": True}
 
         # Send completion
         await broadcaster.send_event({

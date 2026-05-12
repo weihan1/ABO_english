@@ -233,6 +233,7 @@ interface AboStore {
   semanticScholarMaxResultsInput: string;
   semanticScholarDaysBackInput: string;
   semanticScholarSortBy: "recency" | "citation_count";
+  semanticScholarFetchFigures: boolean;
   setSemanticScholarPapers: (papers: ArxivPaper[]) => void;
   setSemanticScholarCrawling: (crawling: boolean) => void;
   setSemanticScholarProgress: (progress: ArxivCrawlProgress | null) => void;
@@ -240,7 +241,9 @@ interface AboStore {
   setSemanticScholarMaxResultsInput: (value: string) => void;
   setSemanticScholarDaysBackInput: (value: string) => void;
   setSemanticScholarSortBy: (sortBy: "recency" | "citation_count") => void;
+  setSemanticScholarFetchFigures: (value: boolean) => void;
   appendSemanticScholarPaper: (paper: ArxivPaper) => void;
+  updateSemanticScholarPaper: (paper: ArxivPaper) => void;
 
   // Showcase Mode
   showcaseMode: boolean;
@@ -361,9 +364,10 @@ export const useStore = create<AboStore>((set) => ({
   semanticScholarCrawling: false,
   semanticScholarProgress: null,
   semanticScholarQuery: "",
-  semanticScholarMaxResultsInput: "",
+  semanticScholarMaxResultsInput: "50",
   semanticScholarDaysBackInput: "",
   semanticScholarSortBy: "recency",
+  semanticScholarFetchFigures: true,
   setSemanticScholarPapers: (semanticScholarPapers) => set({ semanticScholarPapers }),
   setSemanticScholarCrawling: (semanticScholarCrawling) => set({ semanticScholarCrawling }),
   setSemanticScholarProgress: (semanticScholarProgress) => set({ semanticScholarProgress }),
@@ -371,8 +375,13 @@ export const useStore = create<AboStore>((set) => ({
   setSemanticScholarMaxResultsInput: (semanticScholarMaxResultsInput) => set({ semanticScholarMaxResultsInput }),
   setSemanticScholarDaysBackInput: (semanticScholarDaysBackInput) => set({ semanticScholarDaysBackInput }),
   setSemanticScholarSortBy: (semanticScholarSortBy) => set({ semanticScholarSortBy }),
+  setSemanticScholarFetchFigures: (semanticScholarFetchFigures) => set({ semanticScholarFetchFigures }),
   appendSemanticScholarPaper: (paper) =>
     set((s) => ({ semanticScholarPapers: [...s.semanticScholarPapers, paper] })),
+  updateSemanticScholarPaper: (paper) =>
+    set((s) => ({
+      semanticScholarPapers: s.semanticScholarPapers.map((p) => (p.id === paper.id ? paper : p)),
+    })),
 
   // Showcase Mode (persisted to localStorage)
   showcaseMode: localStorage.getItem("abo-showcase") === "true",

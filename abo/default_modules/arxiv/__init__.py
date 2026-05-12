@@ -361,15 +361,36 @@ class ArxivTracker(Module):
         for monitor in monitors:
             monitor_categories = monitor.get("categories") or config.get("default_categories") or ["cs.*"]
             expanded_categories = expand_arxiv_categories(monitor_categories)
+            advanced = monitor.get("advanced") if isinstance(monitor.get("advanced"), dict) else None
             mode, groups = split_keyword_groups(monitor.get("query", ""))
-            if not groups:
+            if not advanced and not groups:
                 continue
 
             papers: list[dict] = []
             api_matched_count = 0
             skipped_existing_count = 0
             skipped_duplicate_count = 0
-            if mode == "AND_OR":
+            if advanced:
+                adv = dict(advanced)
+                if not adv.get("categories"):
+                    adv["categories"] = expanded_categories
+                api_papers = await arxiv_api_search(
+                    advanced=adv,
+                    max_results=max_results,
+                    days_back=days_back,
+                    sort_by=adv.get("sort_by") or "submittedDate",
+                    sort_order=adv.get("sort_order") or "descending",
+                )
+                api_matched_count += len(api_papers)
+                for paper in api_papers:
+                    paper_id = str(paper.get("id", "")).strip()
+                    if not paper_id:
+                        continue
+                    if paper_id in existing_ids:
+                        skipped_existing_count += 1
+                        continue
+                    papers.append(paper)
+            elif mode == "AND_OR":
                 seen_monitor_ids: set[str] = set()
                 for group in groups:
                     group_papers = await arxiv_api_search(

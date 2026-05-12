@@ -22,6 +22,12 @@ import { useToast } from "../../components/Toast";
 import { useStore } from "../../core/store";
 import { ArxivCategorySelector, type ArxivCategory } from "./ArxivCategorySelector";
 import { fetchArxivPaperIntroduction, type ArxivIntroductionPayload } from "./arxivPaperApi";
+import {
+  AdvancedQueryBuilder,
+  createEmptyAdvancedQuery,
+  previewAdvancedQuery,
+  type ArxivAdvancedQuery,
+} from "./AdvancedQueryBuilder";
 
 interface ArxivPaper {
   id: string;
@@ -84,6 +90,8 @@ export function ArxivAPITool() {
   const [daysBack, setDaysBack] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState("submittedDate");
   const [activeTrackingLabel, setActiveTrackingLabel] = useState("");
+  const [searchMode, setSearchMode] = useState<"simple" | "advanced">("simple");
+  const [advancedQuery, setAdvancedQuery] = useState<ArxivAdvancedQuery>(() => createEmptyAdvancedQuery());
 
   // Results state
   const [papers, setPapers] = useState<ArxivPaper[]>([]);
@@ -120,26 +128,49 @@ export function ArxivAPITool() {
   };
 
   const handleSearch = async () => {
-    if (!keywords.trim()) {
+    const isAdvanced = searchMode === "advanced";
+    const hasAdvancedSignal =
+      isAdvanced &&
+      (advancedQuery.conditions.some((c) => c.value.trim()) ||
+        advancedQuery.categories.length > 0 ||
+        Boolean(advancedQuery.date_range));
+
+    if (!isAdvanced && !keywords.trim()) {
       toast.error("请输入关键词");
+      return;
+    }
+    if (isAdvanced && !hasAdvancedSignal) {
+      toast.error("请至少填一个条件 / 分类 / 日期范围");
       return;
     }
 
     setLoading(true);
     try {
-      const trackingLabel = [
-        keywords.trim(),
-        categories.length > 0 ? categories.join(", ") : "",
-      ].filter(Boolean).join(" · ");
+      const trackingLabel = isAdvanced
+        ? previewAdvancedQuery(advancedQuery)
+        : [keywords.trim(), categories.length > 0 ? categories.join(", ") : ""]
+            .filter(Boolean)
+            .join(" · ");
 
-      const result = await api.post<SearchResponse>("/api/tools/arxiv/search", {
-        keywords: keywords.split(/[\s,]+/).map(k => k.trim()).filter(Boolean),
-        categories: categories.length > 0 ? categories : undefined,
-        mode,
-        max_results: maxResults,
-        days_back: daysBack,
-        sort_by: sortBy,
-      });
+      const requestBody: Record<string, unknown> = isAdvanced
+        ? {
+            keywords: [],
+            advanced: advancedQuery,
+            max_results: advancedQuery.max_results,
+            days_back: null,
+            sort_by: advancedQuery.sort_by,
+            sort_order: advancedQuery.sort_order,
+          }
+        : {
+            keywords: keywords.split(/[\s,]+/).map((k) => k.trim()).filter(Boolean),
+            categories: categories.length > 0 ? categories : undefined,
+            mode,
+            max_results: maxResults,
+            days_back: daysBack,
+            sort_by: sortBy,
+          };
+
+      const result = await api.post<SearchResponse>("/api/tools/arxiv/search", requestBody);
       const total = result.total_results ?? result.total ?? result.papers.length;
       setPapers(result.papers);
       setTotalResults(total);
@@ -451,6 +482,68 @@ export function ArxivAPITool() {
   const renderSearchPanel = () => (
     <Card title="搜索条件" icon={<Filter style={{ width: "18px", height: "18px" }} />}>
       <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        {/* Mode switch: simple keywords ↔ advanced field-level builder */}
+        <div style={{ display: "flex", gap: 6 }}>
+          {(["simple", "advanced"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setSearchMode(m)}
+              style={{
+                padding: "6px 14px",
+                borderRadius: 8,
+                border: "1px solid var(--border-light)",
+                background: searchMode === m ? "var(--color-primary)" : "transparent",
+                color: searchMode === m ? "white" : "var(--text-main)",
+                fontSize: "0.8rem",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              {m === "simple" ? "简单关键词" : "高级 (字段限定)"}
+            </button>
+          ))}
+          {searchMode === "advanced" && (
+            <button
+              type="button"
+              onClick={handleSearch}
+              disabled={loading}
+              style={{
+                marginLeft: "auto",
+                padding: "6px 14px",
+                borderRadius: 8,
+                border: "none",
+                background: loading ? "var(--bg-hover)" : "var(--color-primary)",
+                color: "white",
+                fontSize: "0.8rem",
+                fontWeight: 600,
+                cursor: loading ? "not-allowed" : "pointer",
+              }}
+            >
+              {loading ? "搜索中..." : "搜索"}
+            </button>
+          )}
+        </div>
+
+        {searchMode === "advanced" ? (
+          <AdvancedQueryBuilder
+            value={advancedQuery}
+            onChange={setAdvancedQuery}
+            availableCategories={availableCategories}
+            expandedMainCategories={expandedMainCategories}
+            onToggleMainCategoryExpanded={(main) =>
+              setExpandedMainCategories((current) => {
+                const next = new Set(current);
+                if (next.has(main)) next.delete(main);
+                else next.add(main);
+                return next;
+              })
+            }
+            showRuntimeKnobs
+            disabled={loading}
+          />
+        ) : (
+        <>
         {/* Keywords input */}
         <div>
           <label
@@ -708,6 +801,8 @@ export function ArxivAPITool() {
           onToggleMainCategory={toggleMainCategory}
           onToggleMainCategoryExpanded={toggleMainCategoryExpanded}
         />
+        </>
+        )}
 
         <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
           <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: hasLiteraturePath ? "pointer" : "not-allowed" }}>
