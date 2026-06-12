@@ -39,14 +39,14 @@ function RewardToast({
   }, [id, xp, addXP, dismissReward]);
 
   const actionNames: Record<string, string> = {
-    card_like: "点赞内容",
-    card_save: "保存内容",
-    card_dislike: "标记不喜欢",
-    star_paper: "收藏论文",
-    save_paper: "保存论文",
-    read_paper: "阅读论文",
-    daily_checkin: "每日签到",
-    like_content: "喜欢内容",
+    card_like: "Liked content",
+    card_save: "Saved content",
+    card_dislike: "Marked as disliked",
+    star_paper: "Starred paper",
+    save_paper: "Saved paper",
+    read_paper: "Read paper",
+    daily_checkin: "Daily check-in",
+    like_content: "Liked content",
   };
 
   return (
@@ -95,13 +95,13 @@ function RewardToast({
           <div className="flex items-center gap-3 mt-2 text-xs">
             {happiness_delta > 0 && (
               <span className="flex items-center gap-1" style={{ color: "var(--color-secondary)" }}>
-                <Heart className="w-3 h-3" />+{happiness_delta} 幸福
+                <Heart className="w-3 h-3" />+{happiness_delta} happiness
               </span>
             )}
             {happiness_delta < 0 && (
               <span className="flex items-center gap-1" style={{ opacity: 0.7 }}>
                 <Heart className="w-3 h-3" />
-                {happiness_delta} 幸福
+                {happiness_delta} happiness
               </span>
             )}
             {san_delta > 0 && (

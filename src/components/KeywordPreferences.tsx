@@ -22,9 +22,9 @@ function normalizeTopKeywords(items: TopKeywordItem[]): [string, number][] {
 }
 
 function priorityLabel(score: number, count: number): string {
-  if (score >= 0.45 || count >= 5) return "高优先";
-  if (score >= 0.25 || count >= 3) return "稳定偏好";
-  return "观察中";
+  if (score >= 0.45 || count >= 5) return "High priority";
+  if (score >= 0.25 || count >= 3) return "Stable preference";
+  return "Observing";
 }
 
 export default function KeywordPreferences({ showHeader = true }: KeywordPreferencesProps) {
@@ -82,7 +82,7 @@ export default function KeywordPreferences({ showHeader = true }: KeywordPrefere
         style={{ color: "var(--text-muted)" }}
       >
         <TrendingUp className="w-5 h-5 animate-pulse mr-2" />
-        加载正向偏好中...
+        Loading positive preferences...
       </div>
     );
   }
@@ -98,11 +98,11 @@ export default function KeywordPreferences({ showHeader = true }: KeywordPrefere
                 className="text-lg font-semibold"
                 style={{ color: "var(--text-main)" }}
               >
-                正向偏好
+                Positive preferences
               </h3>
             </div>
             <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
-              当前只保留喜欢什么，用它来前置推荐和排序。
+              Only what you like is kept, and it is used to boost recommendations and sorting.
             </p>
           </div>
           <button
@@ -112,7 +112,7 @@ export default function KeywordPreferences({ showHeader = true }: KeywordPrefere
             style={{ color: "var(--text-muted)" }}
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            刷新
+            Refresh
           </button>
         </div>
       )}
@@ -123,7 +123,7 @@ export default function KeywordPreferences({ showHeader = true }: KeywordPrefere
             {likedKeywords.length}
           </div>
           <div style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>
-            正向关键词
+            Positive keywords
           </div>
         </div>
         <div className="rounded-lg p-3 text-center" style={{ background: "var(--bg-hover)" }}>
@@ -131,7 +131,7 @@ export default function KeywordPreferences({ showHeader = true }: KeywordPrefere
             {totalPositiveInteractions}
           </div>
           <div style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>
-            累计记录次数
+            Total recorded count
           </div>
         </div>
         <div className="rounded-lg p-3 text-center" style={{ background: "var(--bg-hover)" }}>
@@ -139,7 +139,7 @@ export default function KeywordPreferences({ showHeader = true }: KeywordPrefere
             {activeModules}
           </div>
           <div style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>
-            来源模块
+            Source modules
           </div>
         </div>
       </div>
@@ -154,11 +154,11 @@ export default function KeywordPreferences({ showHeader = true }: KeywordPrefere
         <div className="flex items-center gap-2 mb-2">
           <ThumbsUp className="w-4 h-4" style={{ color: "var(--color-success-text)" }} />
           <span className="text-sm font-semibold" style={{ color: "var(--text-main)" }}>
-            排序策略
+            Sorting strategy
           </span>
         </div>
         <p className="text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
-          现在只用正反馈提升相关内容的优先级；负反馈暂时不参与关键词偏好计算。
+          Currently only positive feedback boosts related content; negative feedback is not yet part of keyword preference calculation.
         </p>
       </div>
 
@@ -168,7 +168,7 @@ export default function KeywordPreferences({ showHeader = true }: KeywordPrefere
             className="text-sm font-medium mb-3"
             style={{ color: "var(--text-secondary)" }}
           >
-            当前前排偏好
+            Current top preferences
           </h4>
           <div className="flex flex-wrap gap-2">
             {topKeywords.slice(0, 8).map(([keyword, score]) => (
@@ -198,7 +198,7 @@ export default function KeywordPreferences({ showHeader = true }: KeywordPrefere
             style={{ color: "var(--color-success-text)" }}
           >
             <ThumbsUp className="w-4 h-4" />
-            已确认喜欢 ({likedKeywords.length})
+            Confirmed likes ({likedKeywords.length})
           </h4>
           <div className="space-y-2 max-h-72 overflow-y-auto">
             {likedKeywords.map(([keyword, data]) => (
@@ -230,8 +230,8 @@ export default function KeywordPreferences({ showHeader = true }: KeywordPrefere
                       className="mt-1 text-xs flex items-center gap-3 flex-wrap"
                       style={{ color: "var(--text-muted)" }}
                     >
-                      <span>记录 {data.count} 次</span>
-                      <span>模块 {data.source_modules.length}</span>
+                      <span>Recorded {data.count} times</span>
+                      <span>Modules {data.source_modules.length}</span>
                     </div>
                   </div>
                   <div className="text-right shrink-0">
@@ -242,7 +242,7 @@ export default function KeywordPreferences({ showHeader = true }: KeywordPrefere
                       +{data.score.toFixed(2)}
                     </div>
                     <div className="text-xs" style={{ color: "var(--text-light)" }}>
-                      偏好分
+                      Preference score
                     </div>
                   </div>
                 </div>
@@ -268,9 +268,9 @@ export default function KeywordPreferences({ showHeader = true }: KeywordPrefere
       {likedKeywords.length === 0 && (
         <div className="text-center py-8" style={{ color: "var(--text-muted)" }}>
           <Hash className="w-12 h-12 mx-auto mb-3" style={{ opacity: 0.3 }} />
-          <p>还没有形成稳定的正向偏好</p>
+          <p>No stable positive preferences yet</p>
           <p className="text-sm mt-1">
-            在 Feed 里多用点赞、收藏和深入阅读，系统会把你真正喜欢的主题提到前面。
+            Use likes, saves, and deep reads in the Feed, and the system will surface the topics you truly enjoy.
           </p>
         </div>
       )}

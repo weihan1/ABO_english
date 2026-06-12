@@ -34,7 +34,7 @@ export function formatLibraryLocation(
   kind: LibraryRootKind,
   config?: Pick<AppConfig, "vault_path" | "literature_path"> | null,
 ): string {
-  const rootLabel = kind === "vault" ? "情报库" : "文献库";
+  const rootLabel = kind === "vault" ? "Intel Library" : "Literature Library";
   const normalizedPath = normalizePath(path);
   if (!normalizedPath) return rootLabel;
 
@@ -54,5 +54,5 @@ export function withLocationSuffix(
   config?: Pick<AppConfig, "vault_path" | "literature_path"> | null,
 ): string {
   const location = formatLibraryLocation(path, kind, config);
-  return `${message} · 路径：${location}`;
+  return `${message} · Path: ${location}`;
 }

@@ -75,11 +75,11 @@ export default function WikiSearch({ wikiType, onSelectPage }: Props) {
   }
 
   const CATEGORY_LABELS: Record<string, string> = {
-    entity: "实体",
-    concept: "概念",
-    paper: "论文",
-    topic: "主题",
-    overview: "概览",
+    entity: "Entity",
+    concept: "Concept",
+    paper: "Paper",
+    topic: "Topic",
+    overview: "Overview",
   };
 
   return (
@@ -106,7 +106,7 @@ export default function WikiSearch({ wikiType, onSelectPage }: Props) {
             setFocusedIndex(-1);
           }}
           onKeyDown={handleKeyDown}
-          placeholder="搜索页面标题或标签..."
+          placeholder="Search page titles or tags..."
           style={{
             flex: 1,
             border: "none",
@@ -153,7 +153,7 @@ export default function WikiSearch({ wikiType, onSelectPage }: Props) {
                 fontSize: "0.8125rem",
               }}
             >
-              未找到匹配页面
+              No matching pages found
             </div>
           ) : (
             results.map((page, i) => (

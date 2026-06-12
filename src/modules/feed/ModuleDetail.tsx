@@ -34,7 +34,7 @@ const SCHEDULE_OPTIONS = [
 ];
 
 function formatScheduleOptionLabel(value: string): string {
-  if (value.startsWith("*/5")) return "每5分钟";
+  if (value.startsWith("*/5")) return "Every 5 minutes";
   const cronMatch = /^(\d{1,2}) (\d{1,2}) \* \* \*$/.exec(value.trim());
   if (!cronMatch) return value;
   const minute = Number(cronMatch[1]);
@@ -44,74 +44,74 @@ function formatScheduleOptionLabel(value: string): string {
 }
 
 const BILIBILI_GROUP_OPTIONS = [
-  { value: "ai-tech", label: "AI科技" },
-  { value: "study", label: "学习知识" },
-  { value: "digital", label: "数码影音" },
-  { value: "game", label: "游戏" },
-  { value: "finance", label: "财经商业" },
-  { value: "creative", label: "设计创作" },
-  { value: "entertainment", label: "生活娱乐" },
-  { value: "other", label: "其他" },
+  { value: "ai-tech", label: "AI & Tech" },
+  { value: "study", label: "Learning" },
+  { value: "digital", label: "Digital & AV" },
+  { value: "game", label: "Gaming" },
+  { value: "finance", label: "Finance & Business" },
+  { value: "creative", label: "Design & Creation" },
+  { value: "entertainment", label: "Lifestyle & Entertainment" },
+  { value: "other", label: "Other" },
 ];
 
 const XHS_CREATOR_GROUP_OPTIONS = [
-  { value: "research", label: "科研学习" },
-  { value: "writing", label: "论文写作" },
-  { value: "ai", label: "AI工具" },
-  { value: "productivity", label: "效率知识库" },
-  { value: "study_abroad", label: "留学读博" },
-  { value: "lifestyle", label: "日常生活" },
-  { value: "other", label: "其他" },
+  { value: "research", label: "Research & Study" },
+  { value: "writing", label: "Paper Writing" },
+  { value: "ai", label: "AI Tools" },
+  { value: "productivity", label: "Productivity & PKM" },
+  { value: "study_abroad", label: "Study Abroad & PhD" },
+  { value: "lifestyle", label: "Daily Life" },
+  { value: "other", label: "Other" },
 ];
 
 const BILIBILI_DYNAMIC_TYPE_OPTIONS = [
-  { value: 8, label: "视频" },
-  { value: 2, label: "图文" },
-  { value: 4, label: "文字" },
-  { value: 64, label: "专栏" },
+  { value: 8, label: "Video" },
+  { value: 2, label: "Image post" },
+  { value: 4, label: "Text" },
+  { value: 64, label: "Article" },
 ];
 
-// 各模块的订阅配置（仅支持订阅类型的模块）
+// Per-module subscription config (only for modules that support subscriptions)
 const MODULE_SUB_CONFIG: Record<string, {
   types: { type: string; label: string; placeholder: string; example: string }[];
   desc: string;
 }> = {
   "bilibili-tracker": {
     types: [
-      { type: "up_uid", label: "UP主", placeholder: "输入UP主UID或空间链接", example: "1567748478" },
+      { type: "up_uid", label: "Creator", placeholder: "Enter creator UID or space link", example: "1567748478" },
     ],
-    desc: "添加UP主UID追踪其视频更新"
+    desc: "Add creator UIDs to track their video updates"
   },
   "xiaohongshu-tracker": {
     types: [
-      { type: "user_id", label: "用户", placeholder: "输入用户主页链接或ID", example: "5f3c8b9a0000000001001234" },
+      { type: "user_id", label: "User", placeholder: "Enter user profile link or ID", example: "5f3c8b9a0000000001001234" },
     ],
-    desc: "添加用户ID追踪小红书笔记"
+    desc: "Add user IDs to track Xiaohongshu notes"
   },
   "zhihu-tracker": {
     types: [
-      { type: "topic", label: "话题", placeholder: "输入话题ID或链接", example: "19550728" },
-      { type: "user", label: "用户", placeholder: "输入用户ID或主页链接", example: "zhihu-user" },
+      { type: "topic", label: "Topic", placeholder: "Enter topic ID or link", example: "19550728" },
+      { type: "user", label: "User", placeholder: "Enter user ID or profile link", example: "zhihu-user" },
     ],
-    desc: "添加话题或用户追踪知乎内容"
+    desc: "Add topics or users to track Zhihu content"
   },
   "xiaoyuzhou-tracker": {
     types: [
-      { type: "podcast_id", label: "播客", placeholder: "输入播客ID或链接", example: "6169c4c8d8b44c5da7ea2e9b" },
+      { type: "podcast_id", label: "Podcast", placeholder: "Enter podcast ID or link", example: "6169c4c8d8b44c5da7ea2e9b" },
     ],
-    desc: "添加播客ID追踪节目更新"
+    desc: "Add podcast IDs to track episode updates"
   },
   "arxiv-tracker": {
     types: [],
-    desc: "在下方配置关键词"
+    desc: "Configure keywords below"
   },
   "semantic-scholar-tracker": {
     types: [],
-    desc: "在下方配置关键词"
+    desc: "Configure keywords below"
   },
   "folder-monitor": {
     types: [],
-    desc: "监控文件夹变化"
+    desc: "Monitor folder changes"
   },
 };
 
@@ -247,7 +247,7 @@ function normalizeBilibiliDailyDynamicMonitor(
 ): BilibiliDailyDynamicMonitor {
   const keywords = Array.isArray(seed.keywords) ? parseBilibiliStringListInput(seed.keywords.join(", ")) : [];
   const tagFilters = Array.isArray(seed.tag_filters) ? parseBilibiliStringListInput(seed.tag_filters.join(", ")) : [];
-  const label = String(seed.label || keywords[0] || tagFilters[0] || "每日动态监控").trim() || "每日动态监控";
+  const label = String(seed.label || keywords[0] || tagFilters[0] || "Daily feed monitor").trim() || "Daily feed monitor";
   return {
     id: String(seed.id || createLocalBilibiliMonitorId("bili-dm")),
     label,
@@ -279,7 +279,7 @@ function normalizeBilibiliFollowedGroupMonitor(
       || (seed as { group?: string }).group
       || ""
   ).trim();
-  const label = String(seed.label || labelLookup[groupValue] || groupValue || "未命名分组").trim() || "未命名分组";
+  const label = String(seed.label || labelLookup[groupValue] || groupValue || "Unnamed group").trim() || "Unnamed group";
   return {
     id: String(seed.id || createLocalBilibiliMonitorId("bili-gm")),
     group_value: groupValue,
@@ -366,12 +366,12 @@ interface SubDetailData {
 }
 
 const TYPE_LABELS: Record<string, string> = {
-  up_uid: "UP主",
-  user_id: "用户ID",
-  user: "用户",
-  topic: "话题",
-  podcast_id: "播客",
-  keyword: "关键词",
+  up_uid: "Creator",
+  user_id: "User ID",
+  user: "User",
+  topic: "Topic",
+  podcast_id: "Podcast",
+  keyword: "Keyword",
 };
 
 const TYPE_COLORS: Record<string, string> = {
@@ -538,7 +538,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
     };
   }, [module.id, moduleConfig.sessdata]);
 
-  // 设置默认选中类型
+  // Set the default selected type
   useEffect(() => {
     if (subConfig.types.length > 0 && !selectedType) {
       setSelectedType(subConfig.types[0].type);
@@ -563,13 +563,13 @@ export default function ModuleDetail({ module, onBack }: Props) {
         enabled: moduleEnabled,
         schedule: schedule,
       });
-      toast.success("保存成功");
+      toast.success("Saved");
       const modulesRes = await api.get<{ modules: FeedModule[] }>("/api/modules");
       if (modulesRes?.modules) {
         setFeedModules(modulesRes.modules);
       }
     } catch {
-      toast.error("保存失败");
+      toast.error("Save failed");
     }
   }
 
@@ -577,9 +577,9 @@ export default function ModuleDetail({ module, onBack }: Props) {
     setRunning(true);
     try {
       await api.post(`/api/modules/${module.id}/run`, {});
-      toast.success("已开始运行");
+      toast.success("Run started");
     } catch {
-      toast.error("运行失败");
+      toast.error("Run failed");
     } finally {
       setRunning(false);
     }
@@ -587,11 +587,11 @@ export default function ModuleDetail({ module, onBack }: Props) {
 
   async function addSubscription() {
     if (!inputValue.trim()) {
-      toast.error("请输入内容");
+      toast.error("Please enter a value");
       return;
     }
     if (!selectedType) {
-      toast.error("请选择订阅类型");
+      toast.error("Please choose a subscription type");
       return;
     }
     try {
@@ -599,38 +599,38 @@ export default function ModuleDetail({ module, onBack }: Props) {
         type: selectedType,
         value: inputValue.trim()
       });
-      toast.success("订阅已添加");
+      toast.success("Subscription added");
       fetchSubscriptionDetails();
       setInputValue("");
       setShowAddForm(false);
     } catch (err: any) {
       console.error("Add subscription error:", err);
-      toast.error(`添加失败: ${err.message || "请检查网络连接"}`);
+      toast.error(`Failed to add: ${err.message || "Please check your network connection"}`);
     }
   }
 
   async function removeSubscription(type: string, value: string) {
     try {
       await api.delete(`/api/modules/${module.id}/subscriptions`, { type, value } as any);
-      toast.success("订阅已移除");
+      toast.success("Subscription removed");
       fetchSubscriptionDetails();
     } catch {
-      toast.error("移除失败");
+      toast.error("Failed to remove");
     }
   }
 
   async function toggleSubscription(type: string, value: string, isActive: boolean) {
     if (isActive) {
-      // 禁用（软删除）
+      // Disable (soft delete)
       await removeSubscription(type, value);
     } else {
-      // 重新添加
+      // Re-add
       try {
         await api.post(`/api/modules/${module.id}/subscriptions`, { type, value });
-        toast.success("订阅已恢复");
+        toast.success("Subscription restored");
         fetchSubscriptionDetails();
       } catch {
-        toast.error("恢复失败");
+        toast.error("Failed to restore");
       }
     }
   }
@@ -646,14 +646,14 @@ export default function ModuleDetail({ module, onBack }: Props) {
 
   const currentTypeConfig = subConfig.types.find(t => t.type === selectedType);
 
-  async function saveModuleConfig(patch: Partial<ModuleConfig>, successTitle = "已保存") {
+  async function saveModuleConfig(patch: Partial<ModuleConfig>, successTitle = "Saved") {
     try {
       const nextConfig = { ...moduleConfig, ...patch };
       await api.post(`/api/modules/${module.id}/config`, nextConfig);
       setModuleConfig(nextConfig);
       toast.success(successTitle);
     } catch {
-      toast.error("保存失败");
+      toast.error("Save failed");
     }
   }
 
@@ -662,7 +662,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
     try {
       const result = await xiaohongshuGetCookieFromBrowser();
       if (!result.success) {
-        toast.error(result.error || "获取小红书 Cookie 失败");
+        toast.error(result.error || "Failed to get Xiaohongshu cookie");
         return;
       }
       setModuleConfig((prev) => ({
@@ -672,9 +672,9 @@ export default function ModuleDetail({ module, onBack }: Props) {
         auth_ready: true,
         auth_source: "global",
       }));
-      toast.success(result.message || "已复用主动工具的小红书 Cookie");
+      toast.success(result.message || "Reusing the Xiaohongshu cookie from the manual tool");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "获取小红书 Cookie 失败");
+      toast.error(error instanceof Error ? error.message : "Failed to get Xiaohongshu cookie");
     } finally {
       setGettingXhsCookie(false);
     }
@@ -804,7 +804,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
       .map((item) => String(item || "").trim())
       .filter(Boolean);
     if (parsed.length === 0) {
-      toast.error("请输入有效的 UP UID 或空间链接");
+      toast.error("Please enter a valid creator UID or space link");
       return;
     }
     const next = Array.from(new Set([...(moduleConfig.up_uids || []), ...parsed]));
@@ -824,16 +824,16 @@ export default function ModuleDetail({ module, onBack }: Props) {
       .filter((profile) => profile.smartGroups.includes(groupValue))
       .map((profile) => profile.uid);
     if (memberIds.length === 0) {
-      toast.info("这个智能组里还没有可导入的 UP");
+      toast.info("No importable creators in this smart group yet");
       return;
     }
     const next = Array.from(new Set([...(moduleConfig.up_uids || []), ...memberIds]));
     if (next.length === (moduleConfig.up_uids || []).length) {
-      toast.info("这个智能组里的 UP 都已加入固定监督");
+      toast.info("All creators in this smart group are already pinned");
       return;
     }
     setModuleConfig({ ...moduleConfig, up_uids: next });
-    toast.success(`已导入 ${next.length - (moduleConfig.up_uids || []).length} 个固定监督 UP`);
+    toast.success(`Imported ${next.length - (moduleConfig.up_uids || []).length} pinned creators`);
   }
 
   return (
@@ -861,7 +861,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
               }}
             >
               <ArrowLeft style={{ width: "16px", height: "16px" }} />
-              返回
+              Back
             </button>
             <button
               onClick={runNow}
@@ -881,7 +881,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
               }}
             >
               <Play style={{ width: "16px", height: "16px" }} />
-              {running ? "运行中..." : "立即运行"}
+              {running ? "Running..." : "Run now"}
             </button>
           </>
         }
@@ -890,7 +890,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
       <PageContent maxWidth="700px">
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
-          {/* 使用指南小卡片 */}
+          {/* Usage guide mini card */}
           <div style={{
             display: "flex",
             alignItems: "flex-start",
@@ -903,11 +903,11 @@ export default function ModuleDetail({ module, onBack }: Props) {
             <Info style={{ width: "16px", height: "16px", color: "#63CDDA", flexShrink: 0, marginTop: "2px" }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-main)", marginBottom: "2px" }}>
-                {subConfig.desc || `${module.name}模块`}
+                {subConfig.desc || `${module.name} module`}
               </div>
               {subConfig.types.length > 0 && (
                 <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "flex", flexWrap: "wrap", gap: "4px" }}>
-                  支持类型:{subConfig.types.map(t => (
+                  Supported types:{subConfig.types.map(t => (
                     <span key={t.type} style={{ color: "var(--text-secondary)" }}>· {t.label}</span>
                   ))}
                 </div>
@@ -915,7 +915,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
             </div>
           </div>
 
-          {/* 运行设置行 */}
+          {/* Run settings row */}
           <div style={{
             display: "flex",
             alignItems: "center",
@@ -950,7 +950,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                 }} />
               </div>
               <span style={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--text-main)" }}>
-                {moduleEnabled ? "已开启" : "已关闭"}
+                {moduleEnabled ? "Enabled" : "Disabled"}
               </span>
             </div>
 
@@ -978,7 +978,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
 
             {module.next_run && (
               <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginLeft: "auto" }}>
-                下次: {new Date(module.next_run).toLocaleString("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                Next: {new Date(module.next_run).toLocaleString("en-US", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}
               </span>
             )}
 
@@ -996,15 +996,15 @@ export default function ModuleDetail({ module, onBack }: Props) {
                 flexShrink: 0,
               }}
             >
-              保存
+              Save
             </button>
           </div>
 
-          {/* 正在订阅卡片 */}
-          <Card title={`正在订阅 (${subDetails?.subscriptions?.filter(s => s.is_active !== false).length || 0})`} icon={<Calendar style={{ width: "18px", height: "18px", color: "var(--color-primary)" }} />}>
+          {/* Active subscriptions card */}
+          <Card title={`Subscribed (${subDetails?.subscriptions?.filter(s => s.is_active !== false).length || 0})`} icon={<Calendar style={{ width: "18px", height: "18px", color: "var(--color-primary)" }} />}>
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
 
-              {/* 添加订阅按钮 */}
+              {/* Add subscription button */}
               {!showAddForm && subConfig.types.length > 0 && (
                 <button
                   onClick={() => {
@@ -1028,11 +1028,11 @@ export default function ModuleDetail({ module, onBack }: Props) {
                   }}
                 >
                   <Plus style={{ width: "16px", height: "16px" }} />
-                  添加订阅
+                  Add subscription
                 </button>
               )}
 
-              {/* 添加订阅表单 */}
+              {/* Add subscription form */}
               {showAddForm && (
                 <div style={{
                   padding: "16px",
@@ -1040,7 +1040,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                   background: "var(--bg-hover)",
                   border: "1px solid var(--border-light)",
                 }}>
-                  {/* 类型选择 */}
+                  {/* Type selection */}
                   {subConfig.types.length > 1 && (
                     <div style={{ display: "flex", gap: "8px", marginBottom: "12px", flexWrap: "wrap" }}>
                       {subConfig.types.map((t) => (
@@ -1063,13 +1063,13 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     </div>
                   )}
 
-                  {/* 输入框 */}
+                  {/* Input field */}
                   <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
                     <input
                       type="text"
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
-                      placeholder={currentTypeConfig?.placeholder || "输入..."}
+                      placeholder={currentTypeConfig?.placeholder || "Enter..."}
                       style={{
                         flex: 1,
                         padding: "10px 14px",
@@ -1100,7 +1100,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                         cursor: "pointer",
                       }}
                     >
-                      添加
+                      Add
                     </button>
                     <button
                       onClick={() => { setShowAddForm(false); setInputValue(""); }}
@@ -1117,7 +1117,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     </button>
                   </div>
 
-                  {/* 示例提示 */}
+                  {/* Example hint */}
                   {currentTypeConfig?.example && (
                     <div style={{
                       display: "flex",
@@ -1130,12 +1130,12 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     }}>
                       <HelpCircle style={{ width: "14px", height: "14px", color: "#F8B500" }} />
                       <span style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-                        示例: <code style={{ background: "rgba(248,181,0,0.15)", padding: "2px 6px", borderRadius: "4px", color: "#B8860B" }}>{currentTypeConfig.example}</code>
+                        Example: <code style={{ background: "rgba(248,181,0,0.15)", padding: "2px 6px", borderRadius: "4px", color: "#B8860B" }}>{currentTypeConfig.example}</code>
                       </span>
                     </div>
                   )}
 
-                  {/* 历史订阅快捷恢复 */}
+                  {/* Quick restore of past subscriptions */}
                   {subDetails && subDetails.subscriptions.filter(s => s.is_active === false).length > 0 && (
                     <div style={{ marginTop: "12px" }}>
                       <div style={{
@@ -1147,7 +1147,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                         gap: "4px"
                       }}>
                         <History style={{ width: "12px", height: "12px" }} />
-                        点击恢复历史订阅
+                        Click to restore past subscriptions
                       </div>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                         {subDetails.subscriptions
@@ -1180,14 +1180,14 @@ export default function ModuleDetail({ module, onBack }: Props) {
                 </div>
               )}
 
-              {/* 订阅列表 */}
+              {/* Subscription list */}
               {loadingDetails ? (
                 <div style={{ textAlign: "center", padding: "20px", color: "var(--text-muted)", fontSize: "0.875rem" }}>
-                  加载中...
+                  Loading...
                 </div>
               ) : !subDetails || subDetails.subscriptions.filter(s => s.is_active !== false).length === 0 ? (
                 <div style={{ textAlign: "center", padding: "20px", color: "var(--text-muted)", fontSize: "0.875rem" }}>
-                  暂无订阅，点击上方添加
+                  No subscriptions yet — add one above
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -1206,7 +1206,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                           border: "1px solid var(--border-light)",
                         }}
                       >
-                        {/* 开关按钮 */}
+                        {/* Toggle button */}
                         <div
                           onClick={() => toggleSubscription(sub.type, sub.value, true)}
                           style={{
@@ -1289,7 +1289,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
             </div>
           </Card>
 
-          {/* 历史订阅折叠 */}
+          {/* Collapsed past subscriptions */}
           {subDetails && subDetails.subscriptions.filter(s => s.is_active === false).length > 0 && (
             <Card>
               <div
@@ -1304,7 +1304,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                 }}
               >
                 <History style={{ width: "16px", height: "16px" }} />
-                <span>已移除的订阅 ({subDetails.subscriptions.filter(s => s.is_active === false).length})</span>
+                <span>Removed subscriptions ({subDetails.subscriptions.filter(s => s.is_active === false).length})</span>
                 <span style={{ marginLeft: "auto", transform: showHistory ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>▼</span>
               </div>
 
@@ -1325,7 +1325,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                           opacity: 0.7,
                         }}
                       >
-                        {/* 开关按钮 - 可恢复 */}
+                        {/* Toggle button - restorable */}
                         <div
                           onClick={() => toggleSubscription(sub.type, sub.value, false)}
                           style={{
@@ -1372,9 +1372,9 @@ export default function ModuleDetail({ module, onBack }: Props) {
             </Card>
           )}
 
-          {/* 模块特殊配置 */}
+          {/* Module-specific config */}
           {module.id === "bilibili-tracker" && (
-            <Card title="B站登录" icon={<User style={{ width: "18px", height: "18px", color: "var(--color-secondary)" }} />}>
+            <Card title="Bilibili Login" icon={<User style={{ width: "18px", height: "18px", color: "var(--color-secondary)" }} />}>
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                   <label style={{ fontSize: "0.8125rem", fontWeight: 500, color: "var(--text-secondary)" }}>
@@ -1384,7 +1384,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     type="password"
                     value={moduleConfig.sessdata || ""}
                     onChange={(e) => setModuleConfig({ ...moduleConfig, sessdata: e.target.value })}
-                    placeholder="从 Cookie-Editor 复制 SESSDATA 的值"
+                    placeholder="Copy the SESSDATA value from Cookie-Editor"
                     style={{
                       padding: "10px 14px",
                       borderRadius: "var(--radius-md)",
@@ -1402,7 +1402,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                   onClick={async () => {
                     await saveModuleConfig({
                       sessdata: moduleConfig.sessdata || "",
-                    }, "Cookie 已保存");
+                    }, "Cookie saved");
                   }}
                   style={{
                     padding: "8px 16px",
@@ -1416,14 +1416,14 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     alignSelf: "flex-start",
                   }}
                 >
-                  保存 Cookie
+                  Save cookie
                 </button>
               </div>
             </Card>
           )}
 
           {module.id === "bilibili-tracker" && (
-            <Card title="自动爬取策略" icon={<span style={{ fontSize: "16px" }}>🕸️</span>}>
+            <Card title="Automatic Crawl Strategy" icon={<span style={{ fontSize: "16px" }}>🕸️</span>}>
               <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                 <div style={{
                   display: "flex",
@@ -1435,15 +1435,15 @@ export default function ModuleDetail({ module, onBack }: Props) {
                   border: "1px solid var(--border-light)",
                 }}>
                   <div style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 600 }}>
-                    复用主动工具的真实监控定义
+                    Reuses the manual tool's real monitor definitions
                   </div>
                   <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                    这里不再单独维护一套简化关键词，而是直接编辑每日情报真正使用的 B 站监控定义，包括常驻关键词监控、固定 UP 监督、原始分组和智能分组过滤。
+                    Instead of maintaining a separate simplified keyword set, this directly edits the Bilibili monitor definitions the daily intel actually uses — persistent keyword monitors, pinned creators, original groups, and smart-group filters.
                   </div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-                    <span>关键词监控 {(moduleConfig.daily_dynamic_monitors || []).length} 条</span>
-                    <span>固定监督 UP {(moduleConfig.up_uids || []).length} 个</span>
-                    <span>已开智能分组 {bilibiliActiveGroupCount} 个</span>
+                    <span>Keyword monitors: {(moduleConfig.daily_dynamic_monitors || []).length}</span>
+                    <span>Pinned creators: {(moduleConfig.up_uids || []).length}</span>
+                    <span>Smart groups enabled: {bilibiliActiveGroupCount}</span>
                   </div>
                 </div>
 
@@ -1464,10 +1464,10 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
                       <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1 }}>
                         <span style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 600 }}>
-                          关注流自动爬取
+                          Auto-crawl follow feed
                         </span>
                         <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                          定时抓你的关注动态，再按下面的关键词监控、固定 UP 和分组定义做筛选。
+                          Periodically fetches your follow feed, then filters it with the keyword monitors, pinned creators, and group definitions below.
                         </span>
                       </div>
                       <div
@@ -1496,7 +1496,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                       </div>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-                      <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>候选池上限</label>
+                      <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>Candidate pool limit</label>
                       <input
                         type="number"
                         min={1}
@@ -1518,7 +1518,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                         }}
                       />
                       <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                        这里只影响共享候选池和无监控时的全关注流兜底抓取
+                        Only affects the shared candidate pool and the full-feed fallback crawl when no monitors exist
                       </span>
                     </div>
                   </div>
@@ -1535,10 +1535,10 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
                       <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1 }}>
                         <span style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 600 }}>
-                          启用关键词过滤
+                          Enable keyword filtering
                         </span>
                         <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                          关闭后会抓取选中范围里的全部动态；开启后只保留命中关键词监控定义的内容。
+                          When off, all posts in the selected scope are fetched; when on, only content matching keyword monitor definitions is kept.
                         </span>
                       </div>
                       <div
@@ -1567,7 +1567,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                       </div>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-                      <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>分组过滤</label>
+                      <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>Group filtering</label>
                       <select
                         value={moduleConfig.followed_up_filter_mode || "and"}
                         onChange={(e) => setModuleConfig({
@@ -1584,8 +1584,8 @@ export default function ModuleDetail({ module, onBack }: Props) {
                           outline: "none",
                         }}
                       >
-                        <option value="and">原始分组 + 智能分组</option>
-                        <option value="smart_only">仅按智能分组</option>
+                        <option value="and">Original groups + smart groups</option>
+                        <option value="smart_only">Smart groups only</option>
                       </select>
                     </div>
                   </div>
@@ -1593,7 +1593,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   <label style={{ fontSize: "0.8125rem", fontWeight: 500, color: "var(--text-secondary)" }}>
-                    动态类型
+                    Post types
                   </label>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                     {BILIBILI_DYNAMIC_TYPE_OPTIONS.map((option) => {
@@ -1632,13 +1632,13 @@ export default function ModuleDetail({ module, onBack }: Props) {
                 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
                     <div>
-                      <div style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 600 }}>常驻关键词监控</div>
+                      <div style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 600 }}>Persistent keyword monitors</div>
                       <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6, marginTop: "4px" }}>
-                        每一条都会复用主动工具同一套 `daily_dynamic_monitors` 定义；这里直接配置关键词、标签词、最近几天、条数上限和扫描页数上限。到了时间窗口就停，抓到多少算多少。
+                        Each one reuses the manual tool's `daily_dynamic_monitors` definitions; configure keywords, tag words, day range, item limit, and page scan limit here. Crawling stops at the time window — whatever was fetched is kept.
                       </div>
                     </div>
                     <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-                      已启用 {(moduleConfig.daily_dynamic_monitors || []).filter((item) => item.enabled).length} / {(moduleConfig.daily_dynamic_monitors || []).length}
+                      Enabled {(moduleConfig.daily_dynamic_monitors || []).filter((item) => item.enabled).length} / {(moduleConfig.daily_dynamic_monitors || []).length}
                     </span>
                   </div>
                   {(moduleConfig.daily_dynamic_monitors || []).length > 0 ? (
@@ -1665,7 +1665,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                   item.id === monitor.id ? normalizeBilibiliDailyDynamicMonitor({ ...item, label: e.target.value }) : item
                                 )
                               )}
-                              placeholder="监控名称"
+                              placeholder="Monitor name"
                               style={{
                                 flex: 1,
                                 minWidth: "180px",
@@ -1696,7 +1696,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                 cursor: "pointer",
                               }}
                             >
-                              {monitor.enabled ? "已开启" : "已关闭"}
+                              {monitor.enabled ? "On" : "Off"}
                             </button>
                             <button
                               type="button"
@@ -1714,7 +1714,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                 cursor: "pointer",
                               }}
                             >
-                              删除
+                              Delete
                             </button>
                           </div>
                           <input
@@ -1728,7 +1728,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                 }) : item
                               )
                             )}
-                            placeholder="关键词: 科研, AI, 论文"
+                            placeholder="Keywords: research, AI, papers"
                             style={{
                               padding: "10px 14px",
                               borderRadius: "var(--radius-md)",
@@ -1750,7 +1750,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                 }) : item
                               )
                             )}
-                            placeholder="标签词: 机器人, Agent, 多模态"
+                            placeholder="Tag words: robotics, Agent, multimodal"
                             style={{
                               padding: "10px 14px",
                               borderRadius: "var(--radius-md)",
@@ -1762,7 +1762,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                             }}
                           />
                           <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-                            <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>最近几天</label>
+                            <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>Day range</label>
                             <input
                               type="number"
                               min={1}
@@ -1787,7 +1787,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                 outline: "none",
                               }}
                             />
-                            <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>条数上限</label>
+                            <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>Item limit</label>
                             <input
                               type="number"
                               min={1}
@@ -1812,7 +1812,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                 outline: "none",
                               }}
                             />
-                            <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>扫描页数</label>
+                            <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>Pages to scan</label>
                             <input
                               type="number"
                               min={1}
@@ -1843,7 +1843,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     </div>
                   ) : (
                     <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.7 }}>
-                      还没有关键词监控。新增后，定时情报会直接复用这条定义的关键词、标签词、时间窗、条数上限和扫描页数上限。
+                      No keyword monitors yet. Once added, scheduled intel directly reuses this definition's keywords, tag words, time window, item limit, and page scan limit.
                     </div>
                   )}
                   <button
@@ -1851,7 +1851,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     onClick={() => setBilibiliDailyDynamicMonitors([
                       ...(moduleConfig.daily_dynamic_monitors || []),
                       normalizeBilibiliDailyDynamicMonitor({
-                        label: `每日监控 ${(moduleConfig.daily_dynamic_monitors || []).length + 1}`,
+                        label: `Daily monitor ${(moduleConfig.daily_dynamic_monitors || []).length + 1}`,
                       }, bilibiliMonitorDefaults),
                     ])}
                     style={{
@@ -1866,7 +1866,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                       alignSelf: "flex-start",
                     }}
                   >
-                    新增关键词监控
+                    Add keyword monitor
                   </button>
                 </div>
 
@@ -1880,9 +1880,9 @@ export default function ModuleDetail({ module, onBack }: Props) {
                   border: "1px solid var(--border-light)",
                 }}>
                   <div>
-                    <div style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 600 }}>固定 UP 监督</div>
+                    <div style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 600 }}>Pinned creators</div>
                     <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6, marginTop: "4px" }}>
-                      这里维护真正进入每日情报的 `up_uids`。定时抓取会复用关注监控同一套动态抓取、卡片预览和原文跳转逻辑；支持手动输入 UID / 空间链接，也可以从已有智能分组结果里批量导入。
+                      This maintains the `up_uids` that actually enter daily intel. Scheduled crawls reuse the same post fetching, card preview, and source-link logic as follow monitors; enter UIDs / space links manually or bulk-import from existing smart group results.
                     </div>
                   </div>
                   <div
@@ -1893,7 +1893,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                       flexWrap: "wrap",
                     }}
                   >
-                    <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>最近几天</label>
+                    <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>Day range</label>
                     <input
                       type="number"
                       min={1}
@@ -1919,7 +1919,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                       }}
                     />
                     <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                      固定 UP 按这个时间窗口截止，跑到时间点就停，抓到多少返回多少
+                      Pinned creators are crawled up to this time window — it stops at the cutoff and returns whatever was fetched
                     </span>
                   </div>
                   <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -1927,7 +1927,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                       type="text"
                       value={bilibiliUpInput}
                       onChange={(e) => setBilibiliUpInput(e.target.value)}
-                      placeholder="输入 UP UID 或 https://space.bilibili.com/xxxx"
+                      placeholder="Enter creator UID or https://space.bilibili.com/xxxx"
                       style={{
                         flex: 1,
                         minWidth: "240px",
@@ -1960,7 +1960,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                         cursor: "pointer",
                       }}
                     >
-                      加入固定监督
+                      Pin creator
                     </button>
                   </div>
                   {(moduleConfig.up_uids || []).length > 0 ? (
@@ -2012,7 +2012,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                               )}
                               {latestTitle && (
                                 <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                                  最近内容: {latestTitle}
+                                  Latest content: {latestTitle}
                                 </div>
                               )}
                             </div>
@@ -2031,7 +2031,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                 flexShrink: 0,
                               }}
                             >
-                              移除
+                              Remove
                             </button>
                           </div>
                         );
@@ -2039,13 +2039,13 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     </div>
                   ) : (
                     <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.7 }}>
-                      还没有固定监督的 UP。这里只保留真正需要长期盯的作者，保存后会直接参与每日情报抓取。
+                      No pinned creators yet. Keep only authors worth watching long-term; once saved they join the daily intel crawl directly.
                     </div>
                   )}
                   {bilibiliSmartGroupImportOptions.length > 0 && (
                     <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                       <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-secondary)" }}>
-                        从智能分组导入固定监督
+                        Import pinned creators from smart groups
                       </div>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                         {bilibiliSmartGroupImportOptions.map((option) => (
@@ -2067,7 +2067,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                               opacity: option.importableMembers > 0 ? 1 : 0.7,
                             }}
                           >
-                            {option.label} · 可导入 {option.importableMembers} / {option.totalMembers}
+                            {option.label} · importable {option.importableMembers} / {option.totalMembers}
                           </button>
                         ))}
                       </div>
@@ -2085,24 +2085,24 @@ export default function ModuleDetail({ module, onBack }: Props) {
                   border: "1px solid var(--border-light)",
                 }}>
                   <div>
-                    <div style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 600 }}>分组推送</div>
+                    <div style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 600 }}>Group push</div>
                     <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6, marginTop: "4px" }}>
-                      智能分组追踪会复用主动工具同一套定向动态抓取逻辑。每个分组都可以单独设最近几天、保留条数和扫描页数上限。
+                      Smart-group tracking reuses the manual tool's targeted post fetching. Each group can have its own day range, retention limit, and page scan limit.
                     </div>
                   </div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-                    <span>原始分组 {(moduleConfig.followed_up_original_groups || []).length} 个</span>
-                    <span>智能分组 {bilibiliActiveGroupCount} 个</span>
-                    <span>都不选时表示不过滤分组</span>
+                    <span>Original groups: {(moduleConfig.followed_up_original_groups || []).length}</span>
+                    <span>Smart groups: {bilibiliActiveGroupCount}</span>
+                    <span>Selecting none means no group filtering</span>
                   </div>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     <label style={{ fontSize: "0.8125rem", fontWeight: 500, color: "var(--text-secondary)" }}>
-                      开启原始分组推送
+                      Enable original group push
                     </label>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                       {loadingBilibiliGroups ? (
-                        <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>正在读取 B 站原始分组...</span>
+                        <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Reading Bilibili original groups...</span>
                       ) : bilibiliOriginalGroups.length > 0 ? (
                         bilibiliOriginalGroups.map((group) => {
                           const active = (moduleConfig.followed_up_original_groups || []).includes(group.tag_id);
@@ -2129,7 +2129,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                         })
                       ) : (
                         <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                          保存有效 SESSDATA 后会自动读取你在 B 站里的原始关注分组。
+                          After saving a valid SESSDATA, your original Bilibili follow groups are read automatically.
                         </span>
                       )}
                     </div>
@@ -2137,7 +2137,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     <label style={{ fontSize: "0.8125rem", fontWeight: 500, color: "var(--text-secondary)" }}>
-                      开启智能分组推送
+                      Enable smart group push
                     </label>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                       {bilibiliSmartGroupOptions.map((option) => {
@@ -2186,7 +2186,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                             <div>
                               <div style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 600 }}>{monitor.label}</div>
                               <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px" }}>
-                                分组键：{monitor.group_value}
+                                Group key: {monitor.group_value}
                               </div>
                             </div>
                             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -2211,7 +2211,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                   cursor: "pointer",
                                 }}
                               >
-                                {monitor.enabled ? "已开启" : "已关闭"}
+                                {monitor.enabled ? "On" : "Off"}
                               </button>
                               <button
                                 type="button"
@@ -2229,13 +2229,13 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                   cursor: "pointer",
                                 }}
                               >
-                                删除
+                                Delete
                               </button>
                             </div>
                           </div>
 
                           <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-                            <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>最近几天</label>
+                            <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>Day range</label>
                             <input
                               type="number"
                               min={1}
@@ -2260,7 +2260,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                 outline: "none",
                               }}
                             />
-                            <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>保留条数</label>
+                            <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>Items to keep</label>
                             <input
                               type="number"
                               min={1}
@@ -2285,7 +2285,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                 outline: "none",
                               }}
                             />
-                            <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>扫描页数</label>
+                            <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>Pages to scan</label>
                             <input
                               type="number"
                               min={1}
@@ -2316,7 +2316,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     </div>
                   ) : (
                     <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.7 }}>
-                      还没有启用智能分组追踪。点上面的分组标签后，就会生成对应监控并沿用主动抓取的动态卡片与保存路径。
+                      No smart-group tracking enabled yet. Click a group tag above to generate a monitor that reuses the manual crawl's post cards and save paths.
                     </div>
                   )}
                 </div>
@@ -2343,7 +2343,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                       followed_up_original_groups: moduleConfig.followed_up_original_groups || [],
                       followed_up_groups: normalizedGroupMonitors.filter((item) => item.enabled).map((item) => item.group_value),
                       followed_up_filter_mode: moduleConfig.followed_up_filter_mode === "smart_only" ? "smart_only" : "and",
-                    }, "B站爬取策略已保存");
+                    }, "Bilibili crawl strategy saved");
                   }}
                   style={{
                     padding: "8px 16px",
@@ -2357,15 +2357,15 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     alignSelf: "flex-start",
                   }}
                 >
-                  保存爬取策略
+                  Save crawl strategy
                 </button>
               </div>
             </Card>
           )}
 
-          {/* arXiv 关键词配置 */}
+          {/* arXiv keyword config */}
           {module.id === "arxiv-tracker" && (
-            <Card title="关键词" icon={<span style={{ fontSize: "14px" }}>🔤</span>}>
+            <Card title="Keywords" icon={<span style={{ fontSize: "14px" }}>🔤</span>}>
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <input
                   type="text"
@@ -2383,15 +2383,15 @@ export default function ModuleDetail({ module, onBack }: Props) {
                   }}
                 />
                 <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: 0 }}>
-                  输入英文关键词，用逗号分隔。系统会自动追踪包含这些关键词的新论文
+                  Enter English keywords separated by commas. The system will automatically track new papers containing them
                 </p>
                 <button
                   onClick={async () => {
                     try {
                       await api.post("/api/preferences", { modules: { [module.id]: { keywords: moduleConfig.keywords } } });
-                      toast.success("已保存");
+                      toast.success("Saved");
                     } catch {
-                      toast.error("保存失败");
+                      toast.error("Save failed");
                     }
                   }}
                   style={{
@@ -2406,15 +2406,15 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     alignSelf: "flex-start",
                   }}
                 >
-                  保存关键词
+                  Save keywords
                 </button>
               </div>
             </Card>
           )}
 
-          {/* Semantic Scholar API Key 配置 */}
+          {/* Semantic Scholar API key config */}
           {module.id === "semantic-scholar-tracker" && (
-            <Card title="API 配置" icon={<span style={{ fontSize: "14px" }}>🔑</span>}>
+            <Card title="API Configuration" icon={<span style={{ fontSize: "14px" }}>🔑</span>}>
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                   <label style={{ fontSize: "0.8125rem", fontWeight: 500, color: "var(--text-secondary)" }}>
@@ -2424,7 +2424,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     type="password"
                     value={moduleConfig.api_key || ""}
                     onChange={(e) => setModuleConfig({ ...moduleConfig, api_key: e.target.value })}
-                    placeholder="输入你的 API Key（可选）"
+                    placeholder="Enter your API key (optional)"
                     style={{
                       padding: "10px 14px",
                       borderRadius: "var(--radius-md)",
@@ -2436,18 +2436,18 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     }}
                   />
                   <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: 0 }}>
-                    留空将使用默认 API Key。如需使用自己的 Key，请从
+                    Leave empty to use the default API key. To use your own key, request one from
                     <a href="https://www.semanticscholar.org/product/api" target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-primary)", textDecoration: "underline" }}>Semantic Scholar</a>
-                    申请
+                    here
                   </p>
                 </div>
                 <button
                   onClick={async () => {
                     try {
                       await api.post("/api/config", { semantic_scholar_api_key: moduleConfig.api_key || "" });
-                      toast.success("API Key 已保存");
+                      toast.success("API key saved");
                     } catch {
-                      toast.error("保存失败");
+                      toast.error("Save failed");
                     }
                   }}
                   style={{
@@ -2462,15 +2462,15 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     alignSelf: "flex-start",
                   }}
                 >
-                  保存 API Key
+                  Save API key
                 </button>
               </div>
             </Card>
           )}
 
-          {/* 小红书 Cookie 配置 */}
+          {/* Xiaohongshu cookie config */}
           {module.id === "xiaohongshu-tracker" && (
-            <Card title="小红书登录" icon={<span style={{ fontSize: "18px" }}>📕</span>}>
+            <Card title="Xiaohongshu Login" icon={<span style={{ fontSize: "18px" }}>📕</span>}>
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <div
                   style={{
@@ -2489,12 +2489,12 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-main)" }}>
                       {moduleConfig.auth_ready
                         ? moduleConfig.auth_source === "global"
-                          ? "当前已复用主动工具的小红书 Cookie"
-                          : "当前已保存模块专用的小红书 Cookie"
-                        : "当前还没有可复用的小红书 Cookie"}
+                          ? "Currently reusing the Xiaohongshu cookie from the manual tool"
+                          : "A module-specific Xiaohongshu cookie is saved"
+                        : "No reusable Xiaohongshu cookie yet"}
                     </div>
                     <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                      这里直接复用主动工具那条 Cookie 获取链路；定时情报会优先读取这里或主动工具里已保存的 Cookie。
+                      This reuses the manual tool's cookie acquisition flow; scheduled intel reads the cookie saved here or in the manual tool first.
                     </div>
                   </div>
                   <button
@@ -2513,7 +2513,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                       whiteSpace: "nowrap",
                     }}
                   >
-                    {gettingXhsCookie ? "获取中..." : "一键复用浏览器 Cookie"}
+                    {gettingXhsCookie ? "Getting..." : "One-click reuse browser cookie"}
                   </button>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
@@ -2524,7 +2524,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     type="password"
                     value={moduleConfig.web_session || ""}
                     onChange={(e) => setModuleConfig({ ...moduleConfig, web_session: e.target.value })}
-                    placeholder="从 Cookie-Editor 复制 web_session 的值"
+                    placeholder="Copy the web_session value from Cookie-Editor"
                     style={{
                       padding: "10px 14px",
                       borderRadius: "var(--radius-md)",
@@ -2539,13 +2539,13 @@ export default function ModuleDetail({ module, onBack }: Props) {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                   <label style={{ fontSize: "0.8125rem", fontWeight: 500, color: "var(--text-secondary)" }}>
-                    id_token <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 400 }}>(可选)</span>
+                    id_token <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 400 }}>(optional)</span>
                   </label>
                   <input
                     type="password"
                     value={moduleConfig.id_token || ""}
                     onChange={(e) => setModuleConfig({ ...moduleConfig, id_token: e.target.value })}
-                    placeholder="从 Cookie-Editor 复制 id_token 的值"
+                    placeholder="Copy the id_token value from Cookie-Editor"
                     style={{
                       padding: "10px 14px",
                       borderRadius: "var(--radius-md)",
@@ -2580,14 +2580,14 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     alignSelf: "flex-start",
                   }}
                 >
-                  保存 Cookie
+                  Save cookie
                 </button>
               </div>
             </Card>
           )}
 
           {module.id === "xiaohongshu-tracker" && (
-            <Card title="自动爬取策略" icon={<span style={{ fontSize: "16px" }}>🕸️</span>}>
+            <Card title="Automatic Crawl Strategy" icon={<span style={{ fontSize: "16px" }}>🕸️</span>}>
               <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                 <div style={{
                   display: "flex",
@@ -2599,10 +2599,10 @@ export default function ModuleDetail({ module, onBack }: Props) {
                   border: "1px solid var(--border-light)",
                 }}>
                   <div style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 600 }}>
-                    情报推送 / 关注流扫描 / 特定关注
+                    Intel push / follow-feed scan / targeted follows
                   </div>
                   <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                    这里直接编辑小红书监控的真实定义。默认不抓评论；开启评论时默认按前 20 条高赞抓取。
+                    This directly edits the real Xiaohongshu monitor definitions. Comments are not fetched by default; when enabled, the top 20 most-liked comments are fetched.
                   </div>
                 </div>
 
@@ -2617,12 +2617,12 @@ export default function ModuleDetail({ module, onBack }: Props) {
                   border: "1px solid var(--border-light)",
                 }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: "4px", minWidth: "200px" }}>
-                    <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-main)" }}>插件 bridge 设置</div>
+                    <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-main)" }}>Extension bridge settings</div>
                     <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                      情报流定时抓取直接复用主动工具的小红书插件链路参数。
+                      Scheduled intel crawls reuse the manual tool's Xiaohongshu extension bridge parameters.
                     </div>
                   </div>
-                  <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>扩展端口</label>
+                  <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>Extension port</label>
                   <input
                     type="number"
                     min={1}
@@ -2659,7 +2659,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                       cursor: "pointer",
                     }}
                   >
-                    {(moduleConfig.dedicated_window_mode ?? true) ? "独立窗口" : "当前窗口"}
+                    {(moduleConfig.dedicated_window_mode ?? true) ? "Dedicated window" : "Current window"}
                   </button>
                 </div>
 
@@ -2670,7 +2670,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                   alignItems: "start",
                 }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px", minWidth: 0 }}>
-                    <div style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 600 }}>搜索关键词推送</div>
+                    <div style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 600 }}>Search keyword push</div>
                     {(moduleConfig.keyword_monitors || []).map((monitor) => (
                       <div
                         key={monitor.id}
@@ -2694,7 +2694,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                 item.id === monitor.id ? { ...item, label: e.target.value } : item
                               ),
                             })}
-                            placeholder="定义名称"
+                            placeholder="Definition name"
                             style={{
                               flex: 1,
                               minWidth: "180px",
@@ -2726,7 +2726,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                               cursor: "pointer",
                             }}
                           >
-                            {monitor.enabled ? "已开启" : "已关闭"}
+                            {monitor.enabled ? "On" : "Off"}
                           </button>
                           <button
                             type="button"
@@ -2745,7 +2745,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                               cursor: "pointer",
                             }}
                           >
-                            删除
+                            Delete
                           </button>
                         </div>
                         <input
@@ -2757,7 +2757,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                               item.id === monitor.id ? { ...item, keywords: parseKeywordInput(e.target.value) } : item
                             ),
                           })}
-                          placeholder="科研工具, 论文写作, AI 工作流"
+                          placeholder="research tools, paper writing, AI workflows"
                           style={{
                             padding: "10px 14px",
                             borderRadius: "var(--radius-md)",
@@ -2770,7 +2770,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                         />
                         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
                           <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-                            最低点赞
+                            Min likes
                           </label>
                           <input
                             type="number"
@@ -2794,7 +2794,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                             }}
                           />
                           <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-                            每词抓取
+                            Per-keyword fetch
                           </label>
                           <input
                             type="number"
@@ -2819,7 +2819,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                             }}
                           />
                           <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-                            最近天数
+                            Day range
                           </label>
                           <input
                             type="number"
@@ -2861,8 +2861,8 @@ export default function ModuleDetail({ module, onBack }: Props) {
                               outline: "none",
                             }}
                           >
-                            <option value="likes">高赞优先</option>
-                            <option value="time">最新优先</option>
+                            <option value="likes">Most liked first</option>
+                            <option value="time">Newest first</option>
                           </select>
                           <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
                             <input
@@ -2875,7 +2875,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                 ),
                               })}
                             />
-                            选爬评论
+                            Fetch comments
                           </label>
                           {monitor.include_comments ? (
                             <>
@@ -2919,8 +2919,8 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                   outline: "none",
                                 }}
                               >
-                                <option value="likes">高赞优先</option>
-                                <option value="time">最新优先</option>
+                                <option value="likes">Most liked first</option>
+                                <option value="time">Newest first</option>
                               </select>
                             </>
                           ) : null}
@@ -2933,7 +2933,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                         ...moduleConfig,
                         keyword_monitors: [
                           ...(moduleConfig.keyword_monitors || []),
-                          createKeywordMonitor({ label: `情报推送 ${(moduleConfig.keyword_monitors || []).length + 1}` }),
+                          createKeywordMonitor({ label: `Intel push ${(moduleConfig.keyword_monitors || []).length + 1}` }),
                         ],
                       })}
                       style={{
@@ -2948,13 +2948,13 @@ export default function ModuleDetail({ module, onBack }: Props) {
                         alignSelf: "flex-start",
                       }}
                     >
-                      新增搜索关键词推送
+                      Add search keyword push
                     </button>
                   </div>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "16px", minWidth: 0 }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                      <div style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 600 }}>关注流关键词推送</div>
+                      <div style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 600 }}>Follow-feed keyword push</div>
                       <div style={{
                         display: "flex",
                         flexDirection: "column",
@@ -2967,10 +2967,10 @@ export default function ModuleDetail({ module, onBack }: Props) {
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
                           <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                             <span style={{ fontSize: "0.8125rem", color: "var(--text-main)", fontWeight: 600 }}>
-                              已关注流关键词定义
+                              Follow-feed keyword definitions
                             </span>
                             <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                              这里复用主动工具里的关注流搜索定义。会先抓真实已关注流，再按每条关键词定义过滤。
+                              Reuses the manual tool's follow-feed search definitions. The real follow feed is fetched first, then filtered by each keyword definition.
                             </span>
                           </div>
                           <button
@@ -2992,7 +2992,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                               cursor: "pointer",
                             }}
                           >
-                            {(moduleConfig.following_scan?.enabled ?? false) ? "总开关已开启" : "总开关已关闭"}
+                            {(moduleConfig.following_scan?.enabled ?? false) ? "Master switch on" : "Master switch off"}
                           </button>
                         </div>
                         <div style={{ display: "grid", gap: "10px" }}>
@@ -3021,7 +3021,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                           : item
                                       )
                                     )}
-                                    placeholder="定义名称"
+                                    placeholder="Definition name"
                                     style={{
                                       flex: 1,
                                       minWidth: "180px",
@@ -3054,7 +3054,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                       cursor: "pointer",
                                     }}
                                   >
-                                    {monitor.enabled ? "已开启" : "已关闭"}
+                                    {monitor.enabled ? "On" : "Off"}
                                   </button>
                                 </div>
                                 <input
@@ -3067,7 +3067,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                         : item
                                     )
                                   )}
-                                  placeholder="关注流过滤关键词"
+                                  placeholder="Follow-feed filter keywords"
                                   style={{
                                     padding: "10px 14px",
                                     borderRadius: "var(--radius-md)",
@@ -3079,7 +3079,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                   }}
                                 />
                                 <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
-                                  <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>抓取上限</label>
+                                  <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>Fetch limit</label>
                                   <input
                                     type="number"
                                     min={1}
@@ -3103,7 +3103,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                       outline: "none",
                                     }}
                                   />
-                                  <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>最近天数</label>
+                                  <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>Day range</label>
                                   <input
                                     type="number"
                                     min={1}
@@ -3146,8 +3146,8 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                       outline: "none",
                                     }}
                                   >
-                                    <option value="time">最新优先</option>
-                                    <option value="likes">高赞优先</option>
+                                    <option value="time">Newest first</option>
+                                    <option value="likes">Most liked first</option>
                                   </select>
                                   <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
                                     <input
@@ -3161,7 +3161,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                         )
                                       )}
                                     />
-                                    按关键词过滤
+                                    Filter by keyword
                                   </label>
                                   <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
                                     <input
@@ -3175,7 +3175,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                         )
                                       )}
                                     />
-                                    选爬评论
+                                    Fetch comments
                                   </label>
                                   <button
                                     type="button"
@@ -3196,12 +3196,12 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                       marginLeft: "auto",
                                     }}
                                   >
-                                    删除
+                                    Delete
                                   </button>
                                 </div>
                                 {monitor.include_comments ? (
                                   <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
-                                    <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>评论条数</label>
+                                    <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>Comment count</label>
                                     <input
                                       type="number"
                                       min={1}
@@ -3244,8 +3244,8 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                         outline: "none",
                                       }}
                                     >
-                                      <option value="likes">高赞优先</option>
-                                      <option value="time">最新优先</option>
+                                      <option value="likes">Most liked first</option>
+                                      <option value="time">Newest first</option>
                                     </select>
                                   </div>
                                 ) : null}
@@ -3253,7 +3253,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                             ))
                           ) : (
                             <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                              还没有关注流关键词定义。新增后，情报会复用你在主动工具里那套关注流搜索链路。
+                              No follow-feed keyword definitions yet. Once added, intel reuses the same follow-feed search flow as the manual tool.
                             </span>
                           )}
                         </div>
@@ -3263,7 +3263,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                             const nextMonitors = [
                               ...(moduleConfig.following_scan_monitors || []),
                               createFollowingScanMonitor({
-                                label: `关注流推送 ${(moduleConfig.following_scan_monitors || []).length + 1}`,
+                                label: `Follow-feed push ${(moduleConfig.following_scan_monitors || []).length + 1}`,
                                 enabled: moduleConfig.following_scan?.enabled ?? false,
                                 fetch_limit: moduleConfig.following_scan?.fetch_limit ?? 20,
                                 recent_days: moduleConfig.following_scan?.recent_days ?? 7,
@@ -3288,13 +3288,13 @@ export default function ModuleDetail({ module, onBack }: Props) {
                             alignSelf: "flex-start",
                           }}
                         >
-                          新增关注流关键词推送
+                          Add follow-feed keyword push
                         </button>
                       </div>
                     </div>
 
                     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                      <div style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 600 }}>博主最新动态爬取</div>
+                      <div style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 600 }}>Blogger latest posts crawl</div>
                       <div
                         style={{
                           display: "flex",
@@ -3310,10 +3310,10 @@ export default function ModuleDetail({ module, onBack }: Props) {
                       >
                         <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                           <span style={{ fontSize: "0.875rem", fontWeight: 700, color: "#92400e" }}>
-                            默认关闭，可能触发反爬
+                            Off by default — may trigger anti-crawling
                           </span>
                           <span style={{ fontSize: "0.75rem", color: "#92400e", lineHeight: 1.6 }}>
-                            这条链路会访问博主主页抓最近动态，频率过高时容易触发访问频繁或验证页。建议只在需要时开启，并优先结合智能分组缩小范围。
+                            This flow visits blogger profile pages to fetch recent posts; high frequency can trigger rate limiting or verification pages. Enable only when needed, and narrow the scope with smart groups first.
                           </span>
                         </div>
                         <button
@@ -3330,11 +3330,11 @@ export default function ModuleDetail({ module, onBack }: Props) {
                             cursor: "pointer",
                           }}
                         >
-                          {(moduleConfig.creator_push_enabled ?? false) ? "已开启抓取" : "保持关闭"}
+                          {(moduleConfig.creator_push_enabled ?? false) ? "Crawling enabled" : "Keep off"}
                         </button>
                       </div>
                       <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.6 }}>
-                        只要你选了下面的智能分组，系统会直接复用共享智能分组里的博主池进入每日情报抓取；不需要再把每个博主手动导入一次。下面的特定关注名单也会继续一起复用。
+                        Once you select smart groups below, the system reuses the blogger pool from shared smart groups for daily intel crawling — no need to import each blogger manually. The targeted follow list below is also reused.
                       </p>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                         {(moduleConfig.creator_group_options || XHS_CREATOR_GROUP_OPTIONS).map((option) => {
@@ -3387,7 +3387,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                     item.id === monitor.id ? { ...item, label: e.target.value, author: e.target.value || item.author } : item
                                   ),
                                 })}
-                                placeholder="显示名称"
+                                placeholder="Display name"
                                 style={{
                                   padding: "10px 14px",
                                   borderRadius: "var(--radius-md)",
@@ -3410,7 +3410,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                     }) : item
                                   ),
                                 })}
-                                placeholder="用户主页 ID 或链接"
+                                placeholder="User profile ID or link"
                                 style={{
                                   padding: "10px 14px",
                                   borderRadius: "var(--radius-md)",
@@ -3460,10 +3460,10 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                     cursor: "pointer",
                                   }}
                                 >
-                                  {monitor.enabled ? "已开启" : "已关闭"}
+                                  {monitor.enabled ? "On" : "Off"}
                                 </button>
                                 <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-                                  每次抓取
+                                  Per-crawl fetch
                                 </label>
                                 <input
                                   type="number"
@@ -3488,7 +3488,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                   }}
                                 />
                                 <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-                                  最近天数
+                                  Day range
                                 </label>
                                 <input
                                   type="number"
@@ -3530,8 +3530,8 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                     outline: "none",
                                   }}
                                 >
-                                  <option value="time">最新优先</option>
-                                  <option value="likes">高赞优先</option>
+                                  <option value="time">Newest first</option>
+                                  <option value="likes">Most liked first</option>
                                 </select>
                                 <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
                                   <input
@@ -3544,7 +3544,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                       ),
                                     })}
                                   />
-                                  选爬评论
+                                  Fetch comments
                                 </label>
                                 <button
                                   type="button"
@@ -3564,12 +3564,12 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                     marginLeft: "auto",
                                   }}
                                 >
-                                  删除
+                                  Delete
                                 </button>
                               </div>
                               {monitor.include_comments ? (
                                 <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-                                  <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>评论条数</label>
+                                  <label style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>Comment count</label>
                                   <input
                                     type="number"
                                     min={1}
@@ -3610,8 +3610,8 @@ export default function ModuleDetail({ module, onBack }: Props) {
                                       outline: "none",
                                     }}
                                   >
-                                    <option value="likes">高赞优先</option>
-                                    <option value="time">最新优先</option>
+                                    <option value="likes">Most liked first</option>
+                                    <option value="time">Newest first</option>
                                   </select>
                                 </div>
                               ) : null}
@@ -3619,7 +3619,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                           ))
                         ) : (
                           <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                            先去小红书工具的“收藏反推博主”里同步候选博主，或在这里手动新增。
+                            First sync candidate bloggers from the Xiaohongshu tool's "bloggers from bookmarks" feature, or add them manually here.
                           </span>
                         )}
                       </div>
@@ -3629,7 +3629,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                           ...moduleConfig,
                           creator_monitors: [
                             ...(moduleConfig.creator_monitors || []),
-                            createCreatorMonitor({ label: `手动新增 ${(moduleConfig.creator_monitors || []).length + 1}` }),
+                            createCreatorMonitor({ label: `Manually added ${(moduleConfig.creator_monitors || []).length + 1}` }),
                           ],
                         })}
                         style={{
@@ -3644,7 +3644,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                           alignSelf: "flex-start",
                         }}
                       >
-                        新增特定关注
+                        Add targeted follow
                       </button>
                     </div>
                   </div>
@@ -3677,7 +3677,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                       creator_push_enabled: moduleConfig.creator_push_enabled ?? false,
                       extension_port: moduleConfig.extension_port ?? 9334,
                       dedicated_window_mode: moduleConfig.dedicated_window_mode ?? true,
-                    }, "爬取策略已保存");
+                    }, "Crawl strategy saved");
                   }}
                   style={{
                     padding: "8px 16px",
@@ -3691,21 +3691,21 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     alignSelf: "flex-start",
                   }}
                 >
-                  保存爬取策略
+                  Save crawl strategy
                 </button>
               </div>
             </Card>
           )}
 
-          {/* 知乎 Cookie 配置 */}
+          {/* Zhihu cookie config */}
           {module.id === "zhihu-tracker" && (
-            <Card title="知乎登录" icon={<span style={{ fontSize: "18px" }}>❓</span>}>
+            <Card title="Zhihu Login" icon={<span style={{ fontSize: "18px" }}>❓</span>}>
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <input
                   type="password"
                   value={moduleConfig.cookie || ""}
                   onChange={(e) => setModuleConfig({ ...moduleConfig, cookie: e.target.value })}
-                  placeholder="粘贴知乎 Cookie..."
+                  placeholder="Paste Zhihu cookie..."
                   style={{
                     padding: "10px 14px",
                     borderRadius: "var(--radius-md)",
@@ -3721,9 +3721,9 @@ export default function ModuleDetail({ module, onBack }: Props) {
                   onClick={async () => {
                     try {
                       await api.post("/api/preferences", { modules: { [module.id]: { cookie: moduleConfig.cookie } } });
-                      toast.success("已保存");
+                      toast.success("Saved");
                     } catch {
-                      toast.error("保存失败");
+                      toast.error("Save failed");
                     }
                   }}
                   style={{
@@ -3738,15 +3738,15 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     alignSelf: "flex-start",
                   }}
                 >
-                  保存 Cookie
+                  Save cookie
                 </button>
               </div>
             </Card>
           )}
 
-          {/* Semantic Scholar 关键词配置 */}
+          {/* Semantic Scholar keyword config */}
           {module.id === "semantic-scholar-tracker" && (
-            <Card title="关键词" icon={<span style={{ fontSize: "14px" }}>🔤</span>}>
+            <Card title="Keywords" icon={<span style={{ fontSize: "14px" }}>🔤</span>}>
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <input
                   type="text"
@@ -3764,15 +3764,15 @@ export default function ModuleDetail({ module, onBack }: Props) {
                   }}
                 />
                 <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: 0 }}>
-                  输入英文关键词，用逗号分隔
+                  Enter English keywords separated by commas
                 </p>
                 <button
                   onClick={async () => {
                     try {
                       await api.post("/api/preferences", { modules: { [module.id]: { keywords: moduleConfig.keywords } } });
-                      toast.success("已保存");
+                      toast.success("Saved");
                     } catch {
-                      toast.error("保存失败");
+                      toast.error("Save failed");
                     }
                   }}
                   style={{
@@ -3787,14 +3787,14 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     alignSelf: "flex-start",
                   }}
                 >
-                  保存关键词
+                  Save keywords
                 </button>
               </div>
             </Card>
           )}
 
           {module.id === "folder-monitor" && (
-            <Card title="文件夹路径" icon={<Calendar style={{ width: "18px", height: "18px", color: "var(--color-secondary)" }} />}>
+            <Card title="Folder Path" icon={<Calendar style={{ width: "18px", height: "18px", color: "var(--color-secondary)" }} />}>
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <input
                   type="text"
@@ -3815,9 +3815,9 @@ export default function ModuleDetail({ module, onBack }: Props) {
                   onClick={async () => {
                     try {
                       await api.post("/api/preferences", { modules: { [module.id]: { folder_path: moduleConfig.folder_path } } });
-                      toast.success("已保存");
+                      toast.success("Saved");
                     } catch {
-                      toast.error("保存失败");
+                      toast.error("Save failed");
                     }
                   }}
                   style={{
@@ -3832,7 +3832,7 @@ export default function ModuleDetail({ module, onBack }: Props) {
                     alignSelf: "flex-start",
                   }}
                 >
-                  保存路径
+                  Save path
                 </button>
               </div>
             </Card>

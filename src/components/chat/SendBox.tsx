@@ -160,7 +160,7 @@ export function SendBox({ onSend, onStop, loading, disabled, placeholder }: Send
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
-            placeholder={placeholder || '输入消息...'}
+            placeholder={placeholder || 'Type a message...'}
             disabled={disabled || loading}
             className="flex-1 bg-transparent px-2 py-2 text-[#3D2A4F] outline-none text-sm"
           />
@@ -171,7 +171,7 @@ export function SendBox({ onSend, onStop, loading, disabled, placeholder }: Send
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
-            placeholder={placeholder || '输入消息... (Shift+Enter 换行)'}
+            placeholder={placeholder || 'Type a message... (Shift+Enter for new line)'}
             disabled={disabled || loading}
             rows={1}
             className="flex-1 bg-transparent px-2 py-2 text-[#3D2A4F] outline-none text-sm resize-none min-h-[40px] max-h-[300px] overflow-y-auto"
@@ -201,8 +201,8 @@ export function SendBox({ onSend, onStop, loading, disabled, placeholder }: Send
 
       {/* Bottom hints */}
       <div className="flex justify-between mt-1 text-xs text-[#9B8AA7] px-1">
-        <span>按 Enter 发送，Shift+Enter 换行</span>
-        <span>{input.length} 字符</span>
+        <span>Enter to send, Shift+Enter for new line</span>
+        <span>{input.length} characters</span>
       </div>
     </div>
   );

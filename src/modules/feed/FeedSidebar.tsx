@@ -9,7 +9,7 @@ export default function FeedSidebar() {
       {feedModules.length === 0 ? (
         <div className="px-3 py-8 text-center">
           <p className="text-xs text-slate-400 dark:text-slate-500">
-            暂无模块
+            No modules
           </p>
         </div>
       ) : (

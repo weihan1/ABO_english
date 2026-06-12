@@ -210,7 +210,7 @@ export default function ArxivTracker() {
   } = useStore();
   const s2Papers = storedSemanticScholarPapers as SemanticScholarPaper[];
 
-  // 通用状态
+  // Shared state
   const [savedPapers, setSavedPapers] = useState<Set<string>>(new Set());
   const [_savedS2Papers, _setSavedS2Papers] = useState<Set<string>>(new Set());
   const [savingPaperIds, setSavingPaperIds] = useState<Set<string>>(new Set());
@@ -232,7 +232,7 @@ export default function ArxivTracker() {
   const savingPaperIdsRef = useRef<Set<string>>(new Set());
   const savingS2PaperIdsRef = useRef<Set<string>>(new Set());
 
-  // WebSocket 连接 - 使用 ref 来避免依赖问题，确保事件处理始终可用
+  // WebSocket connection - uses a ref to avoid dependency issues so event handling is always available
   const autoSaveRef = useRef(autoSave);
 
   useEffect(() => {
@@ -251,7 +251,7 @@ export default function ArxivTracker() {
       } catch (err) {
         console.error("Failed to load tracker arXiv categories:", err);
         if (isActive) {
-          toast.error("加载 arXiv 分类失败");
+          toast.error("Failed to load arXiv categories");
         }
       }
     };
@@ -320,11 +320,11 @@ export default function ArxivTracker() {
             current: currentProgress?.current ?? 0,
             total: currentProgress?.total ?? 0,
             phase: currentProgress?.phase ?? "fetching",
-            message: String(data.message || "正在取消爬取任务..."),
+            message: String(data.message || "Cancelling crawl task..."),
             currentPaperTitle: currentProgress?.currentPaperTitle,
           });
         } else if (data.type === "crawl_cancelled" && !isSemanticScholarEvent) {
-          toast.info("已取消", String(data.message || "爬取任务已取消"));
+          toast.info("Cancelled", String(data.message || "Crawl task cancelled"));
           setArxivAndCrawling(false);
           setArxivAndProgress(null);
           crawlingIdRef.current = null;
@@ -359,13 +359,13 @@ export default function ArxivTracker() {
             }
           }
         } else if (data.type === "crawl_complete" && !isSemanticScholarEvent) {
-          toast.success("爬取完成", `共找到 ${Number(data.count || 0)} 篇论文`);
+          toast.success("Crawl finished", `Found ${Number(data.count || 0)} papers`);
           setArxivAndCrawling(false);
           setArxivAndProgress(null);
           crawlingIdRef.current = null;
           setCrawlingMode(null);
         } else if (data.type === "crawl_error" && !isSemanticScholarEvent) {
-          toast.error("爬取失败", String(data.error || "未知错误"));
+          toast.error("Crawl failed", String(data.error || "Unknown error"));
           setArxivAndCrawling(false);
           setArxivAndProgress(null);
           crawlingIdRef.current = null;
@@ -390,11 +390,11 @@ export default function ArxivTracker() {
         } else if (data.type === "s2_complete") {
           setSemanticScholarCrawling(false);
           setSemanticScholarProgress(null);
-          toast.success("Semantic Scholar 爬取完成", `共获取 ${Number(data.count || 0)} 篇相关论文`);
+          toast.success("Semantic Scholar crawl finished", `Fetched ${Number(data.count || 0)} related papers`);
         } else if (data.type === "s2_error") {
           setSemanticScholarCrawling(false);
           setSemanticScholarProgress(null);
-          toast.error("Semantic Scholar 爬取失败", String(data.error || "未知错误"));
+          toast.error("Semantic Scholar crawl failed", String(data.error || "Unknown error"));
         }
 
         if (isSemanticScholarEvent) {
@@ -445,24 +445,24 @@ export default function ArxivTracker() {
             setSemanticScholarCrawling(false);
             setSemanticScholarProgress(null);
             s2SessionIdRef.current = null;
-            toast.success("后续论文爬取完成", `共获取 ${Number(data.count || 0)} 篇论文`);
+            toast.success("Follow-up paper crawl finished", `Fetched ${Number(data.count || 0)} papers`);
           } else if (data.type === "crawl_error") {
             setSemanticScholarCrawling(false);
             setSemanticScholarProgress(null);
             s2SessionIdRef.current = null;
-            toast.error("后续论文爬取失败", String(data.error || "未知错误"));
+            toast.error("Follow-up paper crawl failed", String(data.error || "Unknown error"));
           } else if (data.type === "crawl_cancelled") {
             setSemanticScholarCrawling(false);
             setSemanticScholarProgress(null);
             s2SessionIdRef.current = null;
-            toast.info("已取消爬取");
+            toast.info("Crawl cancelled");
           } else if (data.type === "crawl_cancelling") {
             const currentProgress = store.semanticScholarProgress;
             setSemanticScholarProgress({
               current: currentProgress?.current || 0,
               total: currentProgress?.total || 0,
               phase: currentProgress?.phase || "fetching",
-              message: String(data.message || "正在取消爬取任务..."),
+              message: String(data.message || "Cancelling crawl task..."),
             });
           } else if (data.type === "crawl_progress") {
             setSemanticScholarProgress({
@@ -615,11 +615,11 @@ export default function ArxivTracker() {
       : keywords.split(",").map((k) => k.trim()).filter(Boolean);
 
     if (!useAdvanced && (keywordList.length === 0 || (mode === "AND_OR" && !keywords.trim()))) {
-      toast.error("请输入关键词", "至少输入一个关键词进行搜索");
+      toast.error("Please enter keywords", "Enter at least one keyword to search");
       return;
     }
     if (useAdvanced && !advancedReady) {
-      toast.error("高级模式至少需要一个条件 / 分类 / 日期范围");
+      toast.error("Advanced mode needs at least one condition / category / date range");
       return;
     }
 
@@ -636,8 +636,8 @@ export default function ArxivTracker() {
       total: resolvedSearchMaxResults ?? 0,
       phase: "fetching",
       message: resolvedSearchMaxResults
-        ? `正在获取论文列表（最多 ${resolvedSearchMaxResults} 篇）...`
-        : "正在获取论文列表（不限篇数）...",
+        ? `Fetching paper list (up to ${resolvedSearchMaxResults})...`
+        : "Fetching paper list (unlimited)...",
     });
 
     try {
@@ -663,7 +663,7 @@ export default function ArxivTracker() {
       console.log("[arXiv] Crawl API call completed");
     } catch (err) {
       console.error("[arXiv] Crawl API error:", err);
-      toast.error("爬取失败", err instanceof Error ? err.message : "请稍后重试");
+      toast.error("Crawl failed", err instanceof Error ? err.message : "Please try again later");
       crawlingIdRef.current = null;
       setCrawlingMode(null);
       setCrawlSessionId(null);
@@ -675,7 +675,7 @@ export default function ArxivTracker() {
   async function stopCrawl() {
     const sessionId = crawlSessionIdRef.current;
     if (!sessionId) {
-      toast.error("没有正在进行的爬取任务");
+      toast.error("No crawl task in progress");
       return;
     }
 
@@ -685,13 +685,13 @@ export default function ArxivTracker() {
         session_id: sessionId,
       });
       if (result.status !== "ok") {
-        toast.error("停止失败", result.message || "未找到正在进行的爬取任务");
+        toast.error("Stop failed", result.message || "No crawl task in progress");
         return;
       }
-      toast.info("正在取消", result.message || "已发送取消信号");
+      toast.info("Cancelling", result.message || "Cancel signal sent");
     } catch (err) {
       console.error("[arXiv] Cancel error:", err);
-      toast.error("取消失败", err instanceof Error ? err.message : "请稍后重试");
+      toast.error("Cancel failed", err instanceof Error ? err.message : "Please try again later");
     }
   }
 
@@ -738,16 +738,16 @@ export default function ArxivTracker() {
       }
 
       toast.success(
-        "保存成功",
+        "Saved",
         withLocationSuffix(
-          `论文已保存${result.figures ? ` (${result.figures.length} 张图片)` : ""}`,
+          `Paper saved${result.figures ? ` (${result.figures.length} figures)` : ""}`,
           result.path,
           "literature",
           config,
         ),
       );
     } catch (err) {
-      toast.error("保存失败", err instanceof Error ? err.message : "请检查文献库路径");
+      toast.error("Save failed", err instanceof Error ? err.message : "Please check the Literature Library path");
     } finally {
       const nextSavingPaperIdsAfterSave = new Set(savingPaperIdsRef.current);
       nextSavingPaperIdsAfterSave.delete(paper.id);
@@ -859,7 +859,7 @@ export default function ArxivTracker() {
   // Fetch follow-up papers from Semantic Scholar
   async function fetchS2FollowUps() {
     if (!semanticScholarQuery.trim()) {
-      toast.error("请输入论文标题", "例如：VGGT");
+      toast.error("Please enter a paper title", "e.g. VGGT");
       return;
     }
 
@@ -879,19 +879,19 @@ export default function ArxivTracker() {
       total: resolvedMaxResults ?? 0,
       phase: "fetching",
       message: resolvedMaxResults
-        ? `正在查询 Semantic Scholar（最多 ${resolvedMaxResults} 篇）...`
-        : "正在查询 Semantic Scholar（全量）...",
+        ? `Querying Semantic Scholar (up to ${resolvedMaxResults})...`
+        : "Querying Semantic Scholar (all)...",
     });
 
     // Generate session ID for cancellation
     const sessionId = Math.random().toString(36).substring(2, 10);
     s2SessionIdRef.current = sessionId;
 
-    // 后端是长阻塞请求，进度/完成/错误都走 WebSocket。
-    // 如果 webview 在长时间爬取后断开了这个 fetch 连接（TypeError 等传输层错误），
-    // 后端其实仍在运行，WS 会照常推送 crawl_paper/crawl_complete。
-    // 所以传输层失败不要清掉爬取状态——让 WS 作为唯一真相源。
-    // 只有服务端真的返回了错误响应（API 4xx/5xx）才视为致命错误。
+    // The backend call is a long blocking request; progress/completion/errors all flow through WebSocket.
+    // If the webview drops this fetch connection after a long crawl (TypeError or other transport errors),
+    // the backend is actually still running, and WS keeps pushing crawl_paper/crawl_complete.
+    // So do not clear the crawl state on transport failure — let WS be the single source of truth.
+    // Only treat it as fatal when the server actually returns an error response (API 4xx/5xx).
     try {
       await api.post("/api/modules/semantic-scholar-tracker/crawl", {
         query: semanticScholarQuery.trim(),
@@ -905,12 +905,12 @@ export default function ArxivTracker() {
       const message = err instanceof Error ? err.message : "";
       const isServerError = /^API \d+/.test(message);
       if (isServerError) {
-        toast.error("获取失败", message || "请稍后重试");
+        toast.error("Fetch failed", message || "Please try again later");
         setSemanticScholarCrawling(false);
         setSemanticScholarProgress(null);
         s2SessionIdRef.current = null;
       } else {
-        console.warn("[s2] crawl POST 传输层中断，由 WS 继续接管完成事件:", err);
+        console.warn("[s2] crawl POST transport interrupted; WS takes over completion events:", err);
       }
     }
   }
@@ -923,13 +923,13 @@ export default function ArxivTracker() {
           session_id: s2SessionIdRef.current,
         });
         if (result.status !== "ok") {
-          toast.error("停止失败", result.message || "未找到正在进行的爬取任务");
+          toast.error("Stop failed", result.message || "No crawl task in progress");
           return;
         }
-        toast.info("正在取消", result.message || "已发送取消信号");
+        toast.info("Cancelling", result.message || "Cancel signal sent");
       } catch (e) {
         console.error("Cancel failed:", e);
-        toast.error("取消失败", e instanceof Error ? e.message : "请稍后重试");
+        toast.error("Cancel failed", e instanceof Error ? e.message : "Please try again later");
       }
     }
   }
@@ -980,19 +980,19 @@ export default function ArxivTracker() {
         setSemanticScholarPapers(store.semanticScholarPapers.map((entry) => (entry.id === paper.id ? updatedPaper : entry)));
       }
 
-      const figureMsg = result.figures?.length ? ` (${result.figures.length}张图)` : "";
+      const figureMsg = result.figures?.length ? ` (${result.figures.length} figures)` : "";
       const pdfMsg = result.pdf ? " +PDF" : "";
       toast.success(
-        "保存成功",
+        "Saved",
         withLocationSuffix(
-          `论文已保存${figureMsg}${pdfMsg}`,
+          `Paper saved${figureMsg}${pdfMsg}`,
           result.folder,
           "literature",
           config,
         ),
       );
     } catch (err) {
-      toast.error("保存失败", err instanceof Error ? err.message : "请检查文献库路径");
+      toast.error("Save failed", err instanceof Error ? err.message : "Please check the Literature Library path");
     } finally {
       const nextSavingS2PaperIdsAfterSave = new Set(savingS2PaperIdsRef.current);
       nextSavingS2PaperIdsAfterSave.delete(paper.id);
@@ -1004,8 +1004,8 @@ export default function ArxivTracker() {
   return (
     <PageContainer>
       <PageHeader
-        title="论文追踪"
-        subtitle="AND/OR 双模式 · CS领域 · 实时进度 · 自动去重"
+        title="Paper Tracking"
+        subtitle="AND/OR dual mode · CS areas · live progress · auto dedup"
         icon={BookOpen}
         actions={
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
@@ -1029,7 +1029,7 @@ export default function ArxivTracker() {
               }}
             >
               <RefreshCw style={{ width: "14px", height: "14px" }} />
-              清空本次结果
+              Clear current results
             </button>
           </div>
         }
@@ -1065,7 +1065,7 @@ export default function ArxivTracker() {
             }}
           >
             <GitBranch style={{ width: "18px", height: "18px" }} />
-            后续论文
+            Follow-up papers
             <span style={{ fontSize: "0.75rem", opacity: 0.8 }}>(Semantic Scholar)</span>
           </button>
           <button
@@ -1088,7 +1088,7 @@ export default function ArxivTracker() {
             }}
           >
             <Search style={{ width: "18px", height: "18px" }} />
-            AI领域论文
+            AI papers
             <span style={{ fontSize: "0.75rem", opacity: 0.8 }}>(AND / AND-OR)</span>
           </button>
           <button
@@ -1111,7 +1111,7 @@ export default function ArxivTracker() {
             }}
           >
             <GitBranch style={{ width: "18px", height: "18px" }} />
-            关注监控
+            Tracking monitors
           </button>
         </div>
 
@@ -1128,10 +1128,10 @@ export default function ArxivTracker() {
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                   <GitBranch style={{ width: "20px", height: "20px", color: "var(--color-primary)" }} />
                   <span style={{ fontSize: "0.9375rem", fontWeight: 600, color: "var(--text-main)" }}>
-                    Semantic Scholar 后续论文
+                    Semantic Scholar Follow-up papers
                   </span>
                   <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)", marginLeft: "8px" }}>
-                    查找引用该论文的后续研究
+                    Find follow-up research citing this paper
                   </span>
                 </div>
 
@@ -1146,7 +1146,7 @@ export default function ArxivTracker() {
                         fetchS2FollowUps();
                       }
                     }}
-                    placeholder="输入论文标题，如：VGGT"
+                    placeholder="Enter a paper title, e.g. VGGT"
                     disabled={semanticScholarCrawling}
                     style={{
                       flex: 1,
@@ -1181,7 +1181,7 @@ export default function ArxivTracker() {
                       }}
                     >
                       <Square style={{ width: "16px", height: "16px" }} />
-                      停止爬取
+                      Stop crawl
                     </button>
                   ) : (
                     <button
@@ -1205,7 +1205,7 @@ export default function ArxivTracker() {
                       }}
                     >
                       <GitBranch style={{ width: "16px", height: "16px" }} />
-                      查找后续论文
+                      Find follow-up papers
                     </button>
                   )}
                 </div>
@@ -1213,7 +1213,7 @@ export default function ArxivTracker() {
                 <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
                   <label style={{ display: "flex", flexDirection: "column", gap: "6px", width: "140px" }}>
                     <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-secondary)" }}>
-                      最大结果数
+                      Max results
                     </span>
                     <input
                       type="number"
@@ -1221,7 +1221,7 @@ export default function ArxivTracker() {
                       max={5000}
                       value={semanticScholarMaxResultsInput}
                       onChange={(e) => setSemanticScholarMaxResultsInput(e.target.value)}
-                      placeholder="默认 50，留空=全量"
+                      placeholder="Default 50, empty = all"
                       disabled={semanticScholarCrawling}
                       style={{
                         height: "38px",
@@ -1238,7 +1238,7 @@ export default function ArxivTracker() {
 
                   <label style={{ display: "flex", flexDirection: "column", gap: "6px", width: "140px" }}>
                     <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-secondary)" }}>
-                      最近 N 天
+                      Last N days
                     </span>
                     <input
                       type="number"
@@ -1246,7 +1246,7 @@ export default function ArxivTracker() {
                       max={3650}
                       value={semanticScholarDaysBackInput}
                       onChange={(e) => setSemanticScholarDaysBackInput(e.target.value)}
-                      placeholder="留空=不限"
+                      placeholder="Empty = unlimited"
                       disabled={semanticScholarCrawling}
                       style={{
                         height: "38px",
@@ -1263,7 +1263,7 @@ export default function ArxivTracker() {
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                     <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-secondary)" }}>
-                      排序
+                      Sort
                     </span>
                     <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                       <button
@@ -1282,7 +1282,7 @@ export default function ArxivTracker() {
                           cursor: semanticScholarCrawling ? "not-allowed" : "pointer",
                         }}
                       >
-                        最近优先
+                        Newest first
                       </button>
                       <button
                         type="button"
@@ -1300,7 +1300,7 @@ export default function ArxivTracker() {
                           cursor: semanticScholarCrawling ? "not-allowed" : "pointer",
                         }}
                       >
-                        被引优先
+                        Most cited first
                       </button>
                     </div>
                   </div>
@@ -1324,15 +1324,15 @@ export default function ArxivTracker() {
                       style={{ width: "16px", height: "16px", accentColor: "var(--color-primary)" }}
                     />
                     <span style={{ fontSize: "0.875rem", color: "var(--text-secondary)", fontWeight: 600 }}>
-                      爬取图片
+                      Fetch figures
                     </span>
                   </label>
                 </div>
 
                 <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                  提示：默认会把引用该论文的后续研究全量翻页抓完；如果填写最近 N 天，会在抓取结果里按时间过滤并按你选的排序展示。
-                  Semantic Scholar 只提供 abstract（外加 TLDR 一句话），Introduction 仍需从 arXiv 拉取；卡片初次出现使用 S2 元数据 + TLDR，
-                  随后并发补上 Introduction + AI 分析。「爬取图片」仅决定是否额外抓取并展示论文配图。
+                  Note: by default, all follow-up research citing this paper is fetched across pages; if you set Last N days, results are time-filtered and shown in your chosen sort order.
+                  Semantic Scholar only provides the abstract (plus a one-line TLDR); the Introduction still comes from arXiv. Cards first appear with S2 metadata + TLDR,
+                  then the Introduction + AI analysis are filled in concurrently. "Fetch figures" only controls whether paper figures are additionally fetched and displayed.
                 </div>
               </>
             ) : (
@@ -1341,7 +1341,7 @@ export default function ArxivTracker() {
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                   <Search style={{ width: "20px", height: "20px", color: "var(--color-primary)" }} />
                   <span style={{ fontSize: "0.9375rem", fontWeight: 600, color: "var(--text-main)" }}>
-                    AI领域论文
+                    AI papers
                   </span>
                   <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "12px" }}>
                     <div style={{ display: "flex", gap: 4 }}>
@@ -1362,7 +1362,7 @@ export default function ArxivTracker() {
                             cursor: isCrawling ? "not-allowed" : "pointer",
                           }}
                         >
-                          {m === "simple" ? "简单" : "高级"}
+                          {m === "simple" ? "Simple" : "Advanced"}
                         </button>
                       ))}
                     </div>
@@ -1385,7 +1385,7 @@ export default function ArxivTracker() {
                 <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
                   <label style={{ display: "flex", flexDirection: "column", gap: "6px", width: "120px" }}>
                     <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-secondary)" }}>
-                      最大结果数
+                      Max results
                     </span>
                     <input
                       type="number"
@@ -1410,7 +1410,7 @@ export default function ArxivTracker() {
 
                   <label style={{ display: "flex", flexDirection: "column", gap: "6px", width: "140px" }}>
                     <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-secondary)" }}>
-                      截止时间范围(天)
+                      Cutoff range (days)
                     </span>
                     <input
                       type="number"
@@ -1450,10 +1450,10 @@ export default function ArxivTracker() {
                     onToggleMainCategory={toggleSearchMainCategory}
                     onToggleMainCategoryExpanded={toggleSearchMainCategoryExpanded}
                     disabled={isCrawling}
-                    label="领域筛选"
+                    label="Area filter"
                     helperText={searchCategories.length > 0
-                      ? "当前会只搜索你勾选的子类。点击大类按钮可一键全选或取消该大类。"
-                      : "未勾选任何子类时，将和 arXiv API 一样按全领域搜索；点击大类标题展开后再勾选具体子类。"}
+                      ? "Only the subcategories you checked will be searched. Click a category button to select or deselect the whole category."
+                      : "With no subcategories checked, all areas are searched (same as the arXiv API); expand a category heading to pick specific subcategories."}
                     maxHeight="240px"
                   />
                 </div>
@@ -1506,7 +1506,7 @@ export default function ArxivTracker() {
                       }}
                     >
                       <Square style={{ width: "16px", height: "16px" }} />
-                      停止爬取
+                      Stop crawl
                     </button>
                   ) : (
                     <button
@@ -1532,10 +1532,10 @@ export default function ArxivTracker() {
                     >
                       <RefreshCw style={{ width: "16px", height: "16px", animation: isCrawling ? "spin 1s linear infinite" : "none" }} />
                       {isCrawling
-                        ? "爬取中..."
+                        ? "Crawling..."
                         : resolvedSearchMaxResults
-                          ? `立即爬取 (${resolvedSearchMaxResults}篇)`
-                          : "立即爬取（不限篇数）"}
+                          ? `Crawl now (${resolvedSearchMaxResults} papers)`
+                          : "Crawl now (unlimited)"}
                     </button>
                   )}
                 </div>
@@ -1552,17 +1552,17 @@ export default function ArxivTracker() {
                     color: "var(--text-secondary)",
                     lineHeight: 1.6,
                   }}>
-                    <strong style={{ color: "var(--text-main)" }}>搜索规则：</strong>
+                    <strong style={{ color: "var(--text-main)" }}>Search rules:</strong>
                     <br />
-                    逗号分隔的关键词按 AND 搜索；用 <code style={{ background: "var(--bg-card)", padding: "2px 6px", borderRadius: "4px" }}>|</code> 分隔多组 AND 条件
+                    Comma-separated keywords are AND-searched; use <code style={{ background: "var(--bg-card)", padding: "2px 6px", borderRadius: "4px" }}>|</code> to separate multiple AND groups
                     <br />
-                    例如：
+                    For example:
                     <code style={{ background: "var(--bg-card)", padding: "2px 6px", borderRadius: "4px" }}>
                       vision,language | robot,manipulation
                     </code>
                     <br />
                     <span style={{ fontSize: "0.8125rem", opacity: 0.8 }}>
-                      表示：(vision AND language) OR (robot AND manipulation)
+                      means: (vision AND language) OR (robot AND manipulation)
                     </span>
                   </div>
                 )}
@@ -1590,14 +1590,14 @@ export default function ArxivTracker() {
                     <div style={{ fontSize: "0.9375rem", fontWeight: 600, color: "var(--text-main)" }}>
                       {currentProgress.phase === "fetching"
                         ? arxivTrackerActiveTab === "search"
-                          ? "正在获取论文列表..."
-                          : "正在查询 Semantic Scholar..."
+                          ? "Fetching paper list..."
+                          : "Querying Semantic Scholar..."
                         : arxivTrackerActiveTab === "search"
-                          ? `正在推送第 ${currentProgress.current}/${currentProgress.total} 篇`
-                          : `正在处理第 ${currentProgress.current}/${currentProgress.total} 篇`}
+                          ? `Pushing paper ${currentProgress.current}/${currentProgress.total}`
+                          : `Processing paper ${currentProgress.current}/${currentProgress.total}`}
                     </div>
                     <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", marginTop: "2px" }}>
-                      {currentProgress.message || "正在爬取..."}
+                      {currentProgress.message || "Crawling..."}
                     </div>
                   </div>
                   <span style={{
@@ -1606,7 +1606,7 @@ export default function ArxivTracker() {
                     color: "var(--color-primary)",
                   }}>
                     {currentProgress.phase === "fetching"
-                      ? "准备中"
+                      ? "Preparing"
                       : `${Math.round((currentProgress.current / currentProgress.total) * 100)}%`}
                   </span>
                 </div>
@@ -1645,7 +1645,7 @@ export default function ArxivTracker() {
                     borderLeft: "3px solid var(--color-primary)"
                   }}>
                     <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "4px" }}>
-                      当前处理
+                      Currently processing
                     </div>
                     <div style={{
                       fontSize: "0.875rem",
@@ -1664,7 +1664,7 @@ export default function ArxivTracker() {
                 {/* Recently Added Papers */}
                 {currentPapers.length > 0 && (
                   <div style={{ marginTop: "12px", display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>最新获取:</span>
+                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Latest fetched:</span>
                     {currentPapers.slice(-3).reverse().map((p) => (
                       <span key={p.id} style={{
                         fontSize: "0.75rem",
@@ -1678,7 +1678,7 @@ export default function ArxivTracker() {
                       </span>
                     ))}
                     <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginLeft: "auto" }}>
-                      已获取 {currentPapers.length} 篇
+                      Fetched {currentPapers.length} papers
                     </span>
                   </div>
                 )}
@@ -1696,7 +1696,7 @@ export default function ArxivTracker() {
                       style={{ width: "18px", height: "18px", cursor: "pointer" }}
                     />
                     <span style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}>
-                      自动保存到文献库/{arxivTrackerActiveTab === "followups" ? "FollowUps/源论文/日期 论文名" : "arxiv/追踪标签/日期 论文名"}
+                      Auto-save to Literature Library/{arxivTrackerActiveTab === "followups" ? "FollowUps/<source paper>/<date title>" : "arxiv/<tracking label>/<date title>"}
                     </span>
                   </label>
                 </div>
@@ -1707,11 +1707,11 @@ export default function ArxivTracker() {
             {currentPapers.length === 0 ? (
               <EmptyState
                 icon={FileText}
-                title="暂无论文"
+                title="No papers yet"
                 description={
                   arxivTrackerActiveTab === "followups"
-                    ? "输入论文标题点击「查找后续论文」开始搜索"
-                    : "输入关键词点击「立即爬取」开始搜索"
+                    ? "Enter a paper title and click \"Find follow-up papers\" to start"
+                    : "Enter keywords and click \"Crawl now\" to start"
                 }
               />
             ) : (
@@ -1815,7 +1815,7 @@ function PaperFreshnessBoundary({ hasNewPapers }: { hasNewPapers: boolean }) {
           whiteSpace: "nowrap",
         }}
       >
-        {hasNewPapers ? "新论文分界线：以下开始出现已入库论文" : "本次结果从这里开始就是已入库论文"}
+        {hasNewPapers ? "New paper divider: papers below are already saved" : "From here on, results are already-saved papers"}
       </div>
       <div style={{ flex: 1, height: "1px", background: "rgba(16, 185, 129, 0.2)" }} />
     </div>

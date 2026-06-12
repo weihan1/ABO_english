@@ -420,7 +420,7 @@ async function readJsonResponse<T>(res: Response, fallback: string): Promise<T> 
   } catch (error) {
     const preview = text.slice(0, 240);
     throw new Error(
-      `${fallback}: ${error instanceof Error ? error.message : "返回内容无法解析"}${preview ? `；响应片段：${preview}` : ""}`
+      `${fallback}: ${error instanceof Error ? error.message : "response could not be parsed"}${preview ? `; response snippet: ${preview}` : ""}`
     );
   }
 }
@@ -587,12 +587,12 @@ export async function bilibiliGetCookieFromBrowser(): Promise<BrowserCookieRespo
     });
     if (!res.ok) {
       const detail = await res.text();
-      throw new Error(detail || "浏览器 Cookie 获取失败");
+      throw new Error(detail || "Failed to get browser cookie");
     }
     return res.json();
   } catch (err) {
     if (err instanceof TypeError) {
-      throw new Error("ABO 后端未启动，请重启 ABO 后再点击一键连接浏览器 Cookie");
+      throw new Error("ABO backend is not running. Restart ABO, then click one-click browser cookie connect again");
     }
     throw err;
   }

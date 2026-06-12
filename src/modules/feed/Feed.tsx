@@ -52,14 +52,14 @@ const DEFAULT_EXPANDED_TREE_SECTIONS: Record<string, boolean> = {
 };
 
 const FEED_SHORTCUT_HINTS = [
-  "Q 上一条",
-  "E 下一条",
-  "T 回到顶部",
-  "滚轮自动跟随焦点",
-  "D 不喜欢",
-  "S 仅保存到对应库",
-  "W 更重要：写入 Wiki + 同时入库",
-  "X 跳过并处理",
+  "Q Previous",
+  "E Next",
+  "T Back to top",
+  "Scroll follows focus",
+  "D Dislike",
+  "S Save to library only",
+  "W More important: write to Wiki + save to library",
+  "X Skip and mark handled",
 ];
 
 function isEditableEventTarget(target: EventTarget | null): boolean {
@@ -135,7 +135,7 @@ function getXhsKeywordLabels(card: FeedCard): string[] {
 function getBilibiliMonitorLabel(card: FeedCard): string {
   return cardMetadataString(card, "monitor_label")
     || cardMetadataString(card, "monitor_source_label")
-    || "未命名监控";
+    || "Unnamed monitor";
 }
 
 function isBilibiliKeywordMonitorCard(card: FeedCard): boolean {
@@ -157,7 +157,7 @@ function getFeedCardAuthorLabel(card: FeedCard): string {
   return cardMetadataString(card, "intelligence_author_label")
     || cardMetadataString(card, "author")
     || cardMetadataString(card, "up_name")
-    || "未命名作者";
+    || "Unnamed author";
 }
 
 function getTrackedCardSubfolder(card: FeedCard, rootFolder: "xhs" | "bilibili"): string {
@@ -338,7 +338,7 @@ export default function Feed() {
         border: "rgba(168, 230, 207, 0.4)",
         color: "#5BA88C",
         icon: <Wifi style={{ width: "16px", height: "16px", color: "#5BA88C" }} />,
-        label: "实时连接正常",
+        label: "Live connection OK",
       };
     }
     if (feedRealtimeStatus === "reconnecting" || feedRealtimeStatus === "connecting") {
@@ -347,7 +347,7 @@ export default function Feed() {
         border: "rgba(255, 214, 165, 0.45)",
         color: "#C9882B",
         icon: <Wifi style={{ width: "16px", height: "16px", color: "#C9882B" }} />,
-        label: "实时连接重连中",
+        label: "Live connection reconnecting",
       };
     }
     return {
@@ -355,7 +355,7 @@ export default function Feed() {
       border: "rgba(255, 183, 178, 0.4)",
       color: "#D48984",
       icon: <WifiOff style={{ width: "16px", height: "16px", color: "#D48984" }} />,
-      label: "连接已断开",
+      label: "Connection lost",
     };
   }, [feedRealtimeStatus]);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -539,7 +539,7 @@ export default function Feed() {
           xhsKeywordTotal += 1;
           const labels = getXhsKeywordLabels(card);
           if (labels.length === 0) {
-            addCount(xhsKeyword, "xhs-keyword:未命名关键词", "未命名关键词");
+            addCount(xhsKeyword, "xhs-keyword:unnamed-keyword", "Unnamed keyword");
           } else {
             labels.forEach((label) => addCount(xhsKeyword, `xhs-keyword:${label}`, label));
           }
@@ -549,7 +549,7 @@ export default function Feed() {
           xhsFollowingTotal += 1;
           const labels = getXhsKeywordLabels(card);
           if (labels.length === 0) {
-            addCount(xhsFollowing, "xhs-following:未命名关键词", "未命名关键词");
+            addCount(xhsFollowing, "xhs-following:unnamed-keyword", "Unnamed keyword");
           } else {
             labels.forEach((label) => addCount(xhsFollowing, `xhs-following:${label}`, label));
           }
@@ -723,7 +723,7 @@ export default function Feed() {
       const detail = getPaperDetailDescriptor(card);
       if (!detail) continue;
       const displayLabel = paperTypeFilter === "all"
-        ? `${detail.type === "keyword" ? "关键词" : "原论文"} · ${detail.label}`
+        ? `${detail.type === "keyword" ? "Keyword" : "Source paper"} · ${detail.label}`
         : detail.label;
       const existing = counts.get(detail.key);
       counts.set(detail.key, {
@@ -862,7 +862,7 @@ export default function Feed() {
       return true;
     } catch (error) {
       console.error("Failed to sync paper into wiki:", error);
-      toast.error("写入失败", error instanceof Error ? error.message : "请稍后重试");
+      toast.error("Write failed", error instanceof Error ? error.message : "Please try again later");
       return false;
     }
   }
@@ -893,7 +893,7 @@ export default function Feed() {
       });
       return true;
     } catch (error) {
-      toast.error("写入失败", error instanceof Error ? error.message : "请稍后重试");
+      toast.error("Write failed", error instanceof Error ? error.message : "Please try again later");
       return false;
     }
   }
@@ -1070,8 +1070,8 @@ export default function Feed() {
     if (alreadySaved) {
       if (!shouldSyncWiki) {
         toast.success(
-          "已保存到文献库",
-          withLocationSuffix("这篇论文已经在文献库里", existingObsidianPath || existingLiteraturePath, "literature", config),
+          "Saved to Literature Library",
+          withLocationSuffix("This paper is already in the Literature Library", existingObsidianPath || existingLiteraturePath, "literature", config),
         );
         return true;
       }
@@ -1086,8 +1086,8 @@ export default function Feed() {
       }
 
       toast.success(
-        "已写入 Literature Wiki",
-        withLocationSuffix("论文已同步进 Literature Wiki", existingObsidianPath || existingLiteraturePath, "literature", config),
+        "Written to Literature Wiki",
+        withLocationSuffix("Paper synced into the Literature Wiki", existingObsidianPath || existingLiteraturePath, "literature", config),
       );
       return true;
     }
@@ -1161,16 +1161,16 @@ export default function Feed() {
         }
 
         toast.success(
-          "已保存到文献库并写入 Literature Wiki",
-          withLocationSuffix("论文已经完成入库并同步补进 Literature Wiki", result.path, "literature", config),
+          "Saved to Literature Library and written to Literature Wiki",
+          withLocationSuffix("Paper saved to the library and synced into the Literature Wiki", result.path, "literature", config),
         );
       } else {
         toast.success(
-          "已保存到文献库",
+          "Saved to Literature Library",
           withLocationSuffix(
             saveMode === "keyword"
-              ? "关键词论文已入库"
-              : "Follow Up 论文已入库",
+              ? "Keyword-tracked paper saved"
+              : "Follow Up paper saved",
             result.path,
             "literature",
             config,
@@ -1179,7 +1179,7 @@ export default function Feed() {
       }
       return true;
     } catch (error) {
-      toast.error("保存失败", error instanceof Error ? error.message : "请检查文献库路径");
+      toast.error("Save failed", error instanceof Error ? error.message : "Please check the Literature Library path");
       return false;
     }
   }
@@ -1239,13 +1239,13 @@ export default function Feed() {
           });
           if (!wikiSynced) return false;
           toast.success(
-            "已保存到情报库并写入 Internet Wiki",
-            withLocationSuffix("小红书情报已按监控目录入库并同步到 Wiki", savedPath, "vault", config),
+            "Saved to Intel Library and written to Internet Wiki",
+            withLocationSuffix("Xiaohongshu intel saved under its monitor directory and synced to the Wiki", savedPath, "vault", config),
           );
         } else {
           toast.success(
-            "已保存到情报库",
-            withLocationSuffix("小红书情报已按监控目录入库", savedPath, "vault", config),
+            "Saved to Intel Library",
+            withLocationSuffix("Xiaohongshu intel saved under its monitor directory", savedPath, "vault", config),
           );
         }
         return true;
@@ -1293,19 +1293,19 @@ export default function Feed() {
           });
           if (!wikiSynced) return false;
           toast.success(
-            "已保存到情报库并写入 Internet Wiki",
-            withLocationSuffix("B站情报已按监控目录入库并同步到 Wiki", savedPath, "vault", config),
+            "Saved to Intel Library and written to Internet Wiki",
+            withLocationSuffix("Bilibili intel saved under its monitor directory and synced to the Wiki", savedPath, "vault", config),
           );
         } else {
           toast.success(
-            "已保存到情报库",
-            withLocationSuffix("B站情报已按监控目录入库", savedPath, "vault", config),
+            "Saved to Intel Library",
+            withLocationSuffix("Bilibili intel saved under its monitor directory", savedPath, "vault", config),
           );
         }
         return true;
       }
     } catch (error) {
-      toast.error("保存失败", error instanceof Error ? error.message : "请检查情报库路径");
+      toast.error("Save failed", error instanceof Error ? error.message : "Please check the Intel Library path");
       return false;
     }
 
@@ -1326,7 +1326,7 @@ export default function Feed() {
         }
 
         if (!isPaperTrackingCard(card) && !canSaveFeedCard(card)) {
-          toast.success("已写入 Internet Wiki", "这条情报已经补进你的 Internet Wiki 总览");
+          toast.success("Written to Internet Wiki", "This intel has been added to your Internet Wiki overview");
         }
         await markCardProcessed(cardId);
       }
@@ -1376,14 +1376,14 @@ export default function Feed() {
 
       if (skippedIds.size > 0) {
         toast.success(
-          "当前筛选结果已清除",
-          `已从当前 Feed 暂时移除 ${skippedIds.size} 条情报；这不会写入 skip 历史，下次重新爬取时仍会继续出现。`,
+          "Current filter results cleared",
+          `Temporarily removed ${skippedIds.size} items from the current Feed; this is not written to skip history, so they will reappear on the next crawl.`,
         );
       } else {
-        toast.success("无需清除", "当前筛选结果里没有可暂时移除的情报");
+        toast.success("Nothing to clear", "No items in the current filter can be temporarily removed");
       }
     } catch (error) {
-      toast.error("清除失败", error instanceof Error ? error.message : "请稍后重试");
+      toast.error("Clear failed", error instanceof Error ? error.message : "Please try again later");
     } finally {
       setIsBatchSkipping(false);
     }
@@ -1444,12 +1444,12 @@ export default function Feed() {
 
         <div style={{ textAlign: "center", maxWidth: "400px" }}>
           <h2 style={{ fontFamily: "'M PLUS Rounded 1c', sans-serif", fontSize: "clamp(1.25rem, 3vw, 1.5rem)", fontWeight: 700, color: "var(--text-main)", marginBottom: "12px" }}>
-            {feedCards.length === 0 ? "今日 Feed 已清空" : "当前来源已隐藏"}
+            {feedCards.length === 0 ? "Today's Feed is clear" : "Current sources are hidden"}
           </h2>
           <p style={{ fontSize: "clamp(0.9375rem, 2vw, 1rem)", color: "var(--text-muted)", lineHeight: 1.6 }}>
             {feedCards.length === 0
-              ? "所有情报已处理完毕，休息一下吧 ✨"
-              : "剩余未读情报来自你在设置里隐藏的来源。可以在设置页重新打开。"}
+              ? "All intel has been handled — take a break ✨"
+              : "Remaining unread intel comes from sources you hid in Settings. You can re-enable them there."}
           </p>
         </div>
 
@@ -1489,7 +1489,7 @@ export default function Feed() {
                   }
                 }}
                 aria-expanded={showShortcutOverlay}
-                aria-label="查看 Feed 快捷键说明"
+                aria-label="View Feed keyboard shortcuts"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -1507,7 +1507,7 @@ export default function Feed() {
                 }}
               >
                 <Keyboard style={{ width: "14px", height: "14px" }} />
-                快捷键
+                Shortcuts
                 {showShortcutOverlay ? <X style={{ width: "14px", height: "14px" }} /> : null}
               </button>
 
@@ -1571,10 +1571,10 @@ export default function Feed() {
               </div>
               <div>
                 <h1 style={{ fontFamily: "'M PLUS Rounded 1c', sans-serif", fontSize: "clamp(1.25rem, 2.5vw, 1.5rem)", fontWeight: 700, color: "var(--text-main)", marginBottom: "4px" }}>
-                  情报 Feed
+                  Intel Feed
                 </h1>
                 <p style={{ fontSize: "0.9375rem", color: "var(--text-muted)" }}>
-                  {orderedCards.length} 条待处理 · 社媒 {scopeCounts.social} · 论文 {scopeCounts.papers} · 共享智能组 {sharedSmartGroupCount}
+                  {orderedCards.length} pending · Social {scopeCounts.social} · Papers {scopeCounts.papers} · Shared smart groups {sharedSmartGroupCount}
                 </p>
               </div>
             </div>
@@ -1596,10 +1596,10 @@ export default function Feed() {
                   whiteSpace: "nowrap",
                 }}
               >
-                {isBatchSkipping ? "批量跳过中..." : `一键跳过当前筛选 (${orderedCards.length})`}
+                {isBatchSkipping ? "Batch skipping..." : `Skip all in current filter (${orderedCards.length})`}
               </button>
-              <FilterChip active={groupMode === "smart"} label="智能分组" onClick={() => setGroupMode("smart")} />
-              <FilterChip active={groupMode === "timeline"} label="时间线" onClick={() => setGroupMode("timeline")} />
+              <FilterChip active={groupMode === "smart"} label="Smart groups" onClick={() => setGroupMode("smart")} />
+              <FilterChip active={groupMode === "timeline"} label="Timeline" onClick={() => setGroupMode("timeline")} />
             </div>
           </div>
 
@@ -1616,7 +1616,7 @@ export default function Feed() {
           >
             <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "var(--text-main)" }}>
               <Filter style={{ width: "16px", height: "16px" }} />
-              <span style={{ fontSize: "0.875rem", fontWeight: 700 }}>分类与过滤</span>
+              <span style={{ fontSize: "0.875rem", fontWeight: 700 }}>Categories & filters</span>
             </div>
 
             <div
@@ -1639,7 +1639,7 @@ export default function Feed() {
                   && paperTypeFilter === "all"
                   && paperDetailFilter === "all"
                 }
-                label="全部情报"
+                label="All intel"
                 count={scopedCards.length}
                 onClick={resetHierarchyFilters}
                 leading={<Layers style={{ width: "14px", height: "14px" }} />}
@@ -1647,7 +1647,7 @@ export default function Feed() {
 
               <TreeFilterButton
                 active={scopeFilter === "papers"}
-                label="论文追踪"
+                label="Paper tracking"
                 count={scopeCounts.papers}
                 onClick={() => {
                   const nextExpanded = scopeFilter === "papers" ? !expandedTreeSections.papers : true;
@@ -1676,7 +1676,7 @@ export default function Feed() {
                 <>
                   <TreeFilterButton
                     active={scopeFilter === "papers" && paperTypeFilter === "keyword"}
-                    label="arXiv 关键词监控"
+                    label="arXiv keyword monitors"
                     count={paperTypeCounts.keyword}
                     depth={1}
                     onClick={() => {
@@ -1729,7 +1729,7 @@ export default function Feed() {
 
                   <TreeFilterButton
                     active={scopeFilter === "papers" && paperTypeFilter === "followup"}
-                    label="Follow Up 链路"
+                    label="Follow Up chain"
                     count={paperTypeCounts.followup}
                     depth={1}
                     onClick={() => {
@@ -1784,7 +1784,7 @@ export default function Feed() {
 
               <TreeFilterButton
                 active={scopeFilter === "social"}
-                label="社媒关注"
+                label="Social follows"
                 count={scopeCounts.social}
                 onClick={() => {
                   const nextExpanded = scopeFilter === "social" ? !expandedTreeSections.social : true;
@@ -1813,7 +1813,7 @@ export default function Feed() {
                 <>
                   <TreeFilterButton
                     active={scopeFilter === "social" && socialBranchFilter === "social-platform:xhs" && socialDetailFilter === "all"}
-                    label="小红书"
+                    label="Xiaohongshu"
                     count={socialHierarchy.xhs.total}
                     depth={1}
                     onClick={() => {
@@ -1844,7 +1844,7 @@ export default function Feed() {
                     <>
                       <TreeFilterButton
                         active={scopeFilter === "social" && socialBranchFilter === "xhs-keyword" && socialDetailFilter === "all"}
-                        label="关键词监控"
+                        label="Keyword monitors"
                         count={socialHierarchy.xhs.keywordTotal}
                         depth={2}
                         onClick={() => {
@@ -1892,7 +1892,7 @@ export default function Feed() {
 
                       <TreeFilterButton
                         active={scopeFilter === "social" && socialBranchFilter === "xhs-following" && socialDetailFilter === "all"}
-                        label="已关注关键词监控"
+                        label="Followed keyword monitors"
                         count={socialHierarchy.xhs.followingTotal}
                         depth={2}
                         onClick={() => {
@@ -1940,7 +1940,7 @@ export default function Feed() {
 
                       <TreeFilterButton
                         active={scopeFilter === "social" && socialBranchFilter === "xhs-creator" && socialDetailFilter === "all"}
-                        label="固定博主"
+                        label="Pinned bloggers"
                         count={socialHierarchy.xhs.creatorTotal}
                         depth={2}
                         onClick={() => {
@@ -1968,7 +1968,7 @@ export default function Feed() {
                         <TreeFilterButton
                           key={option.key}
                           active={scopeFilter === "social" && socialBranchFilter === "xhs-creator" && socialDetailFilter === option.key}
-                          label={`分组 · ${option.label}`}
+                          label={`Group · ${option.label}`}
                           count={option.count}
                           depth={3}
                           onClick={() => {
@@ -2011,7 +2011,7 @@ export default function Feed() {
 
                   <TreeFilterButton
                     active={scopeFilter === "social" && socialBranchFilter === "social-platform:bilibili" && socialDetailFilter === "all"}
-                    label="哔哩哔哩"
+                    label="Bilibili"
                     count={socialHierarchy.bilibili.total}
                     depth={1}
                     onClick={() => {
@@ -2042,7 +2042,7 @@ export default function Feed() {
                     <>
                       <TreeFilterButton
                         active={scopeFilter === "social" && socialBranchFilter === "bili-keyword" && socialDetailFilter === "all"}
-                        label="关注关键词监控"
+                        label="Follow keyword monitors"
                         count={socialHierarchy.bilibili.keywordTotal}
                         depth={2}
                         onClick={() => {
@@ -2090,7 +2090,7 @@ export default function Feed() {
 
                       <TreeFilterButton
                         active={scopeFilter === "social" && socialBranchFilter === "bili-fixed-up" && socialDetailFilter === "all"}
-                        label="固定 UP 监督"
+                        label="Pinned creators"
                         count={socialHierarchy.bilibili.fixedUpTotal}
                         depth={2}
                         onClick={() => {
@@ -2141,7 +2141,7 @@ export default function Feed() {
 
                   <TreeFilterButton
                     active={scopeFilter === "social" && socialBranchFilter === "social-shared-smart-groups" && socialDetailFilter === "all"}
-                    label="跨平台智能分组"
+                    label="Cross-platform smart groups"
                     count={socialHierarchy.shared.total}
                     depth={1}
                     onClick={() => {
@@ -2192,7 +2192,7 @@ export default function Feed() {
                 <>
                   <TreeFilterButton
                     active={scopeFilter === "other"}
-                    label="其他来源"
+                    label="Other sources"
                     count={scopeCounts.other}
                     onClick={() => {
                       const nextExpanded = scopeFilter === "other" ? !expandedTreeSections.other : true;
@@ -2251,14 +2251,14 @@ export default function Feed() {
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
               <GitBranch style={{ width: "16px", height: "16px", color: "var(--color-primary)" }} />
               <span style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-main)" }}>
-                今日重点
+                Today's highlights
               </span>
             </div>
             <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--text-secondary)", lineHeight: 1.7 }}>
-              当前会把小红书和 B 站统一到同一套智能标签里，同组作者和 UP 主放在一起看；论文可以先按关键词监控 / Follow Up，再按具体关键词或原始论文继续细分。
-              已隐藏来源：{feedPreferences.hidden_module_ids.length > 0
+              Xiaohongshu and Bilibili are unified under one set of smart tags, so authors and creators in the same group are viewed together; papers can be filtered by keyword monitors / Follow Up first, then refined by specific keyword or source paper.
+              Hidden sources: {feedPreferences.hidden_module_ids.length > 0
                 ? feedPreferences.hidden_module_ids.map(getModuleLabel).join("、")
-                : "无"}。
+                : "none"}.
             </p>
           </div>
 
@@ -2267,10 +2267,10 @@ export default function Feed() {
             {orderedCards.length === 0 ? (
               <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text-muted)" }}>
                 <p style={{ fontSize: "1rem", marginBottom: "8px" }}>
-                  当前过滤条件下暂无情报
+                  No intel under the current filter
                 </p>
                 <p style={{ fontSize: "0.875rem", opacity: 0.7, marginBottom: "16px" }}>
-                  可以切换共享智能组、论文关键词 / 原论文，或者把隐藏来源重新放出来。
+                  Try switching shared smart groups, paper keywords / source papers, or re-enabling hidden sources.
                 </p>
                 <button
                   type="button"
@@ -2294,7 +2294,7 @@ export default function Feed() {
                     cursor: "pointer",
                   }}
                 >
-                  清空过滤
+                  Clear filters
                 </button>
               </div>
             ) : groupMode === "smart" ? (
@@ -2322,7 +2322,7 @@ export default function Feed() {
                           color: "var(--color-primary)",
                         }}
                       >
-                        {section.cards.length} 条
+                        {section.cards.length} items
                       </span>
                       {section.platforms.map((platform) => (
                         <span
@@ -2370,7 +2370,7 @@ export default function Feed() {
                     {section.suggestions.length > 0 && (
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                         <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)" }}>
-                          可补充关注
+                          Worth following
                         </span>
                         {section.suggestions.map((name) => (
                           <span

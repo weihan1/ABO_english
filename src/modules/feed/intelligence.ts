@@ -66,38 +66,38 @@ const DEFAULT_HIDDEN_MODULE_IDS = [
 ];
 
 const SOCIAL_SMART_GROUP_OPTIONS: SmartGroupOption[] = [
-  { value: "research", label: "科研学习" },
-  { value: "writing", label: "论文写作" },
-  { value: "ai-tech", label: "AI / 科技" },
-  { value: "productivity", label: "效率知识库" },
-  { value: "study-abroad", label: "留学读博" },
-  { value: "digital", label: "数码影音" },
-  { value: "creative", label: "设计创作" },
-  { value: "finance", label: "财经商业" },
-  { value: "game", label: "游戏" },
-  { value: "lifestyle", label: "生活娱乐" },
-  { value: "other", label: "其他" },
+  { value: "research", label: "Research & Study" },
+  { value: "writing", label: "Paper Writing" },
+  { value: "ai-tech", label: "AI / Tech" },
+  { value: "productivity", label: "Productivity & PKM" },
+  { value: "study-abroad", label: "Study Abroad & PhD" },
+  { value: "digital", label: "Digital & AV" },
+  { value: "creative", label: "Design & Creation" },
+  { value: "finance", label: "Finance & Business" },
+  { value: "game", label: "Gaming" },
+  { value: "lifestyle", label: "Lifestyle & Entertainment" },
+  { value: "other", label: "Other" },
 ];
 
 const DEFAULT_XHS_GROUP_OPTIONS: SmartGroupOption[] = [
-  { value: "research", label: "科研学习" },
-  { value: "writing", label: "论文写作" },
-  { value: "ai", label: "AI工具" },
-  { value: "productivity", label: "效率知识库" },
-  { value: "study_abroad", label: "留学读博" },
-  { value: "lifestyle", label: "日常生活" },
-  { value: "other", label: "其他" },
+  { value: "research", label: "Research & Study" },
+  { value: "writing", label: "Paper Writing" },
+  { value: "ai", label: "AI Tools" },
+  { value: "productivity", label: "Productivity & PKM" },
+  { value: "study_abroad", label: "Study Abroad & PhD" },
+  { value: "lifestyle", label: "Daily Life" },
+  { value: "other", label: "Other" },
 ];
 
 const DEFAULT_BILIBILI_GROUP_OPTIONS: SmartGroupOption[] = [
-  { value: "ai-tech", label: "AI科技" },
-  { value: "study", label: "学习知识" },
-  { value: "digital", label: "数码影音" },
-  { value: "game", label: "游戏" },
-  { value: "finance", label: "财经商业" },
-  { value: "creative", label: "设计创作" },
-  { value: "entertainment", label: "生活娱乐" },
-  { value: "other", label: "其他" },
+  { value: "ai-tech", label: "AI & Tech" },
+  { value: "study", label: "Learning" },
+  { value: "digital", label: "Digital & AV" },
+  { value: "game", label: "Gaming" },
+  { value: "finance", label: "Finance & Business" },
+  { value: "creative", label: "Design & Creation" },
+  { value: "entertainment", label: "Lifestyle & Entertainment" },
+  { value: "other", label: "Other" },
 ];
 
 const SOCIAL_SMART_GROUP_LABEL_MAP = new Map(
@@ -137,13 +137,13 @@ const SOCIAL_SMART_GROUP_ALIASES: Record<string, string> = {
 };
 
 const MODULE_LABELS: Record<string, string> = {
-  "arxiv-tracker": "论文关键词",
+  "arxiv-tracker": "Paper keywords",
   "semantic-scholar-tracker": "Follow Up",
-  "xiaohongshu-tracker": "小红书",
-  "bilibili-tracker": "哔哩哔哩",
-  "xiaoyuzhou-tracker": "小宇宙",
-  "zhihu-tracker": "知乎",
-  "folder-monitor": "文件夹监控",
+  "xiaohongshu-tracker": "Xiaohongshu",
+  "bilibili-tracker": "Bilibili",
+  "xiaoyuzhou-tracker": "Xiaoyuzhou",
+  "zhihu-tracker": "Zhihu",
+  "folder-monitor": "Folder monitor",
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -535,7 +535,7 @@ export function getPaperDetailDescriptor(card: FeedCard): PaperDetailDescriptor 
 
   if (trackingType === "keyword") {
     const labels = getPaperTrackingLabels(card);
-    const label = labels[0] || metadataString(card, "paper_tracking_label") || "未命名关键词";
+    const label = labels[0] || metadataString(card, "paper_tracking_label") || "Unnamed keyword";
     return {
       key: `keyword:${label}`,
       label,
@@ -548,7 +548,7 @@ export function getPaperDetailDescriptor(card: FeedCard): PaperDetailDescriptor 
   const sourcePaperLabel = typeof sourcePaper.title === "string" ? sourcePaper.title.trim() : "";
   const labels = getPaperTrackingLabels(card);
   const explicitLabel = metadataString(card, "paper_tracking_label");
-  const label = sourceTitle || sourcePaperLabel || explicitLabel || labels[0] || "未命名源论文";
+  const label = sourceTitle || sourcePaperLabel || explicitLabel || labels[0] || "Unnamed source paper";
   return {
     key: `followup:${label}`,
     label,
@@ -563,16 +563,16 @@ export function getCardPlatform(card: FeedCard): {
 } {
   const platform = metadataString(card, "platform");
   if (platform === "xiaohongshu" || card.module_id === "xiaohongshu-tracker") {
-    return { id: "xiaohongshu", label: "小红书", scope: "social" };
+    return { id: "xiaohongshu", label: "Xiaohongshu", scope: "social" };
   }
   if (platform === "bilibili" || card.module_id === "bilibili-tracker") {
-    return { id: "bilibili", label: "哔哩哔哩", scope: "social" };
+    return { id: "bilibili", label: "Bilibili", scope: "social" };
   }
   if (
     isPaperTrackingCard(card)
     || Boolean(getPaperTrackingType(card))
   ) {
-    return { id: "papers", label: "论文", scope: "papers" };
+    return { id: "papers", label: "Papers", scope: "papers" };
   }
   return { id: "other", label: getModuleLabel(card.module_id), scope: "other" };
 }
@@ -638,7 +638,7 @@ export function getCardSourceDescriptor(
     return { key: "paper-followup", label: "Follow Up" };
   }
   if (paperTrackingType === "keyword") {
-    return { key: "paper-keyword", label: "关键词监控" };
+    return { key: "paper-keyword", label: "Keyword monitor" };
   }
 
   const platform = getCardPlatform(card);
@@ -646,15 +646,15 @@ export function getCardSourceDescriptor(
   if (platform.id === "xiaohongshu") {
     const crawlSource = metadataString(card, "crawl_source");
     if (crawlSource === "following") {
-      return { key: "xhs-following", label: "关注流" };
+      return { key: "xhs-following", label: "Follow feed" };
     }
     if (crawlSource.startsWith("keyword:")) {
-      return { key: "xhs-keyword", label: "关键词搜索" };
+      return { key: "xhs-keyword", label: "Keyword search" };
     }
     if (smartGroupLabels.length > 0) {
-      return { key: "xhs-smart-group", label: "智能分组博主" };
+      return { key: "xhs-smart-group", label: "Smart-grouped bloggers" };
     }
-    return { key: "xhs-creator", label: "已关注博主" };
+    return { key: "xhs-creator", label: "Followed bloggers" };
   }
 
   if (platform.id === "bilibili") {
@@ -664,15 +664,15 @@ export function getCardSourceDescriptor(
       return { key: `bili-${monitorSource || "source"}`, label: monitorSourceLabel };
     }
     if (smartGroupLabels.length > 0) {
-      return { key: "bili-smart-group", label: "智能分组 UP" };
+      return { key: "bili-smart-group", label: "Smart-grouped creators" };
     }
     if (metadataString(card, "dynamic_id")) {
-      return { key: "bili-follow", label: "关注流" };
+      return { key: "bili-follow", label: "Follow feed" };
     }
     if (metadataString(card, "bvid")) {
-      return { key: "bili-targeted", label: "UP 定向" };
+      return { key: "bili-targeted", label: "Targeted creators" };
     }
-    return { key: "bili-source", label: "B站来源" };
+    return { key: "bili-source", label: "Bilibili source" };
   }
 
   return {
@@ -685,11 +685,11 @@ export function getCardMetricBadges(card: FeedCard): MetricBadge[] {
   const badges: MetricBadge[] = [];
 
   if (card.score >= 0.82) {
-    badges.push({ key: "high-score", label: "高分" });
+    badges.push({ key: "high-score", label: "High score" });
   }
 
   if (Date.now() - getReferenceTime(card) <= 48 * 60 * 60 * 1000) {
-    badges.push({ key: "fresh", label: "近48h" });
+    badges.push({ key: "fresh", label: "Last 48h" });
   }
 
   const likes = metadataNumber(card, "likes");
@@ -697,12 +697,12 @@ export function getCardMetricBadges(card: FeedCard): MetricBadge[] {
   const comments = metadataNumber(card, "comments_count");
   const engagementScore = likes + collects * 2 + comments * 8;
   if (engagementScore >= 1800 || likes >= 1200 || collects >= 300) {
-    badges.push({ key: "engaged", label: "高热度" });
+    badges.push({ key: "engaged", label: "Trending" });
   }
 
   const citationCount = metadataNumber(card, "citation_count");
   if (citationCount >= 20) {
-    badges.push({ key: "cited", label: `高引用 ${citationCount}` });
+    badges.push({ key: "cited", label: `Highly cited ${citationCount}` });
   }
 
   return badges;
@@ -835,7 +835,7 @@ export function groupFeedCards(
       groupValues = smartGroups.values;
     } else if (paperDetail) {
       key = `paper:${paperDetail.key}`;
-      label = `${paperType === "followup" ? "Follow Up" : "关键词"} · ${paperDetail.label}`;
+      label = `${paperType === "followup" ? "Follow Up" : "Keyword"} · ${paperDetail.label}`;
       type = "paper";
     } else if (platform.scope === "social" && authorLabel) {
       key = `source:${platform.id}:${authorLabel}`;

@@ -115,7 +115,7 @@ export default function WikiPageView({ wikiType, slug, onNavigateToPage }: Props
         if (!cancelled) setPage(data);
       } catch (err) {
         if (!cancelled) {
-          setError("加载页面失败");
+          setError("Failed to load page");
           setPage(null);
         }
       } finally {
@@ -176,7 +176,7 @@ export default function WikiPageView({ wikiType, slug, onNavigateToPage }: Props
             animation: "spin 1s linear infinite",
           }}
         />
-        <span style={{ fontSize: "0.9375rem" }}>加载页面...</span>
+        <span style={{ fontSize: "0.9375rem" }}>Loading page...</span>
       </div>
     );
   }
@@ -196,10 +196,10 @@ export default function WikiPageView({ wikiType, slug, onNavigateToPage }: Props
         }}
       >
         <p style={{ fontSize: "1rem", fontWeight: 600 }}>
-          {error || "页面未找到"}
+          {error || "Page not found"}
         </p>
         <p style={{ fontSize: "0.875rem", opacity: 0.7 }}>
-          请检查页面链接是否正确
+          Please check that the page link is correct
         </p>
       </div>
     );
@@ -291,14 +291,14 @@ export default function WikiPageView({ wikiType, slug, onNavigateToPage }: Props
               }}
             >
               <Clock style={{ width: "12px", height: "12px" }} />
-              更新于 {page.updated}
+              Updated {page.updated}
             </span>
             <button
               onClick={async () => {
                 try {
                   await api.post(`/api/wiki/${wikiType}/open`, { slug });
                 } catch (err) {
-                  toast.error("打开失败", err instanceof Error ? err.message : "请检查 Obsidian 路径");
+                  toast.error("Failed to open", err instanceof Error ? err.message : "Please check the Obsidian path");
                 }
               }}
               style={{
@@ -365,7 +365,7 @@ export default function WikiPageView({ wikiType, slug, onNavigateToPage }: Props
                   color: "var(--text-secondary)",
                 }}
               >
-                来源
+                Sources
               </h3>
             </div>
 
@@ -410,7 +410,7 @@ export default function WikiPageView({ wikiType, slug, onNavigateToPage }: Props
                   color: "var(--text-secondary)",
                 }}
               >
-                反向链接
+                Backlinks
               </h3>
             </div>
 
@@ -485,7 +485,7 @@ function SourceItem({ source }: { source: string }) {
             fontWeight: 600,
           }}
         >
-          卡片
+          Cards
         </span>
         <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {cardId}
@@ -530,7 +530,7 @@ function SourceItem({ source }: { source: string }) {
             fontWeight: 600,
           }}
         >
-          链接
+          Links
         </span>
         <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {url}
@@ -565,7 +565,7 @@ function SourceItem({ source }: { source: string }) {
             fontWeight: 600,
           }}
         >
-          论文
+          Papers
         </span>
         <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {paperId}
@@ -599,7 +599,7 @@ function SourceItem({ source }: { source: string }) {
             fontWeight: 600,
           }}
         >
-          文件夹
+          Folders
         </span>
         <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {folderPath}
@@ -652,12 +652,12 @@ function getCategoryTextColor(category: string): string {
 
 function getCategoryLabel(category: string): string {
   const labels: Record<string, string> = {
-    collection: "文件夹",
-    entity: "实体",
-    concept: "概念",
-    paper: "论文",
-    topic: "主题",
-    overview: "概览",
+    collection: "Folder",
+    entity: "Entity",
+    concept: "Concept",
+    paper: "Paper",
+    topic: "Topic",
+    overview: "Overview",
   };
   return labels[category] ?? category;
 }

@@ -8,13 +8,13 @@ import ModuleDetail from "./ModuleDetail";
 import SubscriptionSummary from "./SubscriptionSummary";
 
 const MODULE_DESCRIPTIONS: Record<string, string> = {
-  "arxiv-tracker": "自动追踪 arXiv 上最新的学术论文",
-  "semantic-scholar-tracker": "追踪 Semantic Scholar 上的最新论文",
-  "xiaohongshu-tracker": "追踪小红书上的科研、读博相关笔记",
-  "bilibili-tracker": "追踪 B 站上的知识区、科技区视频",
-  "xiaoyuzhou-tracker": "追踪小宇宙科研、学术类播客",
-  "zhihu-tracker": "追踪知乎上的科研、学术话题",
-  "folder-monitor": "监控指定文件夹，自动导入新文件",
+  "arxiv-tracker": "Automatically track the latest academic papers on arXiv",
+  "semantic-scholar-tracker": "Track the latest papers on Semantic Scholar",
+  "xiaohongshu-tracker": "Track research and PhD-related notes on Xiaohongshu",
+  "bilibili-tracker": "Track knowledge and tech videos on Bilibili",
+  "xiaoyuzhou-tracker": "Track research and academic podcasts on Xiaoyuzhou",
+  "zhihu-tracker": "Track research and academic topics on Zhihu",
+  "folder-monitor": "Monitor a folder and auto-import new files",
 };
 
 export default function ModulePanel() {
@@ -66,8 +66,8 @@ export default function ModulePanel() {
   return (
     <PageContainer>
       <PageHeader
-        title="模块管理"
-        subtitle="配置自动化模块的参数与运行方式"
+        title="Module Management"
+        subtitle="Configure automation module parameters and scheduling"
         icon={LayoutGrid}
         actions={
           <>
@@ -88,13 +88,13 @@ export default function ModulePanel() {
               }}
             >
               <Rss style={{ width: "16px", height: "16px" }} />
-              订阅总表
+              Subscription Overview
             </button>
             <button
               onClick={() => alert(
-                "在终端运行你的 Agent CLI，告诉它：\n\n" +
-                "「帮我写一个 ABO 模块，放在当前 ABO 数据目录的 modules/ 目录下」\n\n" +
-                "ABO 会自动检测并加载新模块。"
+                "Run your agent CLI in a terminal and tell it:\n\n" +
+                "\"Write an ABO module for me and put it in the modules/ directory of the current ABO data directory\"\n\n" +
+                "ABO will automatically detect and load the new module."
               )}
               style={{
                 display: "flex",
@@ -112,7 +112,7 @@ export default function ModulePanel() {
               }}
             >
               <Terminal style={{ width: "16px", height: "16px" }} />
-              新建模块
+              New Module
             </button>
           </>
         }
@@ -180,7 +180,7 @@ export default function ModulePanel() {
                           background: "rgba(188, 164, 227, 0.15)",
                         }}
                       >
-                        {unread} 未读
+                        {unread} unread
                       </span>
                     )}
                     <ArrowRight style={{ width: "18px", height: "18px", color: "var(--text-muted)" }} />
@@ -195,7 +195,7 @@ export default function ModulePanel() {
                     lineHeight: 1.5,
                   }}
                 >
-                  {MODULE_DESCRIPTIONS[mod.id] || "点击配置模块参数"}
+                  {MODULE_DESCRIPTIONS[mod.id] || "Click to configure module parameters"}
                 </p>
 
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -247,7 +247,7 @@ export default function ModulePanel() {
 
         {feedModules.length === 0 && (
           <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text-muted)" }}>
-            <p style={{ fontSize: "1rem" }}>加载模块中...</p>
+            <p style={{ fontSize: "1rem" }}>Loading modules...</p>
           </div>
         )}
       </PageContent>

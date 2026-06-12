@@ -13,11 +13,11 @@ export function PaginationControls({
   totalCount,
   page,
   pageSize,
-  itemLabel = "项",
+  itemLabel = "items",
   pageSizeOptions = [20, 50],
   onPageChange,
   onPageSizeChange,
-  emptyText = "当前没有匹配项",
+  emptyText = "No matching items",
 }: PaginationControlsProps) {
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const safePage = Math.min(page, totalPages);
@@ -36,14 +36,14 @@ export function PaginationControls({
     >
       <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
         {totalCount > 0
-          ? `第 ${safePage} / ${totalPages} 页，当前显示 ${pageStart}-${pageEnd} ${itemLabel}`
+          ? `Page ${safePage} / ${totalPages}, showing ${pageStart}-${pageEnd} ${itemLabel}`
           : emptyText}
       </div>
 
       <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
         {onPageSizeChange && (
           <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-            每页显示
+            Per page
             <select
               value={pageSize}
               onChange={(event) => onPageSizeChange(Number(event.target.value))}
@@ -58,7 +58,7 @@ export function PaginationControls({
             >
               {pageSizeOptions.map((option) => (
                 <option key={option} value={option}>
-                  {option} 个
+                  {option}
                 </option>
               ))}
             </select>
@@ -80,7 +80,7 @@ export function PaginationControls({
             cursor: safePage <= 1 ? "not-allowed" : "pointer",
           }}
         >
-          上一页
+          Previous
         </button>
 
         <button
@@ -98,7 +98,7 @@ export function PaginationControls({
             cursor: safePage >= totalPages ? "not-allowed" : "pointer",
           }}
         >
-          下一页
+          Next
         </button>
       </div>
     </div>

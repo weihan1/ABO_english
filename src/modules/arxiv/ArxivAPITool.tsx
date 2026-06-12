@@ -123,7 +123,7 @@ export function ArxivAPITool() {
       setAvailableCategories(result.categories);
     } catch (e) {
       console.error("Failed to load categories:", e);
-      toast.error("加载分类失败");
+      toast.error("Failed to load categories");
     }
   };
 
@@ -136,11 +136,11 @@ export function ArxivAPITool() {
         Boolean(advancedQuery.date_range));
 
     if (!isAdvanced && !keywords.trim()) {
-      toast.error("请输入关键词");
+      toast.error("Please enter keywords");
       return;
     }
     if (isAdvanced && !hasAdvancedSignal) {
-      toast.error("请至少填一个条件 / 分类 / 日期范围");
+      toast.error("Please add at least one condition / category / date range");
       return;
     }
 
@@ -177,8 +177,8 @@ export function ArxivAPITool() {
       setSearchTimeMs(result.search_time_ms);
       setActiveTrackingLabel(trackingLabel);
       setExpandedIntroductions(new Set());
-      toast.success(`找到 ${total} 篇论文`);
-      // 自动加载图片
+      toast.success(`Found ${total} papers`);
+      // Auto-load figures
       result.papers.forEach(paper => {
         if (!paperFigures[paper.id]) {
           loadPaperFigures(paper);
@@ -186,14 +186,14 @@ export function ArxivAPITool() {
       });
       if (autoSaveAll && result.papers.length > 0) {
         if (!hasLiteraturePath) {
-          toast.info("搜索已完成", "未配置文献库路径，暂未自动保存。");
+          toast.info("Search finished", "No Literature Library path configured, so nothing was auto-saved.");
         } else {
           void saveAllPapers(result.papers, trackingLabel);
         }
       }
     } catch (e) {
       console.error("Search failed:", e);
-      toast.error("搜索失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Search failed", e instanceof Error ? e.message : "Unknown error");
     } finally {
       setLoading(false);
     }
@@ -242,7 +242,7 @@ export function ArxivAPITool() {
       else next.add(paperId);
       return next;
     });
-    // 自动获取图片
+    // Auto-fetch figures
     if (isExpanding) {
       const paper = papers.find(p => p.id === paperId);
       if (paper && !paperFigures[paperId] && !loadingFigures.has(paperId)) {
@@ -291,7 +291,7 @@ export function ArxivAPITool() {
     } catch (e) {
       console.error("Failed to load introduction:", e);
       if (!silent) {
-        toast.error("获取 Introduction 失败", e instanceof Error ? e.message : "未知错误");
+        toast.error("Failed to fetch Introduction", e instanceof Error ? e.message : "Unknown error");
       }
       return null;
     } finally {
@@ -354,7 +354,7 @@ export function ArxivAPITool() {
   ) => {
     setSavingPaper(paper.id);
     try {
-      // 确保图片已加载
+      // Make sure figures are loaded
       let figures = paperFigures[paper.id] || [];
       if (figures.length === 0 && !loadingFigures.has(paper.id)) {
         const result = await api.post<{ figures: ArxivPaper["figures"] }>("/api/tools/arxiv/figures", {
@@ -366,7 +366,7 @@ export function ArxivAPITool() {
 
       const introductionData = paperIntroductionData[paper.id];
 
-      // 调用保存接口，同时保存 Markdown 和 PDF
+      // Call the save endpoint, saving both Markdown and PDF
       const saveResult = await api.post<{
         success: boolean;
         saved_to: string;
@@ -404,9 +404,9 @@ export function ArxivAPITool() {
         }
         if (!options?.silent) {
           toast.success(
-            "保存成功",
+            "Saved",
             withLocationSuffix(
-              "Markdown、PDF 和论文附带内容已保存到知识库",
+              "Markdown, PDF, and paper attachments saved to the knowledge base",
               saveResult.saved_to,
               "literature",
               config,
@@ -418,7 +418,7 @@ export function ArxivAPITool() {
     } catch (e) {
       console.error("Failed to save paper:", e);
       if (!options?.silent) {
-        toast.error("保存失败", String(e));
+        toast.error("Save failed", String(e));
       }
       return null;
     } finally {
@@ -428,13 +428,13 @@ export function ArxivAPITool() {
 
   const saveAllPapers = async (papersToSave = papers, trackingLabelOverride = activeTrackingLabel || keywords.trim()) => {
     if (!hasLiteraturePath) {
-      toast.error("未配置文献库路径", "请先在设置里配置 literature_path 或 vault_path");
+      toast.error("No Literature Library path configured", "Set literature_path or vault_path in Settings first");
       return;
     }
 
     const pendingPapers = papersToSave.filter((paper) => !savedPaperIds.has(paper.id));
     if (pendingPapers.length === 0) {
-      toast.info("当前结果都已保存");
+      toast.info("All current results are already saved");
       return;
     }
 
@@ -461,9 +461,9 @@ export function ArxivAPITool() {
     }
 
     toast.success(
-      "批量保存完成",
+      "Bulk save finished",
       withLocationSuffix(
-        `已保存 ${successCount}/${pendingPapers.length} 篇论文`,
+        `Saved ${successCount}/${pendingPapers.length} papers`,
         dirnamePath(lastSavedPath),
         "literature",
         config,
@@ -480,7 +480,7 @@ export function ArxivAPITool() {
   };
 
   const renderSearchPanel = () => (
-    <Card title="搜索条件" icon={<Filter style={{ width: "18px", height: "18px" }} />}>
+    <Card title="Search Conditions" icon={<Filter style={{ width: "18px", height: "18px" }} />}>
       <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
         {/* Mode switch: simple keywords ↔ advanced field-level builder */}
         <div style={{ display: "flex", gap: 6 }}>
@@ -500,7 +500,7 @@ export function ArxivAPITool() {
                 cursor: "pointer",
               }}
             >
-              {m === "simple" ? "简单关键词" : "高级 (字段限定)"}
+              {m === "simple" ? "Simple keywords" : "Advanced (field-scoped)"}
             </button>
           ))}
           {searchMode === "advanced" && (
@@ -520,7 +520,7 @@ export function ArxivAPITool() {
                 cursor: loading ? "not-allowed" : "pointer",
               }}
             >
-              {loading ? "搜索中..." : "搜索"}
+              {loading ? "Searching..." : "Search"}
             </button>
           )}
         </div>
@@ -555,7 +555,7 @@ export function ArxivAPITool() {
               marginBottom: "8px",
             }}
           >
-            关键词
+            Keywords
           </label>
           <div style={{ display: "flex", gap: "12px" }}>
             <input
@@ -568,7 +568,7 @@ export function ArxivAPITool() {
                   handleSearch();
                 }
               }}
-              placeholder={mode === "AND" ? "vision transformer (同时包含所有词)" : "vision,language | robot (分组AND，组间OR)"}
+              placeholder={mode === "AND" ? "vision transformer (must contain all words)" : "vision,language | robot (AND within group, OR between groups)"}
               style={{
                 flex: 1,
                 padding: "12px 16px",
@@ -602,12 +602,12 @@ export function ArxivAPITool() {
               {loading ? (
                 <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <span className="animate-spin">⟳</span>
-                  搜索中...
+                  Searching...
                 </span>
               ) : (
                 <>
                   <Search style={{ width: "16px", height: "16px" }} />
-                  搜索
+                  Search
                 </>
               )}
             </button>
@@ -625,7 +625,7 @@ export function ArxivAPITool() {
               marginBottom: "8px",
             }}
           >
-            匹配模式
+            Match mode
           </label>
           <div style={{ display: "flex", gap: "8px" }}>
             <button
@@ -642,7 +642,7 @@ export function ArxivAPITool() {
                 transition: "all 0.2s ease",
               }}
             >
-              OR (任意匹配)
+              OR (match any)
             </button>
             <button
               onClick={() => setMode("AND")}
@@ -658,12 +658,12 @@ export function ArxivAPITool() {
                 transition: "all 0.2s ease",
               }}
             >
-              AND (全部匹配)
+              AND (match all)
             </button>
           </div>
         </div>
 
-        {/* Filters row - 三个对齐 */}
+        {/* Filters row - three aligned */}
         <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
           {/* Max results */}
           <div style={{ display: "flex", flexDirection: "column", width: "100px" }}>
@@ -677,7 +677,7 @@ export function ArxivAPITool() {
                 lineHeight: "20px",
               }}
             >
-              最大结果数
+              Max results
             </label>
             <input
               type="number"
@@ -712,7 +712,7 @@ export function ArxivAPITool() {
                 lineHeight: "20px",
               }}
             >
-              时间范围(天)
+              Time range (days)
             </label>
             <input
               type="number"
@@ -749,7 +749,7 @@ export function ArxivAPITool() {
                 lineHeight: "20px",
               }}
             >
-              排序方式
+              Sort by
             </label>
             <div style={{ ...fieldShellStyle, width: "140px" }}>
               <select
@@ -774,9 +774,9 @@ export function ArxivAPITool() {
                   paddingRight: "4px",
                 }}
               >
-                <option value="submittedDate">提交日期</option>
-                <option value="relevance">相关度</option>
-                <option value="lastUpdatedDate">最后更新</option>
+                <option value="submittedDate">Submitted date</option>
+                <option value="relevance">Relevance</option>
+                <option value="lastUpdatedDate">Last updated</option>
               </select>
               <ChevronDown
                 aria-hidden="true"
@@ -814,12 +814,12 @@ export function ArxivAPITool() {
               style={{ width: "16px", height: "16px", cursor: hasLiteraturePath ? "pointer" : "not-allowed" }}
             />
             <span style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}>
-              搜索完成后自动保存全部到文献库/arxiv/追踪标签/论文名
+              After searching, auto-save everything to Literature Library/arxiv/<tracking label>/<paper name>
             </span>
           </label>
           {!hasLiteraturePath && (
             <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-              未配置文献库路径时仅搜索，不执行批量保存。
+              Without a Literature Library path, only search runs — no bulk save.
             </span>
           )}
         </div>
@@ -832,19 +832,19 @@ export function ArxivAPITool() {
       return (
         <EmptyState
           icon={BookOpen}
-          title="开始搜索"
-          description="输入关键词搜索 arXiv 论文"
+          title="Start Searching"
+          description="Enter keywords to search arXiv papers"
         />
       );
     }
 
     return (
       <Card
-        title={`搜索结果 (${totalResults})`}
+        title={`Search Results (${totalResults})`}
         icon={<BookOpen style={{ width: "18px", height: "18px" }} />}
         actions={
           <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-            搜索耗时: {(searchTimeMs / 1000).toFixed(2)}s
+            Search took {(searchTimeMs / 1000).toFixed(2)}s
           </span>
         }
       >
@@ -864,12 +864,12 @@ export function ArxivAPITool() {
           >
             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
               <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-main)" }}>
-                当前结果可直接批量入库
+                Current results can be bulk-saved
               </span>
               <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
                 {bulkSaveProgress
-                  ? `正在保存 ${bulkSaveProgress.current}/${bulkSaveProgress.total} 篇，保存时会一并补齐 PDF、图片和 Introduction。`
-                  : "支持单篇保存，也支持一键保存当前搜索结果全部论文。"}
+                  ? `Saving ${bulkSaveProgress.current}/${bulkSaveProgress.total} papers; PDFs, figures, and Introductions are fetched during save.`
+                  : "Save papers one by one, or save all current search results in one click."}
               </span>
             </div>
 
@@ -883,7 +883,7 @@ export function ArxivAPITool() {
                   style={{ width: "16px", height: "16px", cursor: hasLiteraturePath ? "pointer" : "not-allowed" }}
                 />
                 <span style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-                  自动保存全部
+                  Auto-save all
                 </span>
               </label>
 
@@ -908,8 +908,8 @@ export function ArxivAPITool() {
               >
                 <Save style={{ width: "14px", height: "14px" }} />
                 {bulkSaving
-                  ? `保存中 ${bulkSaveProgress?.current ?? 0}/${bulkSaveProgress?.total ?? papers.length}`
-                  : "一键保存全部"}
+                  ? `Saving ${bulkSaveProgress?.current ?? 0}/${bulkSaveProgress?.total ?? papers.length}`
+                  : "Save all"}
               </button>
             </div>
           </div>
@@ -1036,12 +1036,12 @@ export function ArxivAPITool() {
                         {expandedPapers.has(paper.id) ? (
                           <>
                             <ChevronUp style={{ width: "14px", height: "14px" }} />
-                            收起摘要
+                            Collapse abstract
                           </>
                         ) : (
                           <>
                             <ChevronDown style={{ width: "14px", height: "14px" }} />
-                            展开摘要
+                            Expand abstract
                           </>
                         )}
                       </button>
@@ -1071,17 +1071,17 @@ export function ArxivAPITool() {
                       {introLoading ? (
                         <>
                           <span className="animate-spin">⟳</span>
-                          正在获取 Intro
+                          Fetching Intro
                         </>
                       ) : introExpanded ? (
                         <>
                           <ChevronUp style={{ width: "14px", height: "14px" }} />
-                          收起 Introduction
+                          Collapse Introduction
                         </>
                       ) : (
                         <>
                           <ChevronDown style={{ width: "14px", height: "14px" }} />
-                          展开 Introduction
+                          Expand Introduction
                         </>
                       )}
                     </button>
@@ -1101,12 +1101,12 @@ export function ArxivAPITool() {
                         </div>
                         <div style={{ fontSize: "0.875rem", color: "var(--text-secondary)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
                           {introLoading
-                            ? "正在抓取论文 Introduction..."
+                            ? "Fetching the paper's Introduction..."
                             : introduction
                               ? introduction
                               : introAttempted
-                                ? "这篇论文暂时没有提取到可用的 Introduction。"
-                                : "点击上方按钮获取 Introduction。"}
+                                ? "No usable Introduction extracted for this paper yet."
+                                : "Click the button above to fetch the Introduction."}
                         </div>
                       </div>
                     )}
@@ -1138,7 +1138,7 @@ export function ArxivAPITool() {
                     ))}
                   </div>
 
-                  {/* Figures Preview - 单行横向滚动，大图显示 */}
+                  {/* Figures Preview - single-row horizontal scroll, large images */}
                   {(paperFigures[paper.id]?.length ?? 0) > 0 && (
                     <div style={{ marginBottom: "16px" }}>
                       <div style={{
@@ -1194,7 +1194,7 @@ export function ArxivAPITool() {
                                   fontSize: "0.6875rem",
                                   fontWeight: 600,
                                 }}>
-                                  架构图
+                                  Architecture diagram
                                 </span>
                               )}
                             </div>
@@ -1270,12 +1270,12 @@ export function ArxivAPITool() {
                       {loadingFigures.has(paper.id) ? (
                         <>
                           <span className="animate-spin">⟳</span>
-                          加载图片...
+                          Loading figures...
                         </>
                       ) : (
                         <>
                           <ImageIcon style={{ width: "14px", height: "14px" }} />
-                          {(paperFigures[paper.id]?.length ?? 0) > 0 ? `已加载 ${paperFigures[paper.id]?.length} 张图` : "获取图片"}
+                          {(paperFigures[paper.id]?.length ?? 0) > 0 ? `Loaded ${paperFigures[paper.id]?.length} figures` : "Fetch figures"}
                         </>
                       )}
                     </button>
@@ -1301,17 +1301,17 @@ export function ArxivAPITool() {
                       {isSaved ? (
                         <>
                           <Check style={{ width: "14px", height: "14px" }} />
-                          已保存
+                          Saved
                         </>
                       ) : savingPaper === paper.id ? (
                         <>
                           <span className="animate-spin">⟳</span>
-                          保存中...
+                          Saving...
                         </>
                       ) : (
                         <>
                           <Save style={{ width: "14px", height: "14px" }} />
-                          保存到文献库
+                          Save to Literature Library
                         </>
                       )}
                     </button>
@@ -1328,8 +1328,8 @@ export function ArxivAPITool() {
   return (
     <PageContainer>
       <PageHeader
-        title="arXiv 论文搜索"
-        subtitle="搜索和浏览 arXiv 学术论文"
+        title="arXiv Paper Search"
+        subtitle="Search and browse arXiv academic papers"
         icon={FileText}
       />
       <PageContent maxWidth="1200px">

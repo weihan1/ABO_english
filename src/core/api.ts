@@ -43,19 +43,19 @@ async function retryUntilAvailable<T>(
   const timeoutMs = options.timeoutMs ?? 20000;
   const intervalMs = options.intervalMs ?? 250;
   const deadline = Date.now() + timeoutMs;
-  let lastError = "后端尚未启动";
+  let lastError = "Backend not started yet";
 
   while (Date.now() < deadline) {
     try {
       return await attempt();
     } catch (error) {
-      lastError = error instanceof Error ? error.message : "后端连接失败";
+      lastError = error instanceof Error ? error.message : "Failed to connect to backend";
     }
 
     await new Promise((resolve) => window.setTimeout(resolve, intervalMs));
   }
 
-  throw new Error(`等待后端启动超时：${lastError}`);
+  throw new Error(`Timed out waiting for backend to start: ${lastError}`);
 }
 
 async function waitForReady(options: WaitForReadyOptions = {}): Promise<void> {

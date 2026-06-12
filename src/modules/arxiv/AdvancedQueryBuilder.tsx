@@ -260,7 +260,7 @@ export function AdvancedQueryBuilder({
             <input
               type="text"
               value={cond.value}
-              placeholder={cond.op === "exact" ? "完整短语" : "关键词（空格分隔即 AND）"}
+              placeholder={cond.op === "exact" ? "Exact phrase" : "Keywords (space-separated = AND)"}
               onChange={(e) => updateCondition(cond.id, { value: e.target.value })}
               disabled={disabled}
               style={inputStyle}
@@ -269,7 +269,7 @@ export function AdvancedQueryBuilder({
               type="button"
               onClick={() => removeCondition(cond.id)}
               disabled={disabled || value.conditions.length === 1}
-              title="删除该行"
+              title="Delete this row"
               style={{
                 height: "32px",
                 width: "32px",
@@ -306,7 +306,7 @@ export function AdvancedQueryBuilder({
             cursor: "pointer",
           }}
         >
-          <Plus style={{ width: 14, height: 14 }} /> 添加条件
+          <Plus style={{ width: 14, height: 14 }} /> Add condition
         </button>
       </div>
 
@@ -326,8 +326,8 @@ export function AdvancedQueryBuilder({
             onToggleCategory={toggleCategory}
             onToggleMainCategory={toggleMainCategory}
             onToggleMainCategoryExpanded={onToggleMainCategoryExpanded}
-            label="分类筛选 (可选)"
-            helperText="留空则不附加分类限制；勾选后与上面的条件 AND 组合。"
+            label="Category filter (optional)"
+            helperText="Leave empty for no category restriction; selections are AND-combined with the conditions above."
             maxHeight={220}
             disabled={disabled}
           />
@@ -342,7 +342,7 @@ export function AdvancedQueryBuilder({
         }}
       >
         <div style={{ display: "grid", gap: 4 }}>
-          <label style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>日期范围</label>
+          <label style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>Date range</label>
           <select
             value={value.date_range?.mode ?? "none"}
             onChange={(e) => {
@@ -367,21 +367,21 @@ export function AdvancedQueryBuilder({
             disabled={disabled}
             style={selectStyle}
           >
-            <option value="none">不限</option>
-            <option value="past_days">最近 N 天</option>
-            <option value="absolute">绝对范围</option>
+            <option value="none">Any</option>
+            <option value="past_days">Last N days</option>
+            <option value="absolute">Absolute range</option>
           </select>
         </div>
 
         {value.date_range?.mode === "past_days" && (
           <div style={{ display: "grid", gap: 4 }}>
-            <label style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>N 天</label>
+            <label style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>N days</label>
             <input
               type="number"
               min={0}
               max={3650}
               value={value.date_range.past_days ?? ""}
-              placeholder="留空 / 0 表示不限"
+              placeholder="Empty / 0 = unlimited"
               onChange={(e) => {
                 const raw = e.target.value;
                 const parsed = raw === "" ? undefined : Number(raw);
@@ -402,7 +402,7 @@ export function AdvancedQueryBuilder({
         {value.date_range?.mode === "absolute" && (
           <>
             <div style={{ display: "grid", gap: 4 }}>
-              <label style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>起 (YYYY-MM-DD)</label>
+              <label style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>From (YYYY-MM-DD)</label>
               <input
                 type="date"
                 value={value.date_range.from ?? ""}
@@ -414,7 +414,7 @@ export function AdvancedQueryBuilder({
               />
             </div>
             <div style={{ display: "grid", gap: 4 }}>
-              <label style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>止 (YYYY-MM-DD)</label>
+              <label style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>To (YYYY-MM-DD)</label>
               <input
                 type="date"
                 value={value.date_range.to ?? ""}
@@ -431,7 +431,7 @@ export function AdvancedQueryBuilder({
         {showRuntimeKnobs && (
           <>
             <div style={{ display: "grid", gap: 4 }}>
-              <label style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>排序</label>
+              <label style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>Sort</label>
               <select
                 value={`${value.sort_by}:${value.sort_order}`}
                 onChange={(e) => {
@@ -444,15 +444,15 @@ export function AdvancedQueryBuilder({
                 disabled={disabled}
                 style={selectStyle}
               >
-                <option value="submittedDate:descending">提交日期 ↓</option>
-                <option value="submittedDate:ascending">提交日期 ↑</option>
-                <option value="lastUpdatedDate:descending">最后更新 ↓</option>
-                <option value="lastUpdatedDate:ascending">最后更新 ↑</option>
-                <option value="relevance:descending">相关性</option>
+                <option value="submittedDate:descending">Submitted ↓</option>
+                <option value="submittedDate:ascending">Submitted ↑</option>
+                <option value="lastUpdatedDate:descending">Last updated ↓</option>
+                <option value="lastUpdatedDate:ascending">Last updated ↑</option>
+                <option value="relevance:descending">Relevance</option>
               </select>
             </div>
             <div style={{ display: "grid", gap: 4 }}>
-              <label style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>最大条数</label>
+              <label style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>Max results</label>
               <input
                 type="number"
                 min={1}

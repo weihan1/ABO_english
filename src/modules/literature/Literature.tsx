@@ -117,7 +117,7 @@ export default function Literature() {
       setNeedsConfig(false);
     } catch (err) {
       console.error("Failed to load literature:", err);
-      setError("加载失败，请检查文献库路径设置");
+      setError("Failed to load. Please check the Literature Library path setting");
     } finally {
       setLoading(false);
     }
@@ -133,7 +133,7 @@ export default function Literature() {
       const selected = await open({
         directory: true,
         multiple: false,
-        title:"选择文献库文件夹",
+        title:"Choose Literature Library folder",
       });
       if (selected && typeof selected === "string") {
         // Only send literature_path — don't touch vault_path
@@ -146,7 +146,7 @@ export default function Literature() {
       }
     } catch (err) {
       console.error("Failed to select path:", err);
-      alert("选择文件夹失败，请重试");
+      alert("Failed to choose folder. Please try again");
     }
   }
 
@@ -156,7 +156,7 @@ export default function Literature() {
       await api.post("/api/literature/open", { path: "" });
     } catch (err) {
       console.error("Failed to open:", err);
-      alert("打开失败，请检查文献库路径");
+      alert("Failed to open. Please check the Literature Library path");
     }
   }
 
@@ -177,7 +177,7 @@ export default function Literature() {
       await api.post("/api/literature/open", { path: item.path });
     } catch (err) {
       console.error("Failed to open:", err);
-      alert("打开失败");
+      alert("Failed to open");
     }
   }
 
@@ -234,12 +234,12 @@ export default function Literature() {
     return (
       <PageContainer>
         <PageHeader
-          title="文献库"
-          subtitle="管理论文和文献资料"
+          title="Literature Library"
+          subtitle="Manage papers and reference materials"
           icon={BookOpen}
         />
         <PageContent maxWidth="800px">
-          <Card title="配置路径" icon={<HardDrive style={{ width: "18px", height: "18px" }} />}>
+          <Card title="Configure Path" icon={<HardDrive style={{ width: "18px", height: "18px" }} />}>
             <div style={{ padding: "40px 20px", textAlign: "center" }}>
               <div
                 style={{
@@ -256,10 +256,10 @@ export default function Literature() {
                 <FolderOpen style={{ width: "40px", height: "40px", color: "var(--color-primary)" }} />
               </div>
               <h3 style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--text-main)", marginBottom: "12px" }}>
-                尚未配置路径
+                No path configured yet
               </h3>
               <p style={{ fontSize: "0.9375rem", color: "var(--text-muted)", marginBottom: "24px", lineHeight: 1.6 }}>
-                请在主页配置情报库路径，或在下方配置独立的文献库路径。
+                Configure the Intel Library path on the home page, or set a separate Literature Library path below.
               </p>
               <button
                 onClick={selectLiteraturePath}
@@ -284,7 +284,7 @@ export default function Literature() {
                   e.currentTarget.style.boxShadow = "0 4px 16px rgba(188, 164, 227, 0.4)";
                 }}
               >
-                选择文献库文件夹
+                Choose Literature Library folder
               </button>
             </div>
           </Card>
@@ -296,8 +296,8 @@ export default function Literature() {
   return (
     <PageContainer>
       <PageHeader
-        title="文献库"
-        subtitle="泡泡视图 - 管理论文和文献资料"
+        title="Literature Library"
+        subtitle="Bubble view - manage papers and reference materials"
         icon={BookOpen}
         actions={
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
@@ -329,7 +329,7 @@ export default function Literature() {
               }}
             >
               <ObsidianIcon style={{ width: "16px", height: "16px" }} />
-              在 Obsidian 中打开
+              Open in Obsidian
             </button>
 
             <div style={{ width: "1px", height: "24px", background: "var(--border-light)", margin: "0 4px" }} />
@@ -361,7 +361,7 @@ export default function Literature() {
               }}
             >
               <ExternalLink style={{ width: "14px", height: "14px" }} />
-              在 Finder 中打开
+              Open in Finder
             </button>
 
             {/* Change Path */}
@@ -392,7 +392,7 @@ export default function Literature() {
               }}
             >
               <FolderOpen style={{ width: "14px", height: "14px" }} />
-              更改路径
+              Change path
             </button>
 
             <div style={{ width: "1px", height: "24px", background: "var(--border-light)", margin: "0 4px" }} />
@@ -412,7 +412,7 @@ export default function Literature() {
                 transition: "all 0.3s ease",
               }}
             >
-              泡泡视图
+              Bubble view
             </button>
             <button
               onClick={() => setViewMode("list")}
@@ -428,7 +428,7 @@ export default function Literature() {
                 transition: "all 0.3s ease",
               }}
             >
-              列表视图
+              List view
             </button>
           </div>
         }
@@ -474,18 +474,18 @@ export default function Literature() {
               }}
             >
               <ArrowLeft style={{ width: "16px", height: "16px" }} />
-              返回
+              Back
             </button>
           )}
           <span style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>
-            文献库{currentPath ? ` / ${currentPath}` : ""}
+            Literature Library{currentPath ? ` / ${currentPath}` : ""}
           </span>
         </div>
 
         {/* Loading / Error */}
         {loading && (
           <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text-muted)" }}>
-            <p>加载中...</p>
+            <p>Loading...</p>
           </div>
         )}
 
@@ -508,7 +508,7 @@ export default function Literature() {
         {!loading && items.length === 0 && !error && (
           <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text-muted)" }}>
             <BookOpen style={{ width: "48px", height: "48px", opacity: 0.5, margin: "0 auto 16px" }} />
-            <p>此文件夹为空</p>
+            <p>This folder is empty</p>
           </div>
         )}
 
@@ -527,7 +527,7 @@ export default function Literature() {
               }}
             >
               <span style={{ fontSize: "1.2rem" }}>🔥</span>
-              热门访问
+              Frequently accessed
             </h3>
             <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
               {hotItems.map((item, index) => (
@@ -564,7 +564,7 @@ export default function Literature() {
                   <div>
                     <div style={{ fontWeight: 700, fontSize: "1rem" }}>{item.name}</div>
                     <div style={{ fontSize: "0.75rem", opacity: 0.9 }}>
-                      {item.type === "folder" ? "文件夹" : "文件"} · 访问 {item.stats.accessCount} 次
+                      {item.type === "folder" ? "Folder" : "File"} · accessed {item.stats.accessCount} times
                     </div>
                   </div>
                 </div>
@@ -579,7 +579,7 @@ export default function Literature() {
             {filesFirstInCurrentFolder && orderedFiles.length > 0 && (
               <div>
                 <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-main)", marginBottom: "16px" }}>
-                  文件 ({orderedFiles.length}) - 点击用系统应用打开
+                  Files ({orderedFiles.length}) - click to open with system app
                 </h3>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", justifyContent: "flex-start", marginBottom: "32px" }}>
                   {orderedFiles.map((file, index) => (
@@ -636,7 +636,7 @@ export default function Literature() {
             {orderedFolders.length > 0 && (
               <div style={{ marginBottom: "32px" }}>
                 <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-main)", marginBottom: "16px" }}>
-                  文件夹 ({orderedFolders.length})
+                  Folders ({orderedFolders.length})
                 </h3>
                 <div
                   style={{
@@ -695,7 +695,7 @@ export default function Literature() {
                           {folder.name}
                         </span>
                         <span style={{ fontSize: size * 0.09, color: "white", opacity: 0.8 }}>
-                          {folder.stats.accessCount > 0 ? `${folder.stats.accessCount} 次` : "未访问"}
+                          {folder.stats.accessCount > 0 ? `${folder.stats.accessCount} visits` : "Not visited"}
                         </span>
                         {folder.stats.accessCount > 5 && (
                           <div
@@ -723,7 +723,7 @@ export default function Literature() {
             {!filesFirstInCurrentFolder && orderedFiles.length > 0 && (
               <div>
                 <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-main)", marginBottom: "16px" }}>
-                  文件 ({orderedFiles.length}) - 点击用系统应用打开
+                  Files ({orderedFiles.length}) - click to open with system app
                 </h3>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", justifyContent: "flex-start" }}>
                   {orderedFiles.map((file, index) => (
@@ -846,7 +846,7 @@ export default function Literature() {
                     </div>
                   </div>
                   <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", opacity: 0.6 }}>
-                    {item.type === "folder" ? "进入 →" : "打开 →"}
+                    {item.type === "folder" ? "Enter →" : "Open →"}
                   </span>
                 </button>
               ))}
@@ -865,14 +865,14 @@ export default function Literature() {
           }}
         >
           <h4 style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-main)", marginBottom: "12px" }}>
-            热度说明
+            Heat legend
           </h4>
           <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
             {[
-              { color: "#A8E6CF", label: "高频 (>20项)" },
-              { color: "#BCA4E3", label: "中高频 (10-20项)" },
-              { color: "#FFB7B2", label: "中频 (5-10项)" },
-              { color: "#A8D8FF", label: "低频 (<5项)" },
+              { color: "#A8E6CF", label: "High (>20 items)" },
+              { color: "#BCA4E3", label: "Medium-high (10-20 items)" },
+              { color: "#FFB7B2", label: "Medium (5-10 items)" },
+              { color: "#A8D8FF", label: "Low (<5 items)" },
             ].map((item) => (
               <div key={item.label} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <div style={{ width: "16px", height: "16px", borderRadius: "50%", background: item.color }} />

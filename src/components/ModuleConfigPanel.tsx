@@ -30,13 +30,13 @@ const STATUS_DOT: Record<string, string> = {
 };
 
 function scheduleLabel(schedule: string): string {
-  if (schedule.startsWith("*/5")) return "每5分钟";
+  if (schedule.startsWith("*/5")) return "Every 5 minutes";
   const cronMatch = /^(\d{1,2}) (\d{1,2}) \* \* \*$/.exec(schedule.trim());
   if (cronMatch) {
     const minute = Number(cronMatch[1]);
     const hour = Number(cronMatch[2]);
     if (minute >= 0 && minute <= 59 && hour >= 0 && hour <= 23) {
-      return `每天 ${hour}:${minute.toString().padStart(2, "0")}`;
+      return `Daily at ${hour}:${minute.toString().padStart(2, "0")}`;
     }
   }
   return schedule;
@@ -69,7 +69,7 @@ export default function ModuleConfigPanel() {
         })));
       } catch (e) {
         console.error("Failed to load modules:", e);
-        addToast({ kind: "error", title: "加载模块失败" });
+        addToast({ kind: "error", title: "Failed to load modules" });
       }
     } finally {
       setLoading(false);
@@ -85,9 +85,9 @@ export default function ModuleConfigPanel() {
       setModules(prev => prev.map(m =>
         m.id === moduleId ? { ...m, status: newStatus as any } : m
       ));
-      addToast({ kind: "success", title: newStatus === "active" ? "模块已启用" : "模块已暂停" });
+      addToast({ kind: "success", title: newStatus === "active" ? "Module enabled" : "Module paused" });
     } catch {
-      addToast({ kind: "error", title: "操作失败" });
+      addToast({ kind: "error", title: "Operation failed" });
     }
   }
 
@@ -109,7 +109,7 @@ export default function ModuleConfigPanel() {
         height: "80px", color: "var(--text-muted)", fontSize: "0.8125rem",
       }}>
         <RefreshCw style={{ width: "14px", height: "14px", animation: "spin 1s linear infinite", marginRight: "6px" }} />
-        加载中...
+        Loading...
       </div>
     );
   }
@@ -126,7 +126,7 @@ export default function ModuleConfigPanel() {
           marginBottom: "6px",
         }}>
           <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-            {activeCount}/{visibleModules.length} 个模块运行中
+            {activeCount}/{visibleModules.length} modules running
           </span>
           <button
             onClick={loadModules}
@@ -136,7 +136,7 @@ export default function ModuleConfigPanel() {
               display: "flex", alignItems: "center", gap: "3px",
             }}
           >
-            <RefreshCw style={{ width: "10px", height: "10px" }} /> 刷新
+            <RefreshCw style={{ width: "10px", height: "10px" }} /> Refresh
           </button>
         </div>
 
@@ -189,7 +189,7 @@ export default function ModuleConfigPanel() {
                   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                 }}>
                   {mod.description || scheduleLabel(mod.schedule)}
-                  {unconfigured && !mod.description && " · 待配置"}
+                  {unconfigured && !mod.description && " · Needs setup"}
                 </div>
                 {/* Keywords + schedule tags */}
                 <div style={{
@@ -203,11 +203,11 @@ export default function ModuleConfigPanel() {
                   {kwCount > 0 && (
                     <span style={{ display: "flex", alignItems: "center", gap: "2px" }}>
                       <Hash style={{ width: "8px", height: "8px" }} />
-                      {kwCount} 关键词
+                      {kwCount} keywords
                     </span>
                   )}
                   {kwCount === 0 && unconfigured && (
-                    <span style={{ color: "#eab308" }}>需要配置关键词</span>
+                    <span style={{ color: "#eab308" }}>Keywords need to be configured</span>
                   )}
                 </div>
               </div>
@@ -228,7 +228,7 @@ export default function ModuleConfigPanel() {
                   e.stopPropagation();
                   openModuleConfig(mod.id);
                 }}
-                title="打开详细配置"
+                title="Open detailed settings"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -253,8 +253,8 @@ export default function ModuleConfigPanel() {
         })}
 
         <LazyKeywordPreferencesSection
-          title="偏好学习"
-          description="这里是偏好数据入口。点击后才会真正加载偏好关键词和排序信息。"
+          title="Preference learning"
+          description="Entry point for preference data. Keyword preferences and ranking info load only when clicked."
           style={{ marginTop: "14px" }}
         />
       </div>

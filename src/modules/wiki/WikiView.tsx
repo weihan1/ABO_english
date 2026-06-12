@@ -113,7 +113,7 @@ export default function WikiView({
     try {
       await api.post(`/api/wiki/${wikiType}/open`, slug ? { slug } : {});
     } catch (error) {
-      toast.error("打开失败", error instanceof Error ? error.message : "请检查 Obsidian 路径");
+      toast.error("Failed to open", error instanceof Error ? error.message : "Please check the Obsidian path");
     }
   }
 
@@ -124,11 +124,11 @@ export default function WikiView({
       await refreshControl();
       onSelectPage("overview");
       toast.success(
-        wikiType === "intel" ? "Internet Wiki 已生成" : "Literature Wiki 已生成",
-        `已更新 ${result.pages_updated} 个起步页面`
+        wikiType === "intel" ? "Internet Wiki generated" : "Literature Wiki generated",
+        `Updated ${result.pages_updated} starter pages`
       );
     } catch (error) {
-      toast.error("生成失败", error instanceof Error ? error.message : "请稍后重试");
+      toast.error("Generation failed", error instanceof Error ? error.message : "Please try again later");
     } finally {
       setActionLoading(false);
     }
@@ -146,11 +146,11 @@ export default function WikiView({
       });
       setControl(result.control);
       toast.success(
-        "来源文件夹已更新",
-        enabled ? "这个文件夹会参与下一次 Wiki 生成" : "这个文件夹会从下一次 Wiki 生成里排除"
+        "Source folder updated",
+        enabled ? "This folder will join the next Wiki generation" : "This folder will be excluded from the next Wiki generation"
       );
     } catch (error) {
-      toast.error("更新失败", error instanceof Error ? error.message : "请稍后重试");
+      toast.error("Update failed", error instanceof Error ? error.message : "Please try again later");
     } finally {
       setSourceSavingId(null);
     }
@@ -160,7 +160,7 @@ export default function WikiView({
     <PageContainer>
       <PageHeader
         title={wikiTitle}
-        subtitle={wikiType === "intel" ? "先生成 Internet Wiki 总览，后续从今日情报一键补进去" : "先生成 Literature Wiki 总览，后续把新论文、follow up、旧笔记和指导串起来"}
+        subtitle={wikiType === "intel" ? "Generate the Internet Wiki overview first, then add from Daily Briefing with one click" : "Generate the Literature Wiki overview first, then link new papers, follow-ups, old notes, and guidance"}
         actions={
           <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
             <button
@@ -184,7 +184,7 @@ export default function WikiView({
               }}
             >
               <Sparkles style={{ width: "14px", height: "14px" }} />
-              {actionLoading ? "生成中..." : (control?.primary_action_label ?? (wikiType === "intel" ? "生成 Internet Wiki 总览" : "生成 Literature Wiki 总览"))}
+              {actionLoading ? "Generating..." : (control?.primary_action_label ?? (wikiType === "intel" ? "Generate Internet Wiki overview" : "Generate Literature Wiki overview"))}
             </button>
             <button
               onClick={() => openInObsidian(activePage ?? undefined)}
@@ -235,7 +235,7 @@ export default function WikiView({
               }}
             >
               <FileText style={{ width: "14px", height: "14px" }} />
-              页面
+              Pages
             </button>
             <button
               onClick={() => onSetViewMode("mindmap")}
@@ -257,7 +257,7 @@ export default function WikiView({
               }}
             >
               <MapIcon style={{ width: "14px", height: "14px" }} />
-              脑图
+              Mind map
             </button>
           </div>
         }
@@ -353,7 +353,7 @@ function WikiControlPanel({
           color: "var(--text-muted)",
         }}
       >
-        加载中...
+        Loading...
       </div>
     );
   }
@@ -362,22 +362,22 @@ function WikiControlPanel({
     return (
       <EmptyState
         icon={FileText}
-        title="暂时拿不到 Wiki 状态"
-        description="请稍后再试，或先检查 Obsidian 路径是否可用"
+        title="Wiki status unavailable right now"
+        description="Try again later, or check that the Obsidian path is usable"
       />
     );
   }
 
   const usageSteps = wikiType === "intel"
     ? [
-        "先点“生成 Internet Wiki 总览”，让当前 Bilibili / 小红书收藏先长出一页总览。",
-        "以后在今日情报里看到值得留的内容，点“写入 Internet Wiki”就行。",
-        "回到总览页，只需要补重点，不用从零整理。",
+        "Click \"Generate Internet Wiki overview\" first so your current Bilibili / Xiaohongshu collections grow into an overview page.",
+        "Later, when you see content worth keeping in Daily Briefing, just click \"Write to Internet Wiki\".",
+        "Back on the overview page, you only top up the highlights — no organizing from scratch.",
       ]
     : [
-        "先点“生成 Literature Wiki 总览”，把现有论文、follow up 和旧 archive 长成一页总览。",
-        "以后新搜到或新看完的论文，点“保存到文献库”就会顺手补进 Literature Wiki。",
-        "总览里的内部页看主题脉络，想看关系就点上面的“脑图”，外部链接直接回具体 markdown。",
+        "Click \"Generate Literature Wiki overview\" first to grow existing papers, follow-ups, and old archives into an overview page.",
+        "Later, newly found or newly read papers are added to the Literature Wiki when you click \"Save to Literature Library\".",
+        "Internal pages in the overview show topic threads; click \"Mind map\" above to see relationships, and external links go back to the actual markdown.",
       ];
 
   return (
@@ -403,10 +403,10 @@ function WikiControlPanel({
             <div>
               <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", marginBottom: "8px", color: "var(--color-primary-dark)", fontSize: "0.8125rem", fontWeight: 700 }}>
                 <Sparkles style={{ width: "14px", height: "14px" }} />
-                推荐起手动作
+                Recommended first move
               </div>
               <h2 style={{ fontFamily: "'M PLUS Rounded 1c', sans-serif", fontSize: "1.5rem", fontWeight: 700, color: "var(--text-main)", lineHeight: 1.3 }}>
-                {wikiType === "intel" ? "先让收藏长出一页 Internet Wiki 总览" : "先让论文、follow up 和旧笔记长出一页 Literature Wiki 总览"}
+                {wikiType === "intel" ? "Let your collections grow an Internet Wiki overview first" : "Let papers, follow-ups, and old notes grow a Literature Wiki overview first"}
               </h2>
               <p style={{ marginTop: "10px", fontSize: "0.9375rem", lineHeight: 1.7, color: "var(--text-secondary)", maxWidth: "640px" }}>
                 {control.workflow_hint}
@@ -433,7 +433,7 @@ function WikiControlPanel({
                 }}
               >
                 <Sparkles style={{ width: "15px", height: "15px" }} />
-                {actionLoading ? "生成中..." : control.primary_action_label}
+                {actionLoading ? "Generating..." : control.primary_action_label}
               </button>
 
               {control.has_overview && (
@@ -453,7 +453,7 @@ function WikiControlPanel({
                     fontWeight: 700,
                   }}
                 >
-                  打开总览
+                  Open overview
                   <ArrowRight style={{ width: "15px", height: "15px" }} />
                 </button>
               )}
@@ -475,32 +475,32 @@ function WikiControlPanel({
                 }}
               >
                 <BookOpen style={{ width: "15px", height: "15px" }} />
-                在 Obsidian 里看
+                View in Obsidian
               </button>
             </div>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
             <div style={{ padding: "14px 16px", borderRadius: "10px", background: "rgba(255,255,255,0.56)", border: "1px solid rgba(255,255,255,0.5)" }}>
-              <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>当前来源数</div>
+              <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>Source count</div>
               <div style={{ fontSize: "1.375rem", fontWeight: 700, color: "var(--text-main)" }}>
                 {control.source_summary.total_sources}
               </div>
             </div>
             <div style={{ padding: "14px 16px", borderRadius: "10px", background: "rgba(255,255,255,0.56)", border: "1px solid rgba(255,255,255,0.5)" }}>
-              <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>启用文件夹</div>
+              <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>Enabled folders</div>
               <div style={{ fontSize: "1.375rem", fontWeight: 700, color: "var(--text-main)" }}>
                 {control.source_summary.enabled_folder_count ?? control.source_folders.length}
               </div>
             </div>
             <div style={{ padding: "14px 16px", borderRadius: "10px", background: "rgba(255,255,255,0.56)", border: "1px solid rgba(255,255,255,0.5)" }}>
-              <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>排除文件夹</div>
+              <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>Excluded folders</div>
               <div style={{ fontSize: "1.375rem", fontWeight: 700, color: "var(--text-main)" }}>
                 {control.source_summary.disabled_folder_count ?? 0}
               </div>
             </div>
             <div style={{ padding: "14px 16px", borderRadius: "10px", background: "rgba(255,255,255,0.56)", border: "1px solid rgba(255,255,255,0.5)" }}>
-              <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>参考笔记</div>
+              <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>Reference notes</div>
               <div style={{ fontSize: "1.375rem", fontWeight: 700, color: "var(--text-main)" }}>
                 {control.reference_notes.length}
               </div>
@@ -510,7 +510,7 @@ function WikiControlPanel({
 
         <section style={{ display: "grid", gap: "12px" }}>
           <h3 style={{ fontFamily: "'M PLUS Rounded 1c', sans-serif", fontSize: "1rem", fontWeight: 700, color: "var(--text-main)" }}>
-            来源概览
+            Source overview
           </h3>
           {control.scan_roots.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
@@ -553,7 +553,7 @@ function WikiControlPanel({
                 <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>{item.count}</span>
               </div>
             )) : (
-              <div style={{ color: "var(--text-muted)", fontSize: "0.9375rem" }}>还没扫到可用来源，先检查路径配置。</div>
+              <div style={{ color: "var(--text-muted)", fontSize: "0.9375rem" }}>No usable sources found yet — check the path configuration first.</div>
             )}
           </div>
           {control.source_summary.top_tags.length > 0 && (
@@ -580,10 +580,10 @@ function WikiControlPanel({
         <section style={{ display: "grid", gap: "12px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
             <h3 style={{ fontFamily: "'M PLUS Rounded 1c', sans-serif", fontSize: "1rem", fontWeight: 700, color: "var(--text-main)" }}>
-              素材文件夹
+              Source folders
             </h3>
             <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-              勾选决定下一次生成时哪些文件夹会参与整理
+              Checkboxes decide which folders join the next generation pass
             </div>
           </div>
 
@@ -624,7 +624,7 @@ function WikiControlPanel({
                             fontWeight: 700,
                           }}
                         >
-                          {folder.enabled ? "已纳入" : "已排除"}
+                          {folder.enabled ? "Included" : "Excluded"}
                         </span>
                         {folder.has_page && (
                           <button
@@ -640,7 +640,7 @@ function WikiControlPanel({
                               fontWeight: 700,
                             }}
                           >
-                            打开 VKI
+                            Open VKI
                           </button>
                         )}
                         <button
@@ -660,14 +660,14 @@ function WikiControlPanel({
                             opacity: isSaving ? 0.75 : 1,
                           }}
                         >
-                          {isSaving ? "保存中..." : folder.enabled ? "排除" : "纳入"}
+                          {isSaving ? "Saving..." : folder.enabled ? "Exclude" : "Include"}
                         </button>
                       </div>
                     </div>
 
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                       <span style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", fontWeight: 600 }}>
-                        {folder.note_count} 条素材
+                        {folder.note_count} items
                       </span>
                       {folder.top_tags.slice(0, 4).map((tag) => (
                         <span
@@ -701,14 +701,14 @@ function WikiControlPanel({
             </div>
           ) : (
             <div style={{ color: "var(--text-muted)", fontSize: "0.9375rem" }}>
-              还没扫到可管理的素材文件夹。
+              No manageable source folders found yet.
             </div>
           )}
         </section>
 
         <section style={{ display: "grid", gap: "12px" }}>
           <h3 style={{ fontFamily: "'M PLUS Rounded 1c', sans-serif", fontSize: "1rem", fontWeight: 700, color: "var(--text-main)" }}>
-            就这么用
+            How to use
           </h3>
           <div style={{ display: "grid", gap: "10px" }}>
             {usageSteps.map((step, index) => (
@@ -750,7 +750,7 @@ function WikiControlPanel({
         {control.reference_notes.length > 0 && (
           <section style={{ display: "grid", gap: "12px" }}>
             <h3 style={{ fontFamily: "'M PLUS Rounded 1c', sans-serif", fontSize: "1rem", fontWeight: 700, color: "var(--text-main)" }}>
-              参考到的已有笔记
+              Existing notes used as reference
             </h3>
             <div style={{ display: "grid", gap: "10px" }}>
               {control.reference_notes.map((note) => (
@@ -770,7 +770,7 @@ function WikiControlPanel({
                     {note.path}
                   </div>
                   <div style={{ fontSize: "0.875rem", lineHeight: 1.6, color: "var(--text-secondary)" }}>
-                    {note.excerpt || "已作为参考样本纳入初版生成。"}
+                    {note.excerpt || "Included as a reference sample in the initial generation."}
                   </div>
                 </div>
               ))}
@@ -867,8 +867,8 @@ function WikiMindMapPlaceholder({ wikiType, onSelectPage }: MindMapPlaceholderPr
     return (
       <EmptyState
         icon={MapIcon}
-        title="暂无脑图数据"
-        description="添加更多 Wiki 页面和链接后，脑图将自动生成"
+        title="No mind map data yet"
+        description="The mind map generates automatically as you add more Wiki pages and links"
       />
     );
   }
@@ -918,7 +918,7 @@ function WikiMindMapPlaceholder({ wikiType, onSelectPage }: MindMapPlaceholderPr
           lineHeight: 1.6,
         }}
       >
-        点圆点回到对应 wiki 页面。页面里的外部链接还是原始 markdown，脑图只负责看内部脉络。
+        Click a dot to jump to its wiki page. External links in pages still go to the original markdown; the mind map only shows internal structure.
       </div>
 
       {/* Legend */}
@@ -942,16 +942,16 @@ function WikiMindMapPlaceholder({ wikiType, onSelectPage }: MindMapPlaceholderPr
             />
             <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 500 }}>
               {cat === "collection"
-                ? "文件夹"
+                ? "Folder"
                 : cat === "entity"
-                  ? "实体"
+                  ? "Entity"
                   : cat === "concept"
-                    ? "概念"
+                    ? "Concept"
                     : cat === "paper"
-                      ? "论文"
+                      ? "Paper"
                       : cat === "topic"
-                        ? "主题"
-                        : "概览"}
+                        ? "Topic"
+                        : "Overview"}
             </span>
           </div>
         ))}

@@ -74,80 +74,80 @@ export function useCommandPalette(): UseCommandPaletteReturn {
     // Navigation commands
     {
       id: 'goto-assistant',
-      title: '打开助手',
-      subtitle: '用 Codex 串联情报、Wiki 和对话',
+      title: 'Open Assistant',
+      subtitle: 'Connect intel, wiki, and chat with your AI CLI',
       shortcut: 'G A',
       icon: Bot,
-      keywords: ['assistant', '助手', 'codex', '对话', 'wiki', '情报'],
+      keywords: ['assistant', 'codex', 'chat', 'wiki', 'intel'],
       action: () => setActiveTab('assistant'),
     },
     {
       id: 'goto-feed',
-      title: '打开 Feed',
-      subtitle: '查看情报卡片流',
+      title: 'Open Feed',
+      subtitle: 'View the intel card stream',
       shortcut: 'G F',
       icon: LayoutDashboard,
-      keywords: ['feed', '卡片', '情报', '首页', '主页'],
+      keywords: ['feed', 'cards', 'intel', 'home'],
       action: () => setActiveTab('overview'),
     },
     {
       id: 'goto-profile',
-      title: '打开角色主页',
-      subtitle: '查看个人状态和六维雷达图',
+      title: 'Open Character Home',
+      subtitle: 'View personal status and the six-axis radar chart',
       shortcut: 'G P',
       icon: User,
-      keywords: ['profile', '角色', '主页', '个人', '状态', '六维'],
+      keywords: ['profile', 'character', 'home', 'status', 'radar'],
       action: () => setActiveTab('profile'),
     },
     {
       id: 'goto-literature',
-      title: '打开文献库',
-      subtitle: '管理和搜索文献',
+      title: 'Open Literature Library',
+      subtitle: 'Manage and search papers',
       shortcut: 'G L',
       icon: BookOpen,
-      keywords: ['literature', '文献', '论文', 'arxiv', '学术'],
+      keywords: ['literature', 'papers', 'arxiv', 'academic'],
       action: () => setActiveTab('literature'),
     },
     {
       id: 'goto-modules',
-      title: '打开模块管理',
-      subtitle: '管理所有自动化模块',
+      title: 'Open Module Management',
+      subtitle: 'Manage all automation modules',
       shortcut: 'G M',
       icon: Settings,
-      keywords: ['modules', '模块', '管理', '配置', '爬虫'],
+      keywords: ['modules', 'management', 'config', 'crawler'],
       action: () => setActiveTab('modules'),
     },
     {
       id: 'goto-settings',
-      title: '打开设置',
-      subtitle: '应用配置和偏好设置',
+      title: 'Open Settings',
+      subtitle: 'App configuration and preferences',
       shortcut: 'Cmd ,',
       icon: Settings,
-      keywords: ['settings', '设置', '配置', '偏好'],
+      keywords: ['settings', 'config', 'preferences'],
       action: () => setActiveTab('settings'),
     },
     // Module commands
     {
       id: 'run-arxiv',
-      title: '运行 ArXiv 爬虫',
-      subtitle: '立即运行 ArXiv 论文追踪模块',
+      title: 'Run arXiv Crawler',
+      subtitle: 'Run the arXiv paper tracking module now',
       shortcut: 'R A',
       icon: Play,
-      keywords: ['arxiv', '爬虫', '运行', '论文', '学术'],
+      keywords: ['arxiv', 'crawler', 'run', 'papers', 'academic'],
       action: async () => {
         try {
           setRunningModules(prev => new Set(prev).add('arxiv-tracker'));
           await api.post('/api/modules/arxiv-tracker/run', {});
           addToast({
             kind: 'success',
-            title: 'ArXiv 爬虫已启动',
-            message: '正在获取最新论文...',
+            title: 'arXiv crawler started',
+            message: 'Fetching the latest papers...',
           });
         } catch (err) {
           addToast({
             kind: 'error',
-            title: '运行失败',
-            message: err instanceof Error ? err.message : '无法运行 ArXiv 爬虫',
+            title: 'Run failed',
+            message: err instanceof Error ? err.message : 'Could not run the arXiv crawler',
           });
         } finally {
           setRunningModules(prev => {
@@ -160,17 +160,17 @@ export function useCommandPalette(): UseCommandPaletteReturn {
     },
     {
       id: 'run-all',
-      title: '运行所有模块',
-      subtitle: '立即运行所有启用的模块',
+      title: 'Run All Modules',
+      subtitle: 'Run all enabled modules now',
       shortcut: 'R R',
       icon: PlayCircle,
-      keywords: ['run', '全部', '运行', '所有', '模块', '爬虫'],
+      keywords: ['run', 'all', 'modules', 'crawler'],
       action: async () => {
         try {
           addToast({
             kind: 'info',
-            title: '正在运行所有模块',
-            message: '请稍候...',
+            title: 'Running all modules',
+            message: 'Please wait...',
           });
           // Run all modules in parallel
           const modules = ['arxiv-tracker', 'semantic-scholar-tracker', 'xiaohongshu-tracker', 'bilibili-tracker'];
@@ -179,14 +179,14 @@ export function useCommandPalette(): UseCommandPaletteReturn {
           );
           addToast({
             kind: 'success',
-            title: '所有模块已启动',
-            message: '正在后台运行...',
+            title: 'All modules started',
+            message: 'Running in the background...',
           });
         } catch (err) {
           addToast({
             kind: 'error',
-            title: '运行失败',
-            message: err instanceof Error ? err.message : '无法运行模块',
+            title: 'Run failed',
+            message: err instanceof Error ? err.message : 'Could not run modules',
           });
         }
       },
@@ -194,29 +194,29 @@ export function useCommandPalette(): UseCommandPaletteReturn {
     // Content creation commands
     {
       id: 'create-idea',
-      title: '新建 Idea',
-      subtitle: '在 Idea 工坊创建新想法',
+      title: 'New Idea',
+      subtitle: 'Create a new idea in the Idea Workshop',
       shortcut: 'C I',
       icon: Lightbulb,
-      keywords: ['idea', '想法', '新建', '创建', '工坊'],
+      keywords: ['idea', 'new', 'create', 'workshop'],
       action: () => {
         // Navigate to ideas tab (vault for now, can be updated when ideas module exists)
         setActiveTab('vault');
         addToast({
           kind: 'info',
-          title: '提示',
-          message: '请在 Vault 中创建新想法',
+          title: 'Note',
+          message: 'Create the new idea in your Vault',
         });
       },
     },
     // Search command
     {
       id: 'global-search',
-      title: '全局搜索',
-      subtitle: '搜索卡片、文献和想法',
+      title: 'Global Search',
+      subtitle: 'Search cards, papers, and ideas',
       shortcut: 'Cmd K',
       icon: Search,
-      keywords: ['search', '搜索', '查找', '全局'],
+      keywords: ['search', 'find', 'global'],
       action: () => {
         // This will be handled by the command palette itself
         // Just keep the palette open
@@ -225,18 +225,18 @@ export function useCommandPalette(): UseCommandPaletteReturn {
     // Quick module access
     {
       id: 'goto-arxiv',
-      title: '打开 ArXiv 追踪器',
-      subtitle: '高级 ArXiv 论文搜索和追踪',
+      title: 'Open arXiv Tracker',
+      subtitle: 'Advanced arXiv paper search and tracking',
       icon: FileText,
-      keywords: ['arxiv', '追踪器', '论文', '学术', '搜索'],
+      keywords: ['arxiv', 'tracker', 'papers', 'academic', 'search'],
       action: () => setActiveTab('arxiv'),
     },
     {
       id: 'goto-chat',
-      title: '打开 Agent 对话',
-      subtitle: '与 AI 助手对话',
+      title: 'Open Agent Chat',
+      subtitle: 'Chat with the AI assistant',
       icon: LayoutDashboard,
-      keywords: ['chat', '对话', 'agent', 'claude', 'codex', 'ai', '助手'],
+      keywords: ['chat', 'agent', 'claude', 'codex', 'ai', 'assistant'],
       action: () => setActiveTab('chat'),
     },
   ], [setActiveTab, addToast]);

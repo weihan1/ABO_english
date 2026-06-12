@@ -10,8 +10,8 @@ interface Props {
 }
 
 export default function LazyKeywordPreferencesSection({
-  title = "偏好学习",
-  description = "点击后再加载，只在需要时查看正向偏好和前排关键词。",
+  title = "Preference learning",
+  description = "Loads on click — view positive preferences and top keywords only when needed.",
   defaultOpen = false,
   style,
 }: Props) {

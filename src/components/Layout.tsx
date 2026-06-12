@@ -7,7 +7,7 @@ interface PageContainerProps {
   className?: string;
 }
 
-/** 全屏页面容器 - 确保100%填满 */
+/** Full-screen page container - guarantees 100% fill */
 export function PageContainer({ children, className = "" }: PageContainerProps) {
   const showcaseMode = useStore((s) => s.showcaseMode);
   return (
@@ -72,7 +72,7 @@ interface PageHeaderProps {
   className?: string;
 }
 
-/** 统一页面标题栏 */
+/** Unified page header */
 export function PageHeader({ title, subtitle, icon: Icon, actions, className = "" }: PageHeaderProps) {
   const showcaseMode = useStore((s) => s.showcaseMode);
   return (
@@ -157,7 +157,7 @@ interface PageContentProps {
   centered?: boolean;
 }
 
-/** 统一内容区域 - 可滚动 */
+/** Unified content area - scrollable */
 export function PageContent({ children, className = "", maxWidth = "1400px", centered = true }: PageContentProps) {
   return (
     <div
@@ -195,7 +195,7 @@ interface CardProps {
   style?: React.CSSProperties;
 }
 
-/** 统一卡片组件 */
+/** Unified card component */
 export function Card({
   children,
   className = "",
@@ -352,7 +352,7 @@ interface GridProps {
   style?: React.CSSProperties;
 }
 
-/** 统一网格布局 */
+/** Unified grid layout */
 export function Grid({ children, className = "", columns = 2, gap = "md", style }: GridProps) {
   const gapSize = gap === "sm" ? "12px" : gap === "md" ? "20px" : "28px";
 
@@ -371,7 +371,7 @@ export function Grid({ children, className = "", columns = 2, gap = "md", style 
   );
 }
 
-/** 两列布局 - 左窄右宽 */
+/** Two-column layout - narrow left, wide right */
 export function TwoColumnLayout({
   left,
   right,
@@ -398,7 +398,7 @@ export function TwoColumnLayout({
   );
 }
 
-/** 全屏居中的空状态 */
+/** Full-screen centered empty state */
 export function EmptyState({
   icon: Icon,
   title,
@@ -456,8 +456,8 @@ export function EmptyState({
   );
 }
 
-/** 加载状态 */
-export function LoadingState({ message = "加载中..." }: { message?: string }) {
+/** Loading state */
+export function LoadingState({ message = "Loading..." }: { message?: string }) {
   return (
     <div
       style={{

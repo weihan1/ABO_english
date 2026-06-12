@@ -39,7 +39,7 @@ export function ArxivCategorySelector({
   onToggleMainCategory,
   onToggleMainCategoryExpanded,
   disabled = false,
-  label = "分类筛选",
+  label = "Category filter",
   helperText,
   maxHeight = "260px",
 }: ArxivCategorySelectorProps) {
@@ -107,7 +107,7 @@ export function ArxivCategorySelector({
             color: "var(--text-muted)",
           }}
         >
-          分类加载中...
+          Loading categories...
         </div>
       ) : (
         <div
@@ -141,7 +141,7 @@ export function ArxivCategorySelector({
                   <button
                     type="button"
                     onClick={() => onToggleMainCategoryExpanded(main)}
-                    aria-label={isExpanded ? `收起 ${main}` : `展开 ${main}`}
+                    aria-label={isExpanded ? `Collapse ${main}` : `Expand ${main}`}
                     disabled={disabled}
                     style={{
                       width: "28px",
@@ -167,7 +167,7 @@ export function ArxivCategorySelector({
                   <button
                     type="button"
                     onClick={() => onToggleMainCategory(main)}
-                    title={allSelected ? "取消选择该大类" : "选择该大类下全部小类"}
+                    title={allSelected ? "Deselect this category" : "Select all subcategories under this category"}
                     disabled={disabled}
                     style={{
                       flex: 1,
@@ -188,7 +188,7 @@ export function ArxivCategorySelector({
                   >
                     <span>{main} · {MAIN_CATEGORY_LABELS[main] || main}</span>
                     <span style={{ fontSize: "0.75rem", opacity: 0.85 }}>
-                      {selectedCount > 0 ? `${selectedCount}/${subcategories.length}` : `${subcategories.length} 小类`}
+                      {selectedCount > 0 ? `${selectedCount}/${subcategories.length}` : `${subcategories.length} subcategories`}
                     </span>
                   </button>
                 </div>

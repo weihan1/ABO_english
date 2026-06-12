@@ -36,10 +36,10 @@ export default function SetupWizard() {
             <BookOpen className="w-7 h-7 text-indigo-500 dark:text-indigo-400" aria-hidden />
           </div>
           <h1 className="text-2xl font-heading text-slate-800 dark:text-slate-100">
-            欢迎使用 ABO
+            Welcome to ABO
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 text-center">
-            选择你的 Obsidian Vault 目录，ABO 将在其中创建所需的文件夹结构。
+            Choose your Obsidian Vault directory. ABO will create the folder structure it needs inside it.
           </p>
         </div>
 
@@ -49,7 +49,7 @@ export default function SetupWizard() {
               htmlFor="vault-path"
               className="text-sm font-medium text-slate-700 dark:text-slate-300"
             >
-              Vault 路径
+              Vault path
             </label>
             <input
               id="vault-path"
@@ -75,7 +75,7 @@ export default function SetupWizard() {
             disabled={loading || !path.trim()}
             className="mt-2 py-2.5 px-4 rounded-lg bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white font-medium transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
           >
-            {loading ? "配置中…" : "开始使用"}
+            {loading ? "Configuring…" : "Get started"}
           </button>
         </form>
       </div>

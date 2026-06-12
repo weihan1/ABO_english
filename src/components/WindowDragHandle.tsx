@@ -23,8 +23,8 @@ export default function WindowDragHandle() {
     <div
       data-tauri-drag-region
       onPointerDown={handlePointerDown}
-      title="拖动窗口"
-      aria-label="拖动窗口"
+      title="Drag window"
+      aria-label="Drag window"
       style={{
         position: "fixed",
         top: "8px",

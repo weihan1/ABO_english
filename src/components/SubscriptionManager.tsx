@@ -85,14 +85,14 @@ export default function SubscriptionManager({ types, subscriptions, onChange, di
                       color: "white",
                       cursor: "pointer",
                     }}
-                    aria-label="移除"
+                    aria-label="Remove"
                   >
                     <X style={{ width: "10px", height: "10px" }} />
                   </button>
                 </span>
               ))}
               {list.length === 0 && (
-                <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>暂无订阅</span>
+                <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>No subscriptions yet</span>
               )}
             </div>
             <div style={{ display: "flex", gap: "8px" }}>
@@ -107,7 +107,7 @@ export default function SubscriptionManager({ types, subscriptions, onChange, di
                     add(subType);
                   }
                 }}
-                placeholder={subType.placeholder || `添加 ${subType.label}`}
+                placeholder={subType.placeholder || `Add ${subType.label}`}
                 style={{
                   flex: 1,
                   padding: "10px 16px",
@@ -137,7 +137,7 @@ export default function SubscriptionManager({ types, subscriptions, onChange, di
                 }}
               >
                 <Plus style={{ width: "14px", height: "14px" }} />
-                添加
+                Add
               </button>
             </div>
           </div>

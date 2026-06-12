@@ -21,7 +21,7 @@ export default class AppErrorBoundary extends Component<AppErrorBoundaryProps, A
   static getDerivedStateFromError(error: Error): AppErrorBoundaryState {
     return {
       hasError: true,
-      message: error.message || "页面渲染失败",
+      message: error.message || "Page failed to render",
     };
   }
 
@@ -85,9 +85,9 @@ export default class AppErrorBoundary extends Component<AppErrorBoundaryProps, A
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <h2 style={{ margin: 0, fontSize: "1.125rem", color: "var(--text-main)" }}>这个页面加载失败了</h2>
+            <h2 style={{ margin: 0, fontSize: "1.125rem", color: "var(--text-main)" }}>This page failed to load</h2>
             <p style={{ margin: 0, fontSize: "0.9375rem", lineHeight: 1.7, color: "var(--text-secondary)" }}>
-              已拦截本次渲染异常，应用不会再直接白屏。你可以先回到概览页，或者重新打开当前页面。
+              The rendering error was caught, so the app won’t white-screen. You can go back to the overview page or reopen the current page.
             </p>
             {this.state.message && (
               <code
@@ -124,7 +124,7 @@ export default class AppErrorBoundary extends Component<AppErrorBoundaryProps, A
             }}
           >
             <RotateCcw style={{ width: "16px", height: "16px" }} />
-            重新加载当前页面
+            Reload current page
           </button>
         </div>
       </div>

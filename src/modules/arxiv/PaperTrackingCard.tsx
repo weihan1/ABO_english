@@ -235,7 +235,7 @@ function PaperFigureStrip({
                     fontWeight: 600,
                   }}
                 >
-                  查看论文图片
+                  View paper figures
                 </a>
               )}
               <div
@@ -262,7 +262,7 @@ function PaperFigureStrip({
                       fontWeight: 600,
                     }}
                   >
-                    架构图
+                    Architecture diagram
                   </span>
                 )}
               </div>
@@ -446,14 +446,14 @@ export default function PaperTrackingCard({
           : "#94A3B8";
   const relationshipLabel = metadataString(meta, "relationship_label")
     || (paperTrackingRole === "source"
-      ? "源论文"
+      ? "Source paper"
       : paperTrackingType === "keyword"
-        ? "关键词追踪"
+        ? "Keyword tracking"
         : relationship === "citation"
-          ? "引用文献"
+          ? "Citing papers"
           : relationship === "reference"
-            ? "参考文献"
-            : "论文追踪");
+            ? "References"
+            : "Paper tracking");
   const figureCount = figures.length;
   const hasFigures = figureCount > 0;
   // S2 follow-up cards hide the figure UI entirely when the user opted out of figure crawling.
@@ -565,7 +565,7 @@ export default function PaperTrackingCard({
             <span style={{ fontSize: "1.25rem", fontWeight: 700, color: scoreColor, lineHeight: 1 }}>
               {score}
             </span>
-            <span style={{ fontSize: "0.625rem", color: scoreColor, opacity: 0.8 }}>分</span>
+            <span style={{ fontSize: "0.625rem", color: scoreColor, opacity: 0.8 }}>pts</span>
           </div>
 
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -615,7 +615,7 @@ export default function PaperTrackingCard({
               {metadataNumber(meta, "citation_count") > 0 && (
                 <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}>
                   <Star style={{ width: "12px", height: "12px" }} />
-                  被引 {metadataNumber(meta, "citation_count")} 次
+                  Cited {metadataNumber(meta, "citation_count")} times
                 </span>
               )}
               {displayId && (
@@ -669,7 +669,7 @@ export default function PaperTrackingCard({
                 whiteSpace: "nowrap",
               }}
             >
-              原论文
+              Source paper
             </span>
             <span
               style={{
@@ -823,12 +823,12 @@ export default function PaperTrackingCard({
                 {loadingFigures ? (
                   <>
                     <RefreshCw style={{ width: "14px", height: "14px", animation: "spin 1s linear infinite" }} />
-                    加载图片...
+                    Loading figures...
                   </>
                 ) : (
                   <>
                     <ImageIcon style={{ width: "14px", height: "14px" }} />
-                    {hasFigures ? `已加载 ${figureCount} 张图` : "获取图片"}
+                    {hasFigures ? `Loaded ${figureCount} figures` : "Fetch figures"}
                   </>
                 )}
               </button>
@@ -859,17 +859,17 @@ export default function PaperTrackingCard({
                 {isSaving ? (
                   <>
                     <RefreshCw style={{ width: "14px", height: "14px", animation: "spin 1s linear infinite" }} />
-                    保存中...
+                    Saving...
                   </>
                 ) : effectiveSaved ? (
                   <>
                     <Check style={{ width: "14px", height: "14px" }} />
-                    已保存到文献库
+                    Saved to Literature Library
                   </>
                 ) : (
                   <>
                     <Save style={{ width: "14px", height: "14px" }} />
-                    保存到文献库
+                    Save to Literature Library
                   </>
                 )}
               </button>
@@ -900,12 +900,12 @@ export default function PaperTrackingCard({
                 {isSavingToWiki ? (
                   <>
                     <RefreshCw style={{ width: "14px", height: "14px", animation: "spin 1s linear infinite" }} />
-                    处理中...
+                    Processing...
                   </>
                 ) : (
                   <>
                     <BookHeart style={{ width: "14px", height: "14px" }} />
-                    {effectiveSaved ? "写入 Literature Wiki" : "保存并写入 Literature Wiki"}
+                    {effectiveSaved ? "Write to Literature Wiki" : "Save and write to Literature Wiki"}
                   </>
                 )}
               </button>
@@ -953,8 +953,8 @@ export default function PaperTrackingCard({
               }}
             >
               {loadingIntroduction
-                ? "正在获取 Introduction..."
-                : introduction || (introAttempted ? "未获取到可用的 Introduction 内容。" : "")}
+                ? "Fetching Introduction..."
+                : introduction || (introAttempted ? "No usable Introduction content found." : "")}
             </p>
           </div>
         )}
@@ -986,12 +986,12 @@ export default function PaperTrackingCard({
                 {expanded ? (
                   <>
                     <ChevronUp style={{ width: "14px", height: "14px" }} />
-                    收起摘要
+                    Collapse abstract
                   </>
                 ) : (
                   <>
                     <ChevronDown style={{ width: "14px", height: "14px" }} />
-                    展开完整摘要
+                    Expand full abstract
                   </>
                 )}
               </button>
@@ -1024,17 +1024,17 @@ export default function PaperTrackingCard({
                 {loadingIntroduction ? (
                   <>
                     <RefreshCw style={{ width: "14px", height: "14px", animation: "spin 1s linear infinite" }} />
-                    正在获取 Intro
+                    Fetching Intro
                   </>
                 ) : introExpanded ? (
                   <>
                     <ChevronUp style={{ width: "14px", height: "14px" }} />
-                    收起 Introduction
+                    Collapse Introduction
                   </>
                 ) : (
                   <>
                     <ChevronDown style={{ width: "14px", height: "14px" }} />
-                    展开 Introduction
+                    Expand Introduction
                   </>
                 )}
               </button>

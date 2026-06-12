@@ -61,7 +61,7 @@ export default function CommandPalette() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="搜索命令..."
+            placeholder="Search commands..."
             className="flex-1 bg-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 text-base outline-none"
           />
           <div className="flex items-center gap-2">
@@ -87,10 +87,10 @@ export default function CommandPalette() {
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Search className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" />
               <p className="text-gray-500 dark:text-gray-400 text-sm">
-                没有找到匹配的命令
+                No matching commands found
               </p>
               <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">
-                尝试其他关键词
+                Try different keywords
               </p>
             </div>
           ) : (
@@ -179,19 +179,19 @@ export default function CommandPalette() {
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-[10px]">↑↓</kbd>
-              <span>选择</span>
+              <span>Select</span>
             </span>
             <span className="flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-[10px]">↵</kbd>
-              <span>执行</span>
+              <span>Run</span>
             </span>
             <span className="flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-[10px]">ESC</kbd>
-              <span>关闭</span>
+              <span>Close</span>
             </span>
           </div>
           <span>
-            {filteredCommands.length} 个命令
+            {filteredCommands.length} commands
           </span>
         </div>
       </div>

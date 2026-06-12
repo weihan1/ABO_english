@@ -50,7 +50,7 @@ export default function GamePanel() {
           <span style={{ fontSize: "0.75rem", opacity: 0.75 }}>Researcher</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <span style={{ fontSize: "0.75rem", opacity: 0.75 }}>今日</span>
+          <span style={{ fontSize: "0.75rem", opacity: 0.75 }}>Today</span>
           <span style={{ fontSize: "0.9375rem", fontWeight: 700 }}>+{todayXP} XP</span>
         </div>
       </div>
@@ -61,7 +61,7 @@ export default function GamePanel() {
           display: "flex", justifyContent: "space-between",
           fontSize: "0.6875rem", color: "var(--text-muted)", marginBottom: "4px",
         }}>
-          <span>升级进度</span>
+          <span>Level progress</span>
           <span style={{ fontFamily: "monospace" }}>{xpProgress}/{xpToNextLevel}</span>
         </div>
         <div style={{
@@ -80,13 +80,13 @@ export default function GamePanel() {
       {/* 4 stats - compact 2x2 grid */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
         <StatRow icon={<Heart style={{ width: "14px", height: "14px", color: "#E89B96" }} />}
-          label="幸福度" value={happinessValue} max={100} color="#E89B96" />
+          label="Happiness" value={happinessValue} max={100} color="#E89B96" />
         <StatRow icon={<Brain style={{ width: "14px", height: "14px", color: "#9D7BDB" }} />}
-          label="SAN值" value={sanValue} max={100} color="#9D7BDB" />
+          label="Sanity" value={sanValue} max={100} color="#9D7BDB" />
         <StatRow icon={<Zap style={{ width: "14px", height: "14px", color: "#F59E0B" }} />}
-          label="能量" value={energyValue} max={100} color="#F59E0B" />
+          label="Energy" value={energyValue} max={100} color="#F59E0B" />
         <StatRow icon={<Sparkles style={{ width: "14px", height: "14px", color: "var(--color-primary)" }} />}
-          label="成就" value={achievementCount} color="var(--color-primary)" />
+          label="Achievements" value={achievementCount} color="var(--color-primary)" />
       </div>
 
       {/* Total XP footer */}
@@ -94,7 +94,7 @@ export default function GamePanel() {
         display: "flex", justifyContent: "space-between",
         fontSize: "0.75rem", color: "var(--text-muted)", padding: "0 2px",
       }}>
-        <span>总 XP</span>
+        <span>Total XP</span>
         <span style={{ fontFamily: "monospace", color: "var(--text-secondary)" }}>
           {totalXP.toLocaleString()}
         </span>

@@ -1,6 +1,6 @@
 /**
- * ChatHome - 聊天入口页面 (重构版)
- * 功能: 自动检测后端 CLI，显示加载/空状态，统一布局
+ * ChatHome - chat entry page (refactored)
+ * Features: auto-detect backend CLIs, loading/empty states, unified layout
  */
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Sparkles, Send, Bot, Loader2, Zap, BookOpen, Lightbulb, Target, Clock, Compass, Brain, Plus, Shield, ChevronDown, History } from 'lucide-react';
@@ -10,14 +10,14 @@ import type { CliConfig } from '../../types/chat';
 import { isActionEnterKey, isComposingKeyboardEvent } from '../../core/keyboard';
 import { useStore } from '../../core/store';
 
-// 快捷指令配置
+// Quick command config
 const QUICK_ACTIONS = [
-  { id: 'summarize', label: '总结文献', icon: BookOpen, color: 'text-blue-500' },
-  { id: 'hypothesis', label: '生成假设', icon: Lightbulb, color: 'text-amber-500' },
-  { id: 'critique', label: '批判分析', icon: Target, color: 'text-red-500' },
-  { id: 'plan', label: '研究规划', icon: Clock, color: 'text-green-500' },
-  { id: 'energy', label: '精力引导', icon: Zap, color: 'text-purple-500' },
-  { id: 'insight', label: '灵感激发', icon: Compass, color: 'text-pink-500' },
+  { id: 'summarize', label: 'Summarize papers', icon: BookOpen, color: 'text-blue-500' },
+  { id: 'hypothesis', label: 'Generate hypotheses', icon: Lightbulb, color: 'text-amber-500' },
+  { id: 'critique', label: 'Critical analysis', icon: Target, color: 'text-red-500' },
+  { id: 'plan', label: 'Research planning', icon: Clock, color: 'text-green-500' },
+  { id: 'energy', label: 'Energy guidance', icon: Zap, color: 'text-purple-500' },
+  { id: 'insight', label: 'Spark inspiration', icon: Compass, color: 'text-pink-500' },
 ];
 
 interface ChatHomeProps {
@@ -28,18 +28,18 @@ interface ChatHomeProps {
 export function ChatHome({ onStartChat, isLoading: externalLoading = false }: ChatHomeProps) {
   const aiProvider = useStore((state) => state.aiProvider);
 
-  // 后端检测状态
+  // Backend detection state
   const [isDetecting, setIsDetecting] = useState(true);
   const [availableClis, setAvailableClis] = useState<CliConfig[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // 本地状态
+  // Local state
   const [selectedCli, setSelectedCli] = useState<CliConfig | null>(null);
   const [input, setInput] = useState('');
   const [showCliSelector, setShowCliSelector] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // 自动检测后端 CLI
+  // Auto-detect backend CLIs
   useEffect(() => {
     setIsDetecting(true);
     setError(null);
@@ -58,7 +58,7 @@ export function ChatHome({ onStartChat, isLoading: externalLoading = false }: Ch
       })
       .catch(err => {
         console.error('Failed to detect CLIs:', err);
-        setError("无法连接到后端服务");
+        setError("Could not connect to the backend service");
         setIsDetecting(false);
       });
   }, [aiProvider, selectedCli]);
@@ -100,23 +100,23 @@ export function ChatHome({ onStartChat, isLoading: externalLoading = false }: Ch
     setShowCliSelector(false);
   }, []);
 
-  // 加载状态 - 检测中
+  // Loading state - detecting
   if (isDetecting) {
     return (
       <PageContainer>
-        <LoadingState message="正在检测可用的 AI 助手..." />
+        <LoadingState message="Detecting available AI assistants..." />
       </PageContainer>
     );
   }
 
-  // 错误状态
+  // Error state
   if (error) {
     return (
       <PageContainer>
         <PageContent centered maxWidth="600px">
           <EmptyState
             icon={Bot}
-            title="连接失败"
+            title="Connection Failed"
             description={error}
           />
         </PageContent>
@@ -124,27 +124,27 @@ export function ChatHome({ onStartChat, isLoading: externalLoading = false }: Ch
     );
   }
 
-  // 空状态 - 无可用 CLI
+  // Empty state - no usable CLI
   if (availableClis.length === 0) {
     return (
       <PageContainer>
         <PageContent centered maxWidth="600px">
           <EmptyState
             icon={Bot}
-            title="暂无可用的 AI 助手"
-            description="请安装并配置 Codex CLI 或 Claude Code"
+            title="No AI Assistant Available"
+            description="Please install and configure Codex CLI or Claude Code"
           />
         </PageContent>
       </PageContainer>
     );
   }
 
-  // 主界面
+  // Main view
   return (
     <PageContainer>
       <PageContent centered maxWidth="600px">
         <Card noPadding style={{ padding: 'clamp(24px, 4vw, 40px)' }}>
-          {/* 顶部图标和问候语 */}
+          {/* Top icon and greeting */}
           <div style={{ textAlign: 'center', marginBottom: '28px' }}>
             <div
               style={{
@@ -170,14 +170,14 @@ export function ChatHome({ onStartChat, isLoading: externalLoading = false }: Ch
                 marginBottom: '8px',
               }}
             >
-              Hi，今天有什么安排？
+              Hi, what's the plan today?
             </h1>
             <p style={{ fontSize: '0.9375rem', color: 'var(--text-muted)' }}>
-              选择一个 AI 助手开始对话
+              Pick an AI assistant to start chatting
             </p>
           </div>
 
-          {/* CLI 选择器 */}
+          {/* CLI selector */}
           <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
             {showCliSelector ? (
               <div
@@ -236,7 +236,7 @@ export function ChatHome({ onStartChat, isLoading: externalLoading = false }: Ch
                 }}
               >
                 <Sparkles style={{ width: '16px', height: '16px' }} />
-                <span>{currentCli?.name || '选择助手'}</span>
+                <span>{currentCli?.name || 'Choose assistant'}</span>
                 <span style={{ width: '1px', height: '16px', background: 'var(--color-primary)', opacity: 0.2, margin: '0 4px' }} />
                 <History style={{ width: '14px', height: '14px', opacity: 0.6 }} />
                 <span style={{ width: '1px', height: '16px', background: 'var(--color-primary)', opacity: 0.2, margin: '0 4px' }} />
@@ -246,7 +246,7 @@ export function ChatHome({ onStartChat, isLoading: externalLoading = false }: Ch
             )}
           </div>
 
-          {/* 输入框区域 */}
+          {/* Input area */}
           <div
             style={{
               borderRadius: '16px',
@@ -256,14 +256,14 @@ export function ChatHome({ onStartChat, isLoading: externalLoading = false }: Ch
               transition: 'all 0.2s ease',
             }}
           >
-            {/* 文本域 */}
+            {/* Textarea */}
             <textarea
               ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               onInput={handleInput}
-              placeholder={`${currentCli?.name || 'Codex'}, 发消息、上传文件、打开文件夹或创建定时任务...`}
+              placeholder={`${currentCli?.name || 'Codex'}, send a message, upload files, open folders, or create scheduled tasks...`}
               disabled={externalLoading}
               rows={1}
               style={{
@@ -281,7 +281,7 @@ export function ChatHome({ onStartChat, isLoading: externalLoading = false }: Ch
               }}
             />
 
-            {/* 底部工具栏 */}
+            {/* Bottom toolbar */}
             <div
               style={{
                 display: 'flex',
@@ -290,11 +290,11 @@ export function ChatHome({ onStartChat, isLoading: externalLoading = false }: Ch
                 padding: '8px 12px 12px',
               }}
             >
-              {/* 左侧工具 */}
+              {/* Left tools */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <button
                   type="button"
-                  title="添加附件"
+                  title="Add attachment"
                   style={{
                     width: '32px',
                     height: '32px',
@@ -311,7 +311,7 @@ export function ChatHome({ onStartChat, isLoading: externalLoading = false }: Ch
                   <Plus style={{ width: '20px', height: '20px' }} />
                 </button>
 
-                {/* 默认模型 pill */}
+                {/* Default model pill */}
                 <button
                   type="button"
                   style={{
@@ -329,10 +329,10 @@ export function ChatHome({ onStartChat, isLoading: externalLoading = false }: Ch
                   }}
                 >
                   <Brain style={{ width: '14px', height: '14px' }} />
-                  <span>默认模型</span>
+                  <span>Default model</span>
                 </button>
 
-                {/* 权限 pill */}
+                {/* Permissions pill */}
                 <button
                   type="button"
                   style={{
@@ -350,11 +350,11 @@ export function ChatHome({ onStartChat, isLoading: externalLoading = false }: Ch
                   }}
                 >
                   <Shield style={{ width: '14px', height: '14px' }} />
-                  <span>权限·默认</span>
+                  <span>Permissions · default</span>
                 </button>
               </div>
 
-              {/* 右侧发送按钮 */}
+              {/* Right send button */}
               <button
                 type="button"
                 onClick={handleSubmit}
@@ -384,7 +384,7 @@ export function ChatHome({ onStartChat, isLoading: externalLoading = false }: Ch
             </div>
           </div>
 
-          {/* 快捷操作按钮 */}
+          {/* Quick action buttons */}
           <div
             style={{
               display: 'flex',
@@ -431,9 +431,9 @@ export function ChatHome({ onStartChat, isLoading: externalLoading = false }: Ch
             })}
           </div>
 
-          {/* 底部提示 */}
+          {/* Bottom hint */}
           <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            按 Enter 发送，Shift + Enter 换行
+            Enter to send, Shift + Enter for new line
           </p>
         </Card>
       </PageContent>

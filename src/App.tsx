@@ -68,7 +68,7 @@ function AppLoadingScreen({
   isTauriRuntime: boolean;
   memeIndex: number;
 }) {
-  const memeLabel = currentMeme?.label === "base" ? "ABO 表情设定集" : currentMeme?.label || "ABO";
+  const memeLabel = currentMeme?.label === "base" ? "ABO expression set" : currentMeme?.label || "ABO";
 
   return (
     <div
@@ -91,19 +91,19 @@ function AppLoadingScreen({
       <div className="boot-orb boot-orb-right" />
       <div className="boot-shell">
         <section className="boot-copy">
-          <div className="boot-kicker">ABO 正在启动</div>
-          <h1 className="boot-title">先把桌面壳打开，再把本地大脑叫醒。</h1>
+          <div className="boot-kicker">ABO is starting</div>
+          <h1 className="boot-title">Opening the desktop shell first, then waking up your local brain.</h1>
           <p className="boot-summary">
-            第一次启动可能需要 10-60s。之后再次打开通常会更快。
+            First launch may take 10-60s. Subsequent launches are usually faster.
           </p>
           <div className="boot-status-card">
             <div className="boot-spinner" aria-hidden />
             <div style={{ display: "grid", gap: "6px" }}>
-              <strong className="boot-status-title">正在连接本地后端</strong>
+              <strong className="boot-status-title">Connecting to local backend</strong>
               <span className="boot-status-text">
                 {isTauriRuntime
-                  ? "打包版会自动拉起本地服务，启动完成后会直接进入工作台。"
-                  : "正在加载当前界面。"}
+                  ? "The packaged app starts the local service automatically; once ready you’ll land in the workspace."
+                  : "Loading the current view."}
               </span>
             </div>
           </div>
@@ -115,7 +115,7 @@ function AppLoadingScreen({
           </div>
         </section>
 
-        <section className="boot-stage" aria-label="ABO 启动轮播">
+        <section className="boot-stage" aria-label="ABO startup carousel">
           <div className="boot-stage-frame">
             {LOADING_MEMES.map((meme, index) => {
               const active = index === memeIndex;
@@ -125,7 +125,7 @@ function AppLoadingScreen({
                   className={`boot-slide${active ? " is-active" : ""}`}
                   aria-hidden={!active}
                 >
-                  <img src={meme.src} alt={`ABO 启动图：${meme.label}`} />
+                  <img src={meme.src} alt={`ABO startup image: ${meme.label}`} />
                 </figure>
               );
             })}
@@ -402,7 +402,7 @@ export default function App() {
         );
         setOnboardingCompleted(config.onboarding_completed ?? false);
       } catch (error) {
-        const message = error instanceof Error ? error.message : "后端启动失败";
+        const message = error instanceof Error ? error.message : "Backend failed to start";
         setBootError(message);
         setOnboardingCompleted(null);
       } finally {
@@ -688,7 +688,7 @@ export default function App() {
     }
     addToast({
       kind: "error",
-      title: "ABO 后端未就绪",
+      title: "ABO backend not ready",
       message: bootError,
     });
   }, [addToast, bootError]);
@@ -732,9 +732,9 @@ export default function App() {
             gap: "14px",
           }}
         >
-          <h1 style={{ margin: 0, fontSize: "1.3rem", color: "var(--text-main)" }}>ABO 启动失败</h1>
+          <h1 style={{ margin: 0, fontSize: "1.3rem", color: "var(--text-main)" }}>ABO failed to start</h1>
           <p style={{ margin: 0, fontSize: "0.92rem", lineHeight: 1.7, color: "var(--text-secondary)" }}>
-            桌面壳已经打开，但本地后端服务还没准备好。打包版会自动拉起本地后端；如果等待约 1 分钟后仍然报错，再优先检查 sidecar 是否缺失或被 macOS 拦截执行。
+            The desktop shell is open, but the local backend service is not ready yet. The packaged app starts the backend automatically; if the error persists after about 1 minute, check whether the sidecar is missing or blocked by macOS.
           </p>
           <code
             style={{
@@ -769,7 +769,7 @@ export default function App() {
               cursor: "pointer",
             }}
           >
-            重试启动
+            Retry startup
           </button>
         </div>
       </div>

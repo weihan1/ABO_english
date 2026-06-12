@@ -95,12 +95,12 @@ function timeAgo(dateStr: string): string {
   const then = new Date(dateStr).getTime();
   const diffMs = now - then;
   const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "刚刚";
-  if (diffMin < 60) return `${diffMin}分钟前`;
+  if (diffMin < 1) return "just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
   const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `${diffH}小时前`;
+  if (diffH < 24) return `${diffH}h ago`;
   const diffD = Math.floor(diffH / 24);
-  if (diffD < 30) return `${diffD}天前`;
+  if (diffD < 30) return `${diffD}d ago`;
   return dateStr.slice(0, 10);
 }
 
@@ -216,14 +216,14 @@ export default function WikiHome({ onSelectWiki }: Props) {
       setIntelControl(data.intelControl);
       setLitControl(data.litControl);
       toast.success(
-        wikiType === "intel" ? "Internet Wiki 已生成" : "Literature Wiki 已生成",
-        `已更新 ${result.pages_updated} 个起步页面`
+        wikiType === "intel" ? "Internet Wiki generated" : "Literature Wiki generated",
+        `Updated ${result.pages_updated} starter pages`
       );
       setActionLoading(null);
       onSelectWiki(wikiType);
       return;
     } catch (error) {
-      toast.error("生成失败", error instanceof Error ? error.message : "请稍后重试");
+      toast.error("Generation failed", error instanceof Error ? error.message : "Please try again later");
     }
     setActionLoading(null);
   }
@@ -238,9 +238,9 @@ export default function WikiHome({ onSelectWiki }: Props) {
   if (loading) {
     return (
       <PageContainer>
-        <PageHeader title="知识库" subtitle="先生成初步画像，后续从今日情报和新论文一键补进来" icon={BookHeart} />
+        <PageHeader title="Knowledge Base" subtitle="Generate an initial profile first, then top it up from Daily Briefing and new papers with one click" icon={BookHeart} />
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <LoadingState message="加载知识库..." />
+          <LoadingState message="Loading knowledge base..." />
         </div>
       </PageContainer>
     );
@@ -248,7 +248,7 @@ export default function WikiHome({ onSelectWiki }: Props) {
 
   return (
     <PageContainer>
-      <PageHeader title="知识库" subtitle="先生成初步画像，后续从今日情报和新论文一键补进来" icon={BookHeart} />
+      <PageHeader title="Knowledge Base" subtitle="Generate an initial profile first, then top it up from Daily Briefing and new papers with one click" icon={BookHeart} />
 
       <div
         style={{
@@ -281,20 +281,20 @@ export default function WikiHome({ onSelectWiki }: Props) {
               {
                 key: "step-1",
                 icon: Sparkles,
-                title: "第一次先点生成",
-                description: "系统会按现有收藏先长出一页总览，不需要自己想结构。",
+                title: "First time: click Generate",
+                description: "The system grows an overview page from your existing collections — no need to design the structure yourself.",
               },
               {
                 key: "step-2",
                 icon: Inbox,
-                title: "情报直接补进情报库",
-                description: "以后看到值得留的内容，只点“写入 Internet Wiki”就够了。",
+                title: "Intel flows into the Intel Library",
+                description: "When you see content worth keeping, just click \"Write to Internet Wiki\".",
               },
               {
                 key: "step-3",
                 icon: BookOpen,
-                title: "论文和旧笔记一起挂图",
-                description: "新论文继续保存到文献库，follow up、archive 和指导会一起串成研究地图。",
+                title: "Papers and old notes map together",
+                description: "Keep saving new papers to the Literature Library; follow-ups, archives, and guidance link into a research map.",
               },
             ].map(({ key, icon: Icon, title, description }) => (
               <div key={key} style={{ display: "grid", gridTemplateColumns: "32px 1fr", gap: "12px", alignItems: "start" }}>
@@ -385,7 +385,7 @@ export default function WikiHome({ onSelectWiki }: Props) {
                     fontWeight: 700,
                   }}
                 >
-                  {intelControl?.has_overview ? "已生成总览" : "还没生成"}
+                  {intelControl?.has_overview ? "Overview generated" : "Not generated yet"}
                 </span>
               </div>
 
@@ -402,14 +402,14 @@ export default function WikiHome({ onSelectWiki }: Props) {
                   Internet Wiki
                 </h2>
                 <p style={{ fontSize: "0.9375rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
-                  Bilibili · 小红书 · 收藏主线
+                  Bilibili · Xiaohongshu · bookmark threads
                 </p>
               </div>
 
               <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                <MetricPill label="页" value={intelStats.page_count} background="rgba(188, 164, 227, 0.12)" />
-                <MetricPill label="对象" value={intelStats.entity_count ?? 0} background="rgba(168, 230, 207, 0.15)" />
-                <MetricPill label="来源" value={intelControl?.source_summary.total_sources ?? 0} background="rgba(255, 183, 178, 0.12)" />
+                <MetricPill label="Pages" value={intelStats.page_count} background="rgba(188, 164, 227, 0.12)" />
+                <MetricPill label="Entities" value={intelStats.entity_count ?? 0} background="rgba(168, 230, 207, 0.15)" />
+                <MetricPill label="Sources" value={intelControl?.source_summary.total_sources ?? 0} background="rgba(255, 183, 178, 0.12)" />
               </div>
 
               <div
@@ -423,14 +423,14 @@ export default function WikiHome({ onSelectWiki }: Props) {
                 }}
               >
                 <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-main)" }}>
-                  {intelControl?.has_overview ? "现在可以直接打开 Internet Wiki 总览" : "推荐先生成一页 Internet Wiki 总览"}
+                  {intelControl?.has_overview ? "You can open the Internet Wiki overview now" : "We recommend generating an Internet Wiki overview first"}
                 </div>
                 <div style={{ fontSize: "0.875rem", lineHeight: 1.65, color: "var(--text-secondary)" }}>
-                  {intelControl?.workflow_hint ?? "以后在今日情报里点“写入 Internet Wiki”，系统会继续补进来。"}
+                  {intelControl?.workflow_hint ?? "Later, click \"Write to Internet Wiki\" in Daily Briefing and the system keeps adding to it."}
                 </div>
                 {intelControl?.source_summary.collections?.[0] && (
                   <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                    当前主收藏：{intelControl.source_summary.collections[0].label}
+                    Main collection: {intelControl.source_summary.collections[0].label}
                   </div>
                 )}
               </div>
@@ -439,10 +439,10 @@ export default function WikiHome({ onSelectWiki }: Props) {
                 <WikiActionButton
                   label={
                     actionLoading === "intel"
-                      ? "生成中..."
+                      ? "Generating..."
                       : intelControl?.has_overview
-                      ? "打开总览"
-                      : (intelControl?.primary_action_label ?? "生成 Internet Wiki 总览")
+                      ? "Open overview"
+                      : (intelControl?.primary_action_label ?? "Generate Internet Wiki overview")
                   }
                   primary
                   disabled={actionLoading === "intel"}
@@ -457,10 +457,10 @@ export default function WikiHome({ onSelectWiki }: Props) {
                 <WikiActionButton
                   label={
                     actionLoading === "intel"
-                      ? "请稍候"
+                      ? "Please wait"
                       : intelControl?.has_overview
-                      ? (intelControl?.primary_action_label ?? "刷新 Internet Wiki 总览")
-                      : "进入情报库"
+                      ? (intelControl?.primary_action_label ?? "Refresh Internet Wiki overview")
+                      : "Go to Intel Library"
                   }
                   disabled={actionLoading === "intel"}
                   onClick={() => {
@@ -532,7 +532,7 @@ export default function WikiHome({ onSelectWiki }: Props) {
                     fontWeight: 700,
                   }}
                 >
-                  {litControl?.has_overview ? "已生成总览" : "还没生成"}
+                  {litControl?.has_overview ? "Overview generated" : "Not generated yet"}
                 </span>
               </div>
 
@@ -549,14 +549,14 @@ export default function WikiHome({ onSelectWiki }: Props) {
                   Literature Wiki
                 </h2>
                 <p style={{ fontSize: "0.9375rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
-                  论文 · Follow Up · Archive · 指导
+                  Papers · Follow Up · Archive · Guidance
                 </p>
               </div>
 
               <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                <MetricPill label="页" value={litStats.page_count} background="rgba(168, 230, 207, 0.15)" />
-                <MetricPill label="主题" value={litStats.topic_count ?? 0} background="rgba(188, 164, 227, 0.12)" />
-                <MetricPill label="来源" value={litControl?.source_summary.total_sources ?? 0} background="rgba(255, 183, 178, 0.12)" />
+                <MetricPill label="Pages" value={litStats.page_count} background="rgba(168, 230, 207, 0.15)" />
+                <MetricPill label="Topics" value={litStats.topic_count ?? 0} background="rgba(188, 164, 227, 0.12)" />
+                <MetricPill label="Sources" value={litControl?.source_summary.total_sources ?? 0} background="rgba(255, 183, 178, 0.12)" />
               </div>
 
               <div
@@ -570,14 +570,14 @@ export default function WikiHome({ onSelectWiki }: Props) {
                 }}
               >
                 <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-main)" }}>
-                  {litControl?.has_overview ? "现在可以直接打开 Literature Wiki 总览" : "推荐先生成一页 Literature Wiki 总览"}
+                  {litControl?.has_overview ? "You can open the Literature Wiki overview now" : "We recommend generating a Literature Wiki overview first"}
                 </div>
                 <div style={{ fontSize: "0.875rem", lineHeight: 1.65, color: "var(--text-secondary)" }}>
-                  {litControl?.workflow_hint ?? "以后论文只要保存到文献库，系统会顺手把新论文、follow up 和旧笔记串进 Literature Wiki。"}
+                  {litControl?.workflow_hint ?? "Later, whenever a paper is saved to the Literature Library, the system links new papers, follow-ups, and old notes into the Literature Wiki."}
                 </div>
                 {litControl?.source_summary.collections?.[0] && (
                   <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                    当前主收藏：{litControl.source_summary.collections[0].label}
+                    Main collection: {litControl.source_summary.collections[0].label}
                   </div>
                 )}
               </div>
@@ -586,10 +586,10 @@ export default function WikiHome({ onSelectWiki }: Props) {
                 <WikiActionButton
                   label={
                     actionLoading === "lit"
-                      ? "生成中..."
+                      ? "Generating..."
                       : litControl?.has_overview
-                      ? "打开总览"
-                      : (litControl?.primary_action_label ?? "生成 Literature Wiki 总览")
+                      ? "Open overview"
+                      : (litControl?.primary_action_label ?? "Generate Literature Wiki overview")
                   }
                   primary
                   disabled={actionLoading === "lit"}
@@ -604,10 +604,10 @@ export default function WikiHome({ onSelectWiki }: Props) {
                 <WikiActionButton
                   label={
                     actionLoading === "lit"
-                      ? "请稍候"
+                      ? "Please wait"
                       : litControl?.has_overview
-                      ? (litControl?.primary_action_label ?? "刷新 Literature Wiki 总览")
-                      : "进入文献库"
+                      ? (litControl?.primary_action_label ?? "Refresh Literature Wiki overview")
+                      : "Go to Literature Library"
                   }
                   disabled={actionLoading === "lit"}
                   onClick={() => {
@@ -640,7 +640,7 @@ export default function WikiHome({ onSelectWiki }: Props) {
                   color: "var(--text-secondary)",
                 }}
               >
-                最近更新
+                Recently updated
               </h3>
             </div>
 
@@ -664,10 +664,10 @@ export default function WikiHome({ onSelectWiki }: Props) {
                   }}
                 />
                 <p style={{ fontSize: "0.9375rem", fontWeight: 500 }}>
-                  还没有 Wiki 页面
+                  No Wiki pages yet
                 </p>
                 <p style={{ fontSize: "0.8125rem", marginTop: "4px", opacity: 0.7 }}>
-                  先点上面的生成按钮，后面就按默认动作继续补充
+                  Click the generate button above first, then keep adding via the default actions
                 </p>
               </div>
             ) : (

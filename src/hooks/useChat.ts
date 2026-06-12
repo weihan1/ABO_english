@@ -167,14 +167,14 @@ export function useChat(): UseChatReturn {
     const metadata = event.metadata ?? {};
     const phase = String(metadata.phase ?? '').toLowerCase();
     const label = String(metadata.label ?? event.data ?? '');
-    return event.type === 'thinking' || event.type === 'thought' || phase === 'thinking' || phase === 'thought' || label.includes('思考');
+    return event.type === 'thinking' || event.type === 'thought' || phase === 'thinking' || phase === 'thought' || label.includes('思考') || label.toLowerCase().includes('think');
   }, []);
 
   const upsertThinkingMessage = useCallback((event: StreamEvent, conversationId: string, append = false) => {
     if (!conversationId || !event.msgId) return;
 
     const metadata = event.metadata ?? {};
-    const label = String(metadata.label ?? event.data ?? '正在思考').trim() || '正在思考';
+    const label = String(metadata.label ?? event.data ?? 'Thinking').trim() || 'Thinking';
     const detail = String(metadata.detail ?? metadata.phaseDetail ?? '').trim();
     const content = detail && detail !== label ? `${label}\n${detail}` : label;
     const thinkingMessageId = getThinkingMessageId(event);
@@ -323,7 +323,7 @@ export function useChat(): UseChatReturn {
           connectedSessionRef.current = null;
           connectedCliRef.current = null;
           setIsConnected(false);
-          setError('WebSocket 连接错误');
+          setError('WebSocket connection error');
           reject(error);
         };
 
@@ -372,7 +372,7 @@ export function useChat(): UseChatReturn {
     return false;
   }, []);
 
-  const beginLocalTurn = useCallback((conversation: Conversation, label = '正在发送到工作机') => {
+  const beginLocalTurn = useCallback((conversation: Conversation, label = 'Sending to worker') => {
     const now = Date.now();
     stoppedNoticeRef.current.delete(conversation.id);
     activeTurnConversationIdRef.current = conversation.id;
@@ -405,7 +405,7 @@ export function useChat(): UseChatReturn {
         currentTurnStartedAtRef.current = null;
         setIsStreaming(false);
         setStreamStatus(null);
-        setError('WebSocket 连接失败');
+        setError('WebSocket connection failed');
         return false;
       }
     }
@@ -416,13 +416,13 @@ export function useChat(): UseChatReturn {
       currentTurnStartedAtRef.current = null;
       setIsStreaming(false);
       setStreamStatus(null);
-      setError('发送失败 - WebSocket 未连接');
+      setError('Send failed - WebSocket not connected');
       return false;
     }
     return true;
   }, [beginLocalTurn, connectWebSocket, sendViaWebSocket]);
 
-  const finalizeStoppedTurn = useCallback((conversationId?: string, notice = '已终止当前回复') => {
+  const finalizeStoppedTurn = useCallback((conversationId?: string, notice = 'Current reply stopped') => {
     const targetConversationId = conversationId || activeTurnConversationIdRef.current || activeConversationRef.current?.id || '';
     if (!targetConversationId) return;
 
@@ -474,7 +474,7 @@ export function useChat(): UseChatReturn {
       const now = Date.now();
       setStreamStatus({
         phase: 'stopping',
-        label: '正在终止当前回复',
+        label: 'Stopping current reply',
         elapsedSeconds: currentTurnStartedAtRef.current
           ? Math.max(0, Math.floor((now - currentTurnStartedAtRef.current) / 1000))
           : 0,
@@ -500,9 +500,9 @@ export function useChat(): UseChatReturn {
         void refreshConversationsRef.current();
       }, 150);
     } catch (e) {
-      setError(e instanceof Error ? e.message : '终止对话失败');
+      setError(e instanceof Error ? e.message : 'Failed to stop the conversation');
       if (!sentOverWebSocket) {
-        finalizeStoppedTurn(targetConversationId, '终止请求已发送，但后端没有确认');
+        finalizeStoppedTurn(targetConversationId, 'Stop request sent, but the backend did not confirm');
       }
     }
   }, [finalizeStoppedTurn, sendStopViaWebSocket]);
@@ -561,7 +561,7 @@ export function useChat(): UseChatReturn {
         if (conversationId) {
           activeTurnConversationIdRef.current = conversationId;
         }
-        updateStreamStatus(event, '工作机已启动', conversationId);
+        updateStreamStatus(event, 'Worker started', conversationId);
         currentMsgIdRef.current = event.msgId;
         if (conversationId) {
           touchConversation(conversationId);
@@ -596,7 +596,7 @@ export function useChat(): UseChatReturn {
         if (event.msgId) {
           currentMsgIdRef.current = event.msgId;
         }
-        updateStreamStatus(event, '工作机正在处理', conversationId);
+        updateStreamStatus(event, 'Worker processing', conversationId);
         if (isThinkingEvent(event)) {
           upsertThinkingMessage(event, conversationId);
         }
@@ -613,12 +613,12 @@ export function useChat(): UseChatReturn {
         if (event.msgId) {
           currentMsgIdRef.current = event.msgId;
         }
-        updateStreamStatus(event, '正在思考', conversationId);
+        updateStreamStatus(event, 'Thinking', conversationId);
         upsertThinkingMessage(event, conversationId, true);
         break;
 
       case 'content':
-        updateStreamStatus(event, '正在接收回复', conversationId);
+        updateStreamStatus(event, 'Receiving reply', conversationId);
         mutateMessagesForConversation(conversationId, (prev) => {
           const existing = prev.find((message) => message.msgId === event.msgId && message.role === 'assistant' && message.contentType === 'text');
           if (!existing) {
@@ -647,11 +647,11 @@ export function useChat(): UseChatReturn {
       case 'tool_call': {
         const toolData = event.metadata || {};
         const toolMessageId = getToolMessageId(event);
-        const command = String(toolData.command ?? toolData.toolName ?? event.data ?? '工具调用');
+        const command = String(toolData.command ?? toolData.toolName ?? event.data ?? 'Tool call');
         const phase = String(toolData.phase ?? '');
         const status = phase === 'tool_done' || phase === 'done' || phase === 'completed' ? 'completed' : 'streaming';
         const content = event.data && event.data !== command ? `${command}\n\n${event.data}` : command;
-        updateStreamStatus(event, '正在执行工具', conversationId);
+        updateStreamStatus(event, 'Running tool', conversationId);
         mutateMessagesForConversation(conversationId, (prev) => {
           const nextMessage: Message = {
             id: toolMessageId,
@@ -704,7 +704,7 @@ export function useChat(): UseChatReturn {
         break;
 
       case 'stopped':
-        finalizeStoppedTurn(conversationId, event.data || '已终止当前回复');
+        finalizeStoppedTurn(conversationId, event.data || 'Current reply stopped');
         window.setTimeout(() => {
           void refreshConversationsRef.current();
         }, 150);
@@ -788,13 +788,13 @@ export function useChat(): UseChatReturn {
   ): Promise<Conversation | null> => {
     const cliId = cliType || selectedCli?.id;
     if (!cliId) {
-      setError('请先选择一个 CLI');
+      setError('Please select a CLI first');
       return null;
     }
 
     const cli = availableClis.find((c) => c.id === cliId);
     if (!cli) {
-      setError(`CLI ${cliId} 不可用`);
+      setError(`CLI ${cliId} is not available`);
       return null;
     }
 
@@ -875,7 +875,7 @@ export function useChat(): UseChatReturn {
           })
           .catch((e) => {
             console.error('[useChat] Failed to load conversation messages:', e);
-            setError(e instanceof Error ? e.message : '加载历史消息失败');
+            setError(e instanceof Error ? e.message : 'Failed to load message history');
           });
       }
 
@@ -922,7 +922,7 @@ export function useChat(): UseChatReturn {
       await deleteConversationApi(convId);
     } catch (e) {
       console.error('[useChat] Failed to delete conversation:', e);
-      setError(e instanceof Error ? e.message : '删除对话失败');
+      setError(e instanceof Error ? e.message : 'Failed to delete conversation');
       await refreshConversations();
     }
   }, [activeConversation, conversations, disconnectWebSocket, switchConversation, refreshConversations]);
@@ -931,7 +931,7 @@ export function useChat(): UseChatReturn {
   const sendMessage = useCallback(async (content: string, conversationOverride?: Conversation | null, contextScope?: string) => {
     const targetConversation = conversationOverride ?? activeConversation;
     if (!targetConversation) {
-      setError('没有活动的对话');
+      setError('No active conversation');
       return;
     }
 

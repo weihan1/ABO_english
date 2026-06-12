@@ -152,7 +152,7 @@ export function useGlobalSearch(): UseGlobalSearchReturn {
         } else {
           addToast({
             kind: 'info',
-            title: '已选择',
+            title: 'Selected',
             message: result.title,
           });
         }
@@ -292,13 +292,13 @@ export default function GlobalSearch() {
   const getResultTypeLabel = (type: SearchResult['type']) => {
     switch (type) {
       case 'card':
-        return '卡片';
+        return 'Card';
       case 'literature':
-        return '文献';
+        return 'Paper';
       case 'idea':
-        return '想法';
+        return 'Idea';
       default:
-        return '内容';
+        return 'Content';
     }
   };
 
@@ -327,7 +327,7 @@ export default function GlobalSearch() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="搜索卡片、文献、想法..."
+            placeholder="Search cards, papers, ideas..."
             className="flex-1 bg-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 text-base outline-none"
           />
           {isLoading && (
@@ -350,12 +350,12 @@ export default function GlobalSearch() {
           {showRecent && (
             <div className="px-2">
               <div className="flex items-center justify-between px-2 py-1.5">
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">最近搜索</span>
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Recent searches</span>
                 <button
                   onClick={clearRecent}
                   className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
-                  清除
+                  Clear
                 </button>
               </div>
               {recentSearches.map((query, index) => (
@@ -382,10 +382,10 @@ export default function GlobalSearch() {
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Search className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" />
               <p className="text-gray-500 dark:text-gray-400 text-sm">
-                没有找到匹配的结果
+                No matching results found
               </p>
               <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">
-                尝试其他关键词
+                Try different keywords
               </p>
             </div>
           )}
@@ -394,7 +394,7 @@ export default function GlobalSearch() {
             <div className="px-2">
               <div className="px-2 py-1.5">
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                  搜索结果 ({results.length})
+                  Search results ({results.length})
                 </span>
               </div>
               {results.map((result, index) => {
@@ -455,10 +455,10 @@ export default function GlobalSearch() {
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Search className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" />
               <p className="text-gray-500 dark:text-gray-400 text-sm">
-                输入关键词开始搜索
+                Type keywords to start searching
               </p>
               <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">
-                支持搜索卡片、文献和想法
+                Searches cards, papers, and ideas
               </p>
             </div>
           )}
@@ -469,19 +469,19 @@ export default function GlobalSearch() {
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-[10px]">↑↓</kbd>
-              <span>选择</span>
+              <span>Select</span>
             </span>
             <span className="flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-[10px]">↵</kbd>
-              <span>打开</span>
+              <span>Open</span>
             </span>
             <span className="flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-[10px]">ESC</kbd>
-              <span>关闭</span>
+              <span>Close</span>
             </span>
           </div>
           <span className="hidden sm:inline">
-            快捷键: Cmd+Shift+K
+            Shortcut: Cmd+Shift+K
           </span>
         </div>
       </div>

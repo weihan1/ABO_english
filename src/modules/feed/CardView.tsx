@@ -52,11 +52,11 @@ const SOURCE_ICONS: Record<string, string> = {
   folder: "📁",
 };
 
-// 单手反馈操作
+// One-hand feedback actions
 const RATING_ACTIONS = [
   {
     key: "dislike",
-    label: "不喜欢",
+    label: "Dislike",
     emoji: "👎",
     shortcut: "D",
     gradient: "linear-gradient(135deg, #FFB7B2, #FF9E9A)",
@@ -65,11 +65,11 @@ const RATING_ACTIONS = [
   },
 ];
 
-// 扩展操作
+// Extended actions
 const EXT_ACTIONS = [
   {
     key: "skip",
-    label: "跳过",
+    label: "Skip",
     shortcut: "X",
     Icon: ChevronDown,
     gradient: "linear-gradient(135deg, #E8E8E8, #D0D0D0)",
@@ -77,7 +77,7 @@ const EXT_ACTIONS = [
   },
   {
     key: "wiki",
-    label: "摘录Wiki",
+    label: "Excerpt to Wiki",
     shortcut: "W",
     Icon: BookHeart,
     gradient: "linear-gradient(135deg, #C4B5FD, #A78BFA)",
@@ -88,7 +88,7 @@ const EXT_ACTIONS = [
 const SOCIAL_EXT_ACTIONS = [
   {
     key: "save",
-    label: "保存到情报库",
+    label: "Save to Intel Library",
     shortcut: "S",
     Icon: Save,
     gradient: "linear-gradient(135deg, #A8E6CF, #7DD3C0)",
@@ -377,7 +377,7 @@ function PaperFigureStrip({
                     fontWeight: 600,
                   }}
                 >
-                  查看论文图片
+                  View paper figures
                 </a>
               )}
               <div
@@ -404,7 +404,7 @@ function PaperFigureStrip({
                       fontWeight: 600,
                     }}
                   >
-                    架构图
+                    Architecture diagram
                   </span>
                 )}
               </div>
@@ -593,7 +593,7 @@ function buildXiaohongshuNote(card: FeedCard): XiaohongshuCardNote {
     id: metadataString(card.metadata, "note_id") || card.id,
     title: card.title,
     content: metadataString(card.metadata, "content") || card.summary,
-    author: metadataString(card.metadata, "author") || metadataString(card.metadata, "intelligence_author_label") || "未知作者",
+    author: metadataString(card.metadata, "author") || metadataString(card.metadata, "intelligence_author_label") || "Unknown author",
     author_id: metadataString(card.metadata, "author_id") || metadataString(card.metadata, "user_id"),
     likes: metadataNumber(card.metadata, "likes"),
     collects: metadataNumber(card.metadata, "collects"),
@@ -615,7 +615,7 @@ function buildBilibiliDynamic(card: FeedCard): BilibiliCardDynamic {
     dynamic_id: metadataString(card.metadata, "dynamic_id") || card.id,
     title: card.title,
     content: metadataString(card.metadata, "description") || card.summary,
-    author: metadataString(card.metadata, "up_name") || metadataString(card.metadata, "intelligence_author_label") || "UP主",
+    author: metadataString(card.metadata, "up_name") || metadataString(card.metadata, "intelligence_author_label") || "Creator",
     author_id: metadataString(card.metadata, "up_uid"),
     url: card.source_url,
     published_at: metadataString(card.metadata, "published") || null,
@@ -681,7 +681,7 @@ function SocialFeedbackFooter({
       </div>
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
         {SOCIAL_EXT_ACTIONS.map(({ key, label, shortcut, Icon, gradient, shadow }) => {
-          const displayLabel = key === "wiki" ? "写入 Internet Wiki" : label;
+          const displayLabel = key === "wiki" ? "Write to Internet Wiki" : label;
           return (
             <button
               key={key}
@@ -755,10 +755,10 @@ function FeedXiaohongshuCard({
     setAddingMonitor(true);
     try {
       const sourceSummary = crawlSource === "following"
-        ? (matchedKeywords.length ? `来自关注流搜索：${matchedKeywords.join("，")}` : "来自关注流搜索")
+        ? (matchedKeywords.length ? `From follow-feed search: ${matchedKeywords.join(", ")}` : "From follow-feed search")
         : crawlSource.startsWith("keyword:")
-          ? `来自关键词搜索：${matchedKeywords.join("，") || crawlSource.slice("keyword:".length).trim() || "关键词"}`
-          : "来自小红书定时情报";
+          ? `From keyword search: ${matchedKeywords.join(", ") || crawlSource.slice("keyword:".length).trim() || "keyword"}`
+          : "From scheduled Xiaohongshu intel";
       const result = await xiaohongshuSyncAuthorsToTracker([
         {
           author: note.author,
@@ -772,12 +772,12 @@ function FeedXiaohongshuCard({
       ]);
       setAddedMonitor(true);
       if (result.added_count > 0) {
-        toast.success("已加入指定关注爬取", `新增 ${result.added_count} 个博主，当前总数 ${result.total_user_ids}`);
+        toast.success("Added to targeted follow crawl", `Added ${result.added_count} creators, ${result.total_user_ids} total`);
       } else {
-        toast.info("这个博主已经在指定关注里");
+        toast.info("This creator is already in targeted follows");
       }
     } catch (error) {
-      toast.error("加入失败", error instanceof Error ? error.message : "未知错误");
+      toast.error("Failed to add", error instanceof Error ? error.message : "Unknown error");
     } finally {
       setAddingMonitor(false);
     }
@@ -799,8 +799,8 @@ function FeedXiaohongshuCard({
           onClick: handleAddToMonitor,
           disabled: !note.author_id || addedMonitor,
           pending: addingMonitor,
-          label: addedMonitor ? "已在特定关注" : "加入特定关注",
-          pendingLabel: "加入中...",
+          label: addedMonitor ? "Already followed" : "Add targeted follow",
+          pendingLabel: "Adding...",
         }}
         footer={(
           <SocialFeedbackFooter
@@ -930,19 +930,19 @@ export default function CardView({ card, focused, onClick, onFeedback, onRating,
     .filter((action) => !(isPaperCard && action.key === "wiki"))
     .map((action) => {
       if (action.key === "wiki") {
-        return { ...action, label: "写入 Internet Wiki" };
+        return { ...action, label: "Write to Internet Wiki" };
       }
       return action;
     });
   const bilibiliTypeLabel =
     dynamicType === "video"
-      ? "视频"
+      ? "Video"
       : dynamicType === "article"
-      ? "专栏"
+      ? "Article"
       : dynamicType === "image"
-      ? "图文"
+      ? "Image post"
       : dynamicType === "text"
-      ? "动态"
+      ? "Post"
       : "";
   const paperAuthors = metadataStringList(card.metadata, "authors");
   const paperPublished = metadataString(card.metadata, "published") || (
@@ -957,12 +957,12 @@ export default function CardView({ card, focused, onClick, onFeedback, onRating,
   const effectiveSaved = Boolean(card.metadata.saved_to_literature || literaturePath);
   const relationshipLabel = metadataString(card.metadata, "relationship_label")
     || (paperTrackingRole === "source"
-      ? "源论文"
+      ? "Source paper"
       : paperTrackingType === "followup"
         ? "Follow Up"
         : paperTrackingType === "keyword"
-          ? "关键词追踪"
-          : "论文");
+          ? "Keyword tracking"
+          : "Paper");
   const initialFigures = useMemo(() => {
     const localFigures = normalizePaperFigures(card.metadata.local_figures);
     return localFigures.length ? localFigures : normalizePaperFigures(card.metadata.figures);
@@ -1072,7 +1072,7 @@ export default function CardView({ card, focused, onClick, onFeedback, onRating,
             zIndex: 10,
           }}
         >
-          {userRating === "like" ? "👍 喜欢" : userRating === "neutral" ? "😐 中立" : "👎 不喜欢"}
+          {userRating === "like" ? "👍 Like" : userRating === "neutral" ? "😐 Neutral" : "👎 Dislike"}
         </div>
       )}
 
@@ -1152,7 +1152,7 @@ export default function CardView({ card, focused, onClick, onFeedback, onRating,
             target="_blank"
             rel="noreferrer"
             onClick={(e) => e.stopPropagation()}
-            aria-label="在浏览器打开"
+            aria-label="Open in browser"
             style={{
               padding: "8px",
               borderRadius: "50%",
@@ -1300,7 +1300,7 @@ export default function CardView({ card, focused, onClick, onFeedback, onRating,
                 border: "1px solid rgba(188, 164, 227, 0.18)",
               }}
             >
-              智能组 · {label}
+              Smart group · {label}
             </span>
           ))}
           {!isBilibiliCard && intelligenceAuthorLabel && (
@@ -1359,10 +1359,10 @@ export default function CardView({ card, focused, onClick, onFeedback, onRating,
               }}
             >
               {paperTrackingRole === "source"
-                ? "源论文"
+                ? "Source paper"
                 : paperTrackingType === "followup"
                   ? "Follow Up"
-                  : "关键词"} · {paperTrackingLabel}
+                  : "Keyword"} · {paperTrackingLabel}
             </span>
           )}
           {paperTrackingType === "followup" && resolvedSourcePaperTitle && resolvedSourcePaperTitle !== paperTrackingLabel && (
@@ -1409,7 +1409,7 @@ export default function CardView({ card, focused, onClick, onFeedback, onRating,
           {paperCitationCount > 0 && (
             <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}>
               <Star style={{ width: "12px", height: "12px" }} />
-              被引 {paperCitationCount} 次
+              Cited {paperCitationCount} times
             </span>
           )}
           {displayId && (
@@ -1530,12 +1530,12 @@ export default function CardView({ card, focused, onClick, onFeedback, onRating,
               {loadingFigures ? (
                 <>
                   <RefreshCw style={{ width: "14px", height: "14px", animation: "spin 1s linear infinite" }} />
-                  抓取中...
+                  Fetching...
                 </>
               ) : (
                 <>
                   <ImageIcon style={{ width: "14px", height: "14px" }} />
-                  {hasPaperFigures ? `已抓取 ${figureCount} 张图` : "抓取图片"}
+                  {hasPaperFigures ? `Fetched ${figureCount} figures` : "Fetch figures"}
                 </>
               )}
             </button>
@@ -1564,19 +1564,19 @@ export default function CardView({ card, focused, onClick, onFeedback, onRating,
             {effectiveSaved ? (
               <>
                 <Check style={{ width: "14px", height: "14px" }} />
-                已保存到文献库
+                Saved to Literature Library
               </>
             ) : (
               <>
                 <Save style={{ width: "14px", height: "14px" }} />
-                保存到文献库
+                Save to Literature Library
               </>
             )}
           </button>
         </div>
       )}
 
-      {/* Rating Section - 三级打分 (横排，移到摘要上方) */}
+      {/* Rating Section - 3-level rating (horizontal, above abstract) */}
       <div style={{ marginBottom: "12px" }}>
         <div style={{ display: "flex", gap: "10px" }}>
           {RATING_ACTIONS.map(({ key, label, emoji, shortcut, gradient, shadow, color }) => {

@@ -33,7 +33,7 @@ const MAX_VISIBLE_SUGGESTIONS = 5;
 type MappingStatusFilter = "all" | "confirmed" | "unconfirmed";
 
 function formatUpdatedAt(updatedAt?: string | null): string {
-  if (!updatedAt) return "尚未保存";
+  if (!updatedAt) return "Not saved yet";
   const date = new Date(updatedAt);
   if (Number.isNaN(date.getTime())) return updatedAt;
   return date.toLocaleString("zh-CN", {
@@ -60,7 +60,7 @@ function labelsEqual(left: string[], right: string[]): boolean {
 }
 
 function formatGroupLabels(labels: string[]): string {
-  if (labels.length === 0) return "未指定";
+  if (labels.length === 0) return "Unspecified";
   return labels.join(" · ");
 }
 
@@ -72,8 +72,8 @@ function resolveEntryLabels(entry: SharedSignalEntry): string[] {
 }
 
 export function SharedSignalMappingPanel({
-  title = "共享分组规则",
-  description = "原始标签 -> 共享规则 -> 共享组 -> 作者入组。此处管理的是笔记标签和分组的关系；作者会根据样本笔记命中的标签，在下一次整理时自动加入对应的共享组。",
+  title = "Shared grouping rules",
+  description = "Raw tag -> shared rule -> shared group -> author joins group. This manages the relation between note tags and groups; based on which tags an author's sample notes hit, they will automatically join the matching shared group during the next organization pass.",
   entries,
   groupOptions,
   saving = false,
@@ -191,8 +191,8 @@ export function SharedSignalMappingPanel({
     return nextAuthors;
   }, [entries]);
   const summaryText = entries.length > 0
-    ? "原始标签 -> 共享规则 -> 共享组 -> 作者入组。这里管的是标签和分组的关系，不是直接编辑作者名单。"
-    : "先执行一次“共享智能分组”，这里才会出现跨平台共用的共享规则词典。";
+    ? "Raw tag -> shared rule -> shared group -> author joins group. This manages tag-to-group relations, not the author list directly."
+    : "Run \"shared smart grouping\" once first, and the cross-platform shared rule dictionary will appear here.";
 
   return (
     <div
@@ -250,27 +250,27 @@ export function SharedSignalMappingPanel({
             <div style={{ minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
                 <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "var(--text-main)" }}>{title}</div>
-                <span style={summaryChipStyle}>跨平台共用</span>
+                <span style={summaryChipStyle}>Shared across platforms</span>
               </div>
               <div style={{ marginTop: "4px", fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
                 {summaryText}
               </div>
               <div style={{ marginTop: "6px", fontSize: "0.72rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                博主 / UP 会根据其样本笔记标签的命中情况加入对应共享组；你在这里修改的是“标签怎么归组”。
+                Creators join shared groups based on the tags their sample notes hit; what you edit here is how tags map to groups.
               </div>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "10px" }}>
-                <span style={summaryChipStyle}>共享组 {effectiveGroupLabels.length}</span>
-                <span style={summaryChipStyle}>原始标签 {entries.length}</span>
-                <span style={summaryChipStyle}>已确认 {mappedCount}</span>
+                <span style={summaryChipStyle}>Shared groups {effectiveGroupLabels.length}</span>
+                <span style={summaryChipStyle}>Raw tags {entries.length}</span>
+                <span style={summaryChipStyle}>Confirmed {mappedCount}</span>
                 {unmappedCount > 0 && (
                   <span style={{ ...summaryChipStyle, background: "rgba(245, 158, 11, 0.12)", color: "#B45309" }}>
-                    待确认 {unmappedCount}
+                    Pending {unmappedCount}
                   </span>
                 )}
               </div>
               {sampleAuthors.length > 0 && (
                 <div style={{ marginTop: "8px", fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                  当前规则会影响：{sampleAuthors.join("、")}
+                  Current rules affect: {sampleAuthors.join(", ")}
                 </div>
               )}
             </div>
@@ -278,7 +278,7 @@ export function SharedSignalMappingPanel({
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "8px" }}>
             <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-              最近更新 {formatUpdatedAt(updatedAt)}
+              Last updated {formatUpdatedAt(updatedAt)}
             </div>
             <div
               style={{
@@ -295,7 +295,7 @@ export function SharedSignalMappingPanel({
               }}
             >
               {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-              {open ? "收起规则" : "展开查看"}
+              {open ? "Collapse rules" : "Expand to view"}
             </div>
           </div>
         </div>
@@ -307,7 +307,7 @@ export function SharedSignalMappingPanel({
 
           <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
             <div>
-              <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--text-main)" }}>怎么用</div>
+              <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--text-main)" }}>How to use</div>
               <div style={{ marginTop: "4px", fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.6, maxWidth: "760px" }}>
                 {description}
               </div>
@@ -327,7 +327,7 @@ export function SharedSignalMappingPanel({
                 cursor: saving || changedCount === 0 ? "not-allowed" : "pointer",
               }}
             >
-              {saving ? "保存中..." : `保存规则${changedCount > 0 ? ` (${changedCount})` : ""}`}
+              {saving ? "Saving..." : `Save rules${changedCount > 0 ? ` (${changedCount})` : ""}`}
             </button>
           </div>
 
@@ -355,14 +355,14 @@ export function SharedSignalMappingPanel({
               <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
                 <div>
                   <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--text-main)" }}>
-                    例子：标签如何把作者挂进共享组
+                    Example: how tags pull authors into shared groups
                   </div>
                   <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
-                    最简单的链路：先定义标签归属，再重新整理作者。
+                    Simplest flow: define tag mappings first, then re-organize authors.
                   </div>
                 </div>
                 <div style={{ ...summaryChipStyle, background: "rgba(255, 255, 255, 0.78)" }}>
-                  {showExample ? "收起例子" : "展开例子"}
+                  {showExample ? "Hide example" : "Show example"}
                 </div>
               </div>
             </button>
@@ -370,28 +370,28 @@ export function SharedSignalMappingPanel({
             {showExample && (
               <div style={{ padding: "0 12px 12px", borderTop: "1px solid rgba(14, 165, 233, 0.16)", display: "flex", flexDirection: "column", gap: "10px" }}>
                 <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.7, marginTop: "10px" }}>
-                  <strong style={{ color: "var(--text-main)" }}>原始标签</strong>
+                  <strong style={{ color: "var(--text-main)" }}>Raw tag</strong>
                   {" -> "}
-                  <strong style={{ color: "var(--text-main)" }}>共享规则</strong>
+                  <strong style={{ color: "var(--text-main)" }}>Shared rule</strong>
                   {" -> "}
-                  <strong style={{ color: "var(--text-main)" }}>共享组</strong>
+                  <strong style={{ color: "var(--text-main)" }}>Shared group</strong>
                   {" -> "}
-                  <strong style={{ color: "var(--text-main)" }}>作者入组</strong>
+                  <strong style={{ color: "var(--text-main)" }}>Author joins group</strong>
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                   {[
-                    "Obsidian -> 知识管理 / Obsidian",
-                    "双链笔记 -> 知识管理 / Obsidian",
-                    "卡片笔记 -> 知识管理 / Obsidian",
+                    "Obsidian -> Knowledge Management / Obsidian",
+                    "Linked notes -> Knowledge Management / Obsidian",
+                    "Zettelkasten -> Knowledge Management / Obsidian",
                   ].map((item) => (
                     <span key={item} style={exampleChipStyle}>{item}</span>
                   ))}
                 </div>
                 <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.7 }}>
-                  某个 B 站 UP 的最近 3 条里出现了 <strong style={{ color: "var(--text-main)" }}>Obsidian、双链笔记</strong>；
-                  某个小红书博主的本地笔记里出现了 <strong style={{ color: "var(--text-main)" }}>卡片笔记</strong>。
-                  重新整理作者后，这两个人都会被加入同一个共享组：
-                  <strong style={{ color: "var(--text-main)" }}> 知识管理 / Obsidian</strong>。
+                  A Bilibili creator's last 3 posts mention <strong style={{ color: "var(--text-main)" }}>Obsidian and linked notes</strong>;
+                  a Xiaohongshu blogger's local notes mention <strong style={{ color: "var(--text-main)" }}>Zettelkasten</strong>.
+                  After re-organizing authors, both will join the same shared group:
+                  <strong style={{ color: "var(--text-main)" }}> Knowledge Management / Obsidian</strong>.
                 </div>
               </div>
             )}
@@ -401,7 +401,7 @@ export function SharedSignalMappingPanel({
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="搜索原始标签 / 共享组 / 作者"
+              placeholder="Search raw tags / shared groups / authors"
               style={{
                 flex: "1 1 260px",
                 minWidth: 0,
@@ -415,9 +415,9 @@ export function SharedSignalMappingPanel({
             />
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
               {[
-                { value: "all" as const, label: `全部 ${entries.length}` },
-                { value: "confirmed" as const, label: `已确认 ${mappedCount}` },
-                { value: "unconfirmed" as const, label: `未确认 ${unmappedCount}` },
+                { value: "all" as const, label: `All ${entries.length}` },
+                { value: "confirmed" as const, label: `Confirmed ${mappedCount}` },
+                { value: "unconfirmed" as const, label: `Unconfirmed ${unmappedCount}` },
               ].map((option) => {
                 const active = statusFilter === option.value;
                 return (
@@ -443,7 +443,7 @@ export function SharedSignalMappingPanel({
               })}
             </div>
             <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-              共 {entries.length} 个原始标签，当前命中 {statusFilteredEntries.length} 个
+              {entries.length} raw tags total, {statusFilteredEntries.length} matching
             </div>
           </div>
 
@@ -451,17 +451,17 @@ export function SharedSignalMappingPanel({
             totalCount={statusFilteredEntries.length}
             page={safePage}
             pageSize={pageSize}
-            itemLabel="个标签"
+            itemLabel="tags"
             pageSizeOptions={PAGE_SIZE_OPTIONS}
             onPageChange={setPage}
             onPageSizeChange={(nextPageSize) => setPageSize(nextPageSize === 50 ? 50 : 20)}
-            emptyText="当前没有匹配的标签"
+            emptyText="No matching tags"
           />
 
           <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "560px", overflow: "auto", paddingRight: "2px" }}>
             {statusFilteredEntries.length === 0 ? (
               <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                没有匹配的原始标签。
+                No matching raw tags.
               </div>
             ) : pagedEntries.map((entry) => {
               const entryLabels = resolveEntryLabels(entry);
@@ -489,7 +489,7 @@ export function SharedSignalMappingPanel({
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
                       <span style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>{entry.signal}</span>
-                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>出现 {entry.count} 次</span>
+                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Seen {entry.count} times</span>
                       {entry.platforms.map((platform) => (
                         <span key={`${entry.signal}-${platform}`} style={platformChipStyle}>
                           {platform}
@@ -497,16 +497,16 @@ export function SharedSignalMappingPanel({
                       ))}
                     </div>
                     <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
-                      现在会归到：{formatGroupLabels(entryLabels)}
+                      Currently mapped to: {formatGroupLabels(entryLabels)}
                     </div>
                     {entry.sample_groups.length > 0 && (
                       <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                        已影响分组：{entry.sample_groups.join(" / ")}
+                        Groups affected: {entry.sample_groups.join(" / ")}
                       </div>
                     )}
                     {entry.sample_authors.length > 0 && (
                       <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                        示例作者：{entry.sample_authors.join("、")}
+                        Sample authors: {entry.sample_authors.join(", ")}
                       </div>
                     )}
                   </div>
@@ -514,10 +514,10 @@ export function SharedSignalMappingPanel({
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", flexWrap: "wrap" }}>
                       <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", fontWeight: 700 }}>
-                        目标共享组
+                        Target shared groups
                       </span>
                       <span style={{ fontSize: "0.6875rem", color: "var(--text-muted)" }}>
-                        已选 {draftLabels.length} 个
+                        {draftLabels.length} selected
                       </span>
                     </div>
 
@@ -542,7 +542,7 @@ export function SharedSignalMappingPanel({
                         </button>
                       )) : (
                         <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                          还没有指定共享组
+                          No shared group assigned yet
                         </span>
                       )}
                     </div>
@@ -558,7 +558,7 @@ export function SharedSignalMappingPanel({
                             addDraftLabel(entry.signal, draftInput);
                           }
                         }}
-                        placeholder="输入共享组名后回车添加"
+                        placeholder="Type a shared group name and press Enter to add"
                         style={{
                           flex: "1 1 220px",
                           minWidth: 0,
@@ -585,7 +585,7 @@ export function SharedSignalMappingPanel({
                           cursor: draftInput.trim() ? "pointer" : "not-allowed",
                         }}
                       >
-                        添加
+                        Add
                       </button>
                       <button
                         type="button"
@@ -602,7 +602,7 @@ export function SharedSignalMappingPanel({
                           cursor: draftLabels.length > 0 ? "pointer" : "not-allowed",
                         }}
                       >
-                        清空
+                        Clear
                       </button>
                     </div>
 
@@ -619,7 +619,7 @@ export function SharedSignalMappingPanel({
                         }}
                       >
                         <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
-                          快速加入共享组。可多选；点一次加入，再点一次移除。
+                          Quickly join shared groups. Multi-select; click once to add, click again to remove.
                         </div>
                         <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                           {visibleSuggestionLabels.map((label) => {
@@ -640,7 +640,7 @@ export function SharedSignalMappingPanel({
                                   cursor: "pointer",
                                 }}
                               >
-                                {active ? `已选 ${label}` : `加入 ${label}`}
+                                {active ? `Selected ${label}` : `Add ${label}`}
                               </button>
                             );
                           })}
@@ -659,7 +659,7 @@ export function SharedSignalMappingPanel({
                                 cursor: "pointer",
                               }}
                             >
-                              {expandedSuggestions ? "收起分组" : `... 全部 ${suggestionLabels.length} 个智能分组`}
+                              {expandedSuggestions ? "Collapse groups" : `... all ${suggestionLabels.length} smart groups`}
                             </button>
                           )}
                         </div>

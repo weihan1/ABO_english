@@ -25,12 +25,12 @@ interface SummaryData {
 }
 
 const TYPE_LABELS: Record<string, string> = {
-  up_uid: "UP主",
-  user_id: "用户ID",
-  user: "用户",
-  topic: "话题",
-  podcast_id: "播客",
-  keyword: "关键词",
+  up_uid: "Creator",
+  user_id: "User ID",
+  user: "User",
+  topic: "Topic",
+  podcast_id: "Podcast",
+  keyword: "Keyword",
 };
 
 const TYPE_COLORS: Record<string, string> = {
@@ -58,7 +58,7 @@ export default function SubscriptionSummary({ onBack }: Props) {
       const data = await api.get<SummaryData>("/api/subscriptions/summary");
       setSummary(data);
     } catch {
-      toast.error("加载订阅总表失败");
+      toast.error("Failed to load subscription overview");
     } finally {
       setLoading(false);
     }
@@ -79,7 +79,7 @@ export default function SubscriptionSummary({ onBack }: Props) {
   }
 
   function formatDateTime(isoString: string | null): string {
-    if (!isoString) return "从未";
+    if (!isoString) return "Never";
     try {
       const date = new Date(isoString);
       return date.toLocaleString("zh-CN", {
@@ -96,20 +96,20 @@ export default function SubscriptionSummary({ onBack }: Props) {
   async function removeSubscription(moduleId: string, type: string, value: string) {
     try {
       await api.delete(`/api/modules/${moduleId}/subscriptions`, { type, value } as any);
-      toast.success("订阅已移除");
+      toast.success("Subscription removed");
       fetchSummary();
     } catch {
-      toast.error("移除失败");
+      toast.error("Failed to remove");
     }
   }
 
   if (loading) {
     return (
       <PageContainer>
-        <PageHeader title="订阅总表" subtitle="加载中..." icon={Rss} />
+        <PageHeader title="Subscription Overview" subtitle="Loading..." icon={Rss} />
         <PageContent maxWidth="700px">
           <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
-            加载中...
+            Loading...
           </div>
         </PageContent>
       </PageContainer>
@@ -119,8 +119,8 @@ export default function SubscriptionSummary({ onBack }: Props) {
   return (
     <PageContainer>
       <PageHeader
-        title="订阅总表"
-        subtitle={`${summary?.total_subscriptions || 0} 个订阅 · ${summary?.total_modules || 0} 个模块`}
+        title="Subscription Overview"
+        subtitle={`${summary?.total_subscriptions || 0} subscriptions · ${summary?.total_modules || 0} modules`}
         icon={Rss}
         actions={
           <>
@@ -141,7 +141,7 @@ export default function SubscriptionSummary({ onBack }: Props) {
               }}
             >
               <RefreshCw style={{ width: "14px", height: "14px" }} />
-              刷新
+              Refresh
             </button>
             <button
               onClick={onBack}
@@ -160,7 +160,7 @@ export default function SubscriptionSummary({ onBack }: Props) {
               }}
             >
               <ArrowLeft style={{ width: "16px", height: "16px" }} />
-              返回
+              Back
             </button>
           </>
         }
@@ -168,7 +168,7 @@ export default function SubscriptionSummary({ onBack }: Props) {
 
       <PageContent maxWidth="700px">
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          {/* 统计卡片 */}
+          {/* Stats cards */}
           <div
             style={{
               display: "grid",
@@ -195,7 +195,7 @@ export default function SubscriptionSummary({ onBack }: Props) {
                 {summary?.total_subscriptions || 0}
               </div>
               <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px" }}>
-                总订阅数
+                Total subscriptions
               </div>
             </div>
             <div
@@ -217,7 +217,7 @@ export default function SubscriptionSummary({ onBack }: Props) {
                 {summary?.total_modules || 0}
               </div>
               <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px" }}>
-                活跃模块
+                Active modules
               </div>
             </div>
             <div
@@ -242,12 +242,12 @@ export default function SubscriptionSummary({ onBack }: Props) {
                 )}
               </div>
               <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px" }}>
-                订阅类型
+                Subscription types
               </div>
             </div>
           </div>
 
-          {/* 模块列表 */}
+          {/* Module list */}
           {summary?.modules && Object.entries(summary.modules).length > 0 ? (
             Object.entries(summary.modules).map(([moduleId, moduleData]) => {
               const moduleInfo = summary.modules_info[moduleId] || {
@@ -260,10 +260,10 @@ export default function SubscriptionSummary({ onBack }: Props) {
               return (
                 <Card
                   key={moduleId}
-                  title={`${moduleInfo.name} (${allSubs.length} 个订阅)`}
+                  title={`${moduleInfo.name} (${allSubs.length} subscriptions)`}
                   icon={<Rss style={{ width: "18px", height: "18px", color: "var(--color-primary)" }} />}
                 >
-                  {/* 按类型分组的订阅 */}
+                  {/* Subscriptions grouped by type */}
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     {Object.entries(moduleData.by_type).map(([type, subs]) => (
                       <div key={type}>
@@ -288,7 +288,7 @@ export default function SubscriptionSummary({ onBack }: Props) {
                             {TYPE_LABELS[type] || type}
                           </span>
                           <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                            {subs.length} 个
+                            {subs.length}
                           </span>
                         </div>
 
@@ -380,7 +380,7 @@ export default function SubscriptionSummary({ onBack }: Props) {
                                 fontSize: "0.75rem",
                               }}
                             >
-                              + {subs.length - 3} 更多
+                              + {subs.length - 3} more
                             </button>
                           )}
                         </div>
@@ -400,7 +400,7 @@ export default function SubscriptionSummary({ onBack }: Props) {
                           fontSize: "0.75rem",
                         }}
                       >
-                        收起
+                        Collapse
                       </button>
                     )}
                   </div>
@@ -417,9 +417,9 @@ export default function SubscriptionSummary({ onBack }: Props) {
                 }}
               >
                 <Rss style={{ width: "48px", height: "48px", opacity: 0.3, marginBottom: "16px" }} />
-                <div style={{ fontSize: "0.875rem" }}>暂无订阅</div>
+                <div style={{ fontSize: "0.875rem" }}>No subscriptions yet</div>
                 <div style={{ fontSize: "0.75rem", marginTop: "8px" }}>
-                  前往各模块页面添加订阅
+                  Go to each module page to add subscriptions
                 </div>
               </div>
             </Card>

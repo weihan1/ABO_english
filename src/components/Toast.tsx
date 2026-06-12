@@ -55,7 +55,7 @@ export default function ToastContainer() {
             <button
               onClick={() => removeToast(t.id)}
               className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer"
-              aria-label="关闭"
+              aria-label="Close"
             >
               <X className="w-4 h-4" />
             </button>

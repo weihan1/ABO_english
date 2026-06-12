@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-// ── 类型定义 ──────────────────────────────────────────────────────
+// ── Type definitions ──────────────────────────────────────────────────────
 
 export type ActiveTab =
   | "assistant"
@@ -147,11 +147,11 @@ function normalizeAiProvider(value: unknown): AiProvider {
 // ── Store ─────────────────────────────────────────────────────────
 
 interface AboStore {
-  // 导航
+  // Navigation
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
 
-  // 配置
+  // Configuration
   config: AppConfig | null;
   setConfig: (config: AppConfig) => void;
 

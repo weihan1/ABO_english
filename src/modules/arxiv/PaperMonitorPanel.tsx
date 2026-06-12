@@ -134,7 +134,7 @@ function compactSelectedArxivCategories(
 }
 
 function formatCategoryTag(category: string): string {
-  return category.endsWith(".*") ? `${category.slice(0, -2).toUpperCase()} 全部领域` : category;
+  return category.endsWith(".*") ? `${category.slice(0, -2).toUpperCase()} all areas` : category;
 }
 
 function clampInteger(value: string, min: number, max: number, fallback: number): number {
@@ -227,7 +227,7 @@ export default function PaperMonitorPanel() {
         current.length > 0 ? current : getDefaultArxivSelectorCategories(categories),
       );
     } catch (error) {
-      toast.error("加载监控配置失败", error instanceof Error ? error.message : "请稍后重试");
+      toast.error("Failed to load monitor config", error instanceof Error ? error.message : "Please try again later");
     } finally {
       setLoading(false);
     }
@@ -260,10 +260,10 @@ export default function PaperMonitorPanel() {
       await api.post("/api/modules/arxiv-tracker/config", nextConfig);
       setArxivConfig(nextConfig);
       if (successMessage) {
-        toast.success("关键词监控已更新", successMessage);
+        toast.success("Keyword monitors updated", successMessage);
       }
     } catch (error) {
-      toast.error("保存关键词监控失败", error instanceof Error ? error.message : "请稍后重试");
+      toast.error("Failed to save keyword monitors", error instanceof Error ? error.message : "Please try again later");
     } finally {
       setSavingKey(null);
     }
@@ -275,10 +275,10 @@ export default function PaperMonitorPanel() {
       await api.post("/api/modules/semantic-scholar-tracker/config", nextConfig);
       setFollowupConfig(nextConfig);
       if (successMessage) {
-        toast.success("Follow Up 监控已更新", successMessage);
+        toast.success("Follow Up monitors updated", successMessage);
       }
     } catch (error) {
-      toast.error("保存 Follow Up 监控失败", error instanceof Error ? error.message : "请稍后重试");
+      toast.error("Failed to save Follow Up monitors", error instanceof Error ? error.message : "Please try again later");
     } finally {
       setSavingKey(null);
     }
@@ -290,11 +290,11 @@ export default function PaperMonitorPanel() {
     try {
       await api.post(`/api/modules/${moduleId}/run`, {});
       toast.success(
-        "监控已启动",
-        moduleId === "arxiv-tracker" ? "关键词监控结果会进入今日情报" : "Follow Up 结果会进入今日情报"
+        "Monitor started",
+        moduleId === "arxiv-tracker" ? "Keyword monitor results will appear in Daily Briefing" : "Follow Up results will appear in Daily Briefing"
       );
     } catch (error) {
-      toast.error("启动监控失败", error instanceof Error ? error.message : "请稍后重试");
+      toast.error("Failed to start monitor", error instanceof Error ? error.message : "Please try again later");
     } finally {
       setRunningKey(null);
     }
@@ -306,7 +306,7 @@ export default function PaperMonitorPanel() {
     const previousValue = isMaxResults ? arxivConfig.max_results : arxivConfig.days_back;
 
     if (!rawValue.trim()) {
-      toast.error(isMaxResults ? "每项最多不能为空" : "最近天数不能为空");
+      toast.error(isMaxResults ? "Per-item max cannot be empty" : "Day range cannot be empty");
       if (isMaxResults) setArxivMaxResultsInput(String(previousValue));
       else setArxivDaysBackInput(String(previousValue));
       return;
@@ -333,7 +333,7 @@ export default function PaperMonitorPanel() {
     const previousValue = isMaxResults ? followupConfig.max_results : followupConfig.days_back;
 
     if (!rawValue.trim()) {
-      toast.error(isMaxResults ? "每项最多不能为空" : "最近天数不能为空");
+      toast.error(isMaxResults ? "Per-item max cannot be empty" : "Day range cannot be empty");
       if (isMaxResults) setFollowupMaxResultsInput(String(previousValue));
       else setFollowupDaysBackInput(String(previousValue));
       return;
@@ -360,7 +360,7 @@ export default function PaperMonitorPanel() {
       keywordAdvancedDraft.categories.length > 0 ||
       Boolean(keywordAdvancedDraft.date_range);
     if (!hasSignal) {
-      toast.error("请至少填一个高级条件 / 分类 / 日期范围");
+      toast.error("Please add at least one advanced condition / category / date range");
       return;
     }
 
@@ -385,7 +385,7 @@ export default function PaperMonitorPanel() {
         (monitor) => monitor.advanced && JSON.stringify(monitor.advanced) === advancedKey,
       )
     ) {
-      toast.error("相同的高级监控已存在", "可以直接开关，或删除后重新添加");
+      toast.error("An identical advanced monitor already exists", "Toggle it directly, or delete and re-add it");
       return;
     }
 
@@ -393,7 +393,7 @@ export default function PaperMonitorPanel() {
       ...arxivConfig,
       keyword_monitors: [...arxivConfig.keyword_monitors, nextMonitor],
     };
-    await persistArxivConfig(nextConfig, `新增 ${label}`);
+    await persistArxivConfig(nextConfig, `Added ${label}`);
     setAdvancedLabelDraft("");
     setKeywordAdvancedDraft(createEmptyAdvancedQuery());
   }
@@ -401,7 +401,7 @@ export default function PaperMonitorPanel() {
   async function addKeywordMonitor() {
     const query = keywordQueryDraft.trim();
     if (!query) {
-      toast.error("请输入关键词表达式", "支持逗号 AND 和 | 分组 OR");
+      toast.error("Please enter a keyword expression", "Supports comma AND and | grouped OR");
       return;
     }
 
@@ -422,7 +422,7 @@ export default function PaperMonitorPanel() {
         (monitor) => monitor.query.trim().toLowerCase() === nextMonitor.query.toLowerCase()
       )
     ) {
-      toast.error("关键词监控已存在", "可以直接开关，或删除后重新添加");
+      toast.error("Keyword monitor already exists", "Toggle it directly, or delete and re-add it");
       return;
     }
 
@@ -430,7 +430,7 @@ export default function PaperMonitorPanel() {
       ...arxivConfig,
       keyword_monitors: [...arxivConfig.keyword_monitors, nextMonitor],
     };
-    await persistArxivConfig(nextConfig, `新增 ${nextMonitor.label}`);
+    await persistArxivConfig(nextConfig, `Added ${nextMonitor.label}`);
     setKeywordLabelDraft("");
     setKeywordQueryDraft("");
     setKeywordSelectedCategories(getDefaultArxivSelectorCategories(availableCategories));
@@ -439,7 +439,7 @@ export default function PaperMonitorPanel() {
   async function addFollowupMonitor() {
     const query = followupQueryDraft.trim();
     if (!query) {
-      toast.error("请输入论文全称", "Semantic Scholar 会按论文标题查找 follow up");
+      toast.error("Please enter the full paper title", "Semantic Scholar finds follow-ups by paper title");
       return;
     }
 
@@ -453,12 +453,12 @@ export default function PaperMonitorPanel() {
       resolvedTitle = resolved.paper?.title?.trim() || query;
 
       if (!resolved.found || !resolvedTitle) {
-        toast.error("没有找到源论文", "请换成更完整的论文标题后再添加");
+        toast.error("Source paper not found", "Try a more complete paper title and add again");
         return;
       }
       setFollowupLabelDraft((current) => current.trim() ? current : resolvedTitle);
     } catch (error) {
-      toast.error("解析源论文失败", error instanceof Error ? error.message : "请稍后重试");
+      toast.error("Failed to resolve source paper", error instanceof Error ? error.message : "Please try again later");
       return;
     } finally {
       setSavingKey(null);
@@ -479,7 +479,7 @@ export default function PaperMonitorPanel() {
           duplicateKeys.has(monitor.label.trim().toLowerCase())
       )
     ) {
-      toast.error("Follow Up 监控已存在", "可以直接开关，或删除后重新添加");
+      toast.error("Follow Up monitor already exists", "Toggle it directly, or delete and re-add it");
       return;
     }
 
@@ -487,7 +487,7 @@ export default function PaperMonitorPanel() {
       ...followupConfig,
       followup_monitors: [...followupConfig.followup_monitors, nextMonitor],
     };
-    await persistFollowupConfig(nextConfig, `新增 ${nextMonitor.label}`);
+    await persistFollowupConfig(nextConfig, `Added ${nextMonitor.label}`);
     setFollowupLabelDraft("");
     setFollowupQueryDraft("");
   }
@@ -503,7 +503,7 @@ export default function PaperMonitorPanel() {
 
   return (
     <Card
-      title="关注监控"
+      title="Tracking Monitors"
       icon={<Bell style={{ width: "18px", height: "18px", color: "var(--color-primary)" }} />}
       style={{ marginBottom: "24px" }}
     >
@@ -524,7 +524,7 @@ export default function PaperMonitorPanel() {
             }}
           >
             <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "6px" }}>
-              关键词监控
+              Keyword monitors
             </div>
             <div style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--text-main)" }}>
               {keywordEnabledCount}/{arxivConfig.keyword_monitors.length || 0}
@@ -539,7 +539,7 @@ export default function PaperMonitorPanel() {
             }}
           >
             <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "6px" }}>
-              Follow Up 监控
+              Follow Up monitors
             </div>
             <div style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--text-main)" }}>
               {followupEnabledCount}/{followupConfig.followup_monitors.length || 0}
@@ -558,11 +558,11 @@ export default function PaperMonitorPanel() {
             border: "1px dashed var(--border-light)",
           }}
         >
-          配好的监控会复用模块定时调度，抓到的新论文直接进入今日情报的论文追踪。关键词监控支持
+          Configured monitors reuse the module's schedule, and newly caught papers go straight into Daily Briefing's paper tracking. Keyword monitors support
           <code style={{ margin: "0 4px", padding: "2px 6px", borderRadius: "4px", background: "var(--bg-card)" }}>
             vision,language | robot,manipulation
           </code>
-          这种 AND / OR 提示风格。
+          this AND / OR expression style.
         </div>
 
         <div
@@ -588,10 +588,10 @@ export default function PaperMonitorPanel() {
               <Search style={{ width: "18px", height: "18px", color: "var(--color-primary)" }} />
               <div>
                 <div style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--text-main)" }}>
-                  arXiv 关键词追踪
+                  arXiv keyword tracking
                 </div>
                 <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                  按指定领域抓取，结果会落到今日情报的关键词分组
+                  Crawls the specified areas; results land in Daily Briefing's keyword groups
                 </div>
               </div>
             </div>
@@ -599,7 +599,7 @@ export default function PaperMonitorPanel() {
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
               <label style={{ display: "flex", flexDirection: "column", gap: "6px", width: "128px" }}>
                 <span style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", fontWeight: 600 }}>
-                  每项最多
+                  Per-item max
                 </span>
                 <input
                   type="number"
@@ -621,7 +621,7 @@ export default function PaperMonitorPanel() {
               </label>
               <label style={{ display: "flex", flexDirection: "column", gap: "6px", width: "128px" }}>
                 <span style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", fontWeight: 600 }}>
-                  最近天数
+                  Day range
                 </span>
                 <input
                   type="number"
@@ -645,7 +645,7 @@ export default function PaperMonitorPanel() {
 
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {loading ? (
-                <div style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>正在加载监控项…</div>
+                <div style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>Loading monitors…</div>
               ) : arxivConfig.keyword_monitors.length === 0 ? (
                 <div
                   style={{
@@ -656,7 +656,7 @@ export default function PaperMonitorPanel() {
                     fontSize: "0.875rem",
                   }}
                 >
-                  还没有关键词监控。建议先加 1-3 个高价值主题。
+                  No keyword monitors yet. Start with 1-3 high-value topics.
                 </div>
               ) : (
                 arxivConfig.keyword_monitors.map((monitor) => (
@@ -718,7 +718,7 @@ export default function PaperMonitorPanel() {
                           ...arxivConfig,
                           keyword_monitors: arxivConfig.keyword_monitors.filter((item) => item.id !== monitor.id),
                         };
-                        await persistArxivConfig(nextConfig, `删除 ${monitor.label}`);
+                        await persistArxivConfig(nextConfig, `Deleted ${monitor.label}`);
                       }}
                       style={{
                         width: "34px",
@@ -742,16 +742,16 @@ export default function PaperMonitorPanel() {
 
             <div style={{ display: "grid", gap: "10px" }}>
               <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-secondary)" }}>
-                简单关键词监控
+                Simple keyword monitor
                 <span style={{ fontSize: "0.72rem", fontWeight: 400, color: "var(--text-muted)", marginLeft: 8 }}>
-                  字符串：逗号 = AND，<code>|</code> = OR；匹配标题 + 摘要
+                  String: comma = AND, <code>|</code> = OR; matches title + abstract
                 </span>
               </div>
               <input
                 type="text"
                 value={keywordLabelDraft}
                 onChange={(event) => setKeywordLabelDraft(event.target.value)}
-                placeholder="显示名称，可留空"
+                placeholder="Display name, optional"
                 style={{
                   height: "40px",
                   padding: "0 12px",
@@ -766,7 +766,7 @@ export default function PaperMonitorPanel() {
                 type="text"
                 value={keywordQueryDraft}
                 onChange={(event) => setKeywordQueryDraft(event.target.value)}
-                placeholder="例如：vision,language | robot,manipulation"
+                placeholder="e.g. vision,language | robot,manipulation"
                 style={{
                   height: "40px",
                   padding: "0 12px",
@@ -818,8 +818,8 @@ export default function PaperMonitorPanel() {
                       return next;
                     })
                   }
-                  label="关注领域"
-                  helperText="默认已选 Computer Science 全部领域。你也可以切到其他学科，按标签精细控制爬取范围。"
+                  label="Areas of interest"
+                  helperText="All Computer Science areas are selected by default. You can switch disciplines and fine-tune the crawl scope by tag."
                   maxHeight={240}
                   disabled={savingKey === "arxiv"}
                 />
@@ -846,7 +846,7 @@ export default function PaperMonitorPanel() {
                 }}
               >
                 <Plus style={{ width: "16px", height: "16px" }} />
-                添加关键词监控
+                Add keyword monitor
               </button>
               <button
                 type="button"
@@ -867,7 +867,7 @@ export default function PaperMonitorPanel() {
                 }}
               >
                 <Play style={{ width: "16px", height: "16px" }} />
-                {runningKey === "arxiv" ? "执行中..." : "立即执行"}
+                {runningKey === "arxiv" ? "Running..." : "Run now"}
               </button>
             </div>
           </section>
@@ -887,10 +887,10 @@ export default function PaperMonitorPanel() {
               <GitBranch style={{ width: "18px", height: "18px", color: "var(--color-primary)" }} />
               <div>
                 <div style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--text-main)" }}>
-                  Follow Up 论文追踪
+                  Follow Up paper tracking
                 </div>
                 <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                  复用 Semantic Scholar 后端，按论文全称追踪后续研究
+                  Uses the Semantic Scholar backend to track follow-up research by full paper title
                 </div>
               </div>
             </div>
@@ -898,7 +898,7 @@ export default function PaperMonitorPanel() {
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
               <label style={{ display: "flex", flexDirection: "column", gap: "6px", width: "128px" }}>
                 <span style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", fontWeight: 600 }}>
-                  每项最多
+                  Per-item max
                 </span>
                 <input
                   type="number"
@@ -920,7 +920,7 @@ export default function PaperMonitorPanel() {
               </label>
               <label style={{ display: "flex", flexDirection: "column", gap: "6px", width: "128px" }}>
                 <span style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", fontWeight: 600 }}>
-                  最近天数
+                  Day range
                 </span>
                 <input
                   type="number"
@@ -953,7 +953,7 @@ export default function PaperMonitorPanel() {
                 }
                 style={pillStyle(followupConfig.sort_by === "recency")}
               >
-                最近优先
+                Newest first
               </button>
               <button
                 type="button"
@@ -965,13 +965,13 @@ export default function PaperMonitorPanel() {
                 }
                 style={pillStyle(followupConfig.sort_by === "citation_count")}
               >
-                被引优先
+                Most cited first
               </button>
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {loading ? (
-                <div style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>正在加载监控项…</div>
+                <div style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>Loading monitors…</div>
               ) : followupConfig.followup_monitors.length === 0 ? (
                 <div
                   style={{
@@ -982,7 +982,7 @@ export default function PaperMonitorPanel() {
                     fontSize: "0.875rem",
                   }}
                 >
-                  还没有 Follow Up 监控。建议优先加你最在意的基准论文或方法论文。
+                  No Follow Up monitors yet. Start with the benchmark or method papers you care about most.
                 </div>
               ) : (
                 followupConfig.followup_monitors.map((monitor) => (
@@ -1027,7 +1027,7 @@ export default function PaperMonitorPanel() {
                           ...followupConfig,
                           followup_monitors: followupConfig.followup_monitors.filter((item) => item.id !== monitor.id),
                         };
-                        await persistFollowupConfig(nextConfig, `删除 ${monitor.label}`);
+                        await persistFollowupConfig(nextConfig, `Deleted ${monitor.label}`);
                       }}
                       style={{
                         width: "34px",
@@ -1054,7 +1054,7 @@ export default function PaperMonitorPanel() {
                 type="text"
                 value={followupLabelDraft}
                 onChange={(event) => setFollowupLabelDraft(event.target.value)}
-                placeholder="显示名称，可留空"
+                placeholder="Display name, optional"
                 style={{
                   height: "40px",
                   padding: "0 12px",
@@ -1068,7 +1068,7 @@ export default function PaperMonitorPanel() {
               <textarea
                 value={followupQueryDraft}
                 onChange={(event) => setFollowupQueryDraft(event.target.value)}
-                placeholder="输入论文全称，例如：World Action Models are Zero-shot Policies"
+                placeholder="Enter the full paper title, e.g. World Action Models are Zero-shot Policies"
                 rows={3}
                 style={{
                   padding: "10px 12px",
@@ -1103,7 +1103,7 @@ export default function PaperMonitorPanel() {
                 }}
               >
                 <Plus style={{ width: "16px", height: "16px" }} />
-                {savingKey === "followup" ? "处理中..." : "添加 Follow Up 监控"}
+                {savingKey === "followup" ? "Processing..." : "Add Follow Up monitor"}
               </button>
               <button
                 type="button"
@@ -1124,7 +1124,7 @@ export default function PaperMonitorPanel() {
                 }}
               >
                 <Play style={{ width: "16px", height: "16px" }} />
-                {runningKey === "followup" ? "执行中..." : "立即执行"}
+                {runningKey === "followup" ? "Running..." : "Run now"}
               </button>
             </div>
           </section>
@@ -1145,10 +1145,10 @@ export default function PaperMonitorPanel() {
             <Search style={{ width: "18px", height: "18px", color: "var(--color-primary)" }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--text-main)" }}>
-                高级条件监控
+                Advanced condition monitor
               </div>
               <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                按字段限定条件（Title / Abstract / Author / Category …），对齐 arXiv 官方高级搜索语法
+                Field-scoped conditions (Title / Abstract / Author / Category …), aligned with arXiv's official advanced search syntax
               </div>
             </div>
             <span
@@ -1160,7 +1160,7 @@ export default function PaperMonitorPanel() {
                 border: "1px solid var(--border-light)",
               }}
             >
-              {arxivConfig.keyword_monitors.filter((m) => m.advanced).length} 条
+              {arxivConfig.keyword_monitors.filter((m) => m.advanced).length}
             </span>
           </div>
 
@@ -1169,7 +1169,7 @@ export default function PaperMonitorPanel() {
               type="text"
               value={advancedLabelDraft}
               onChange={(event) => setAdvancedLabelDraft(event.target.value)}
-              placeholder="显示名称，可留空（留空则用编译后的 search_query 作为名字）"
+              placeholder="Display name, optional (defaults to the compiled search_query)"
               style={{
                 height: "40px",
                 padding: "0 12px",
@@ -1219,7 +1219,7 @@ export default function PaperMonitorPanel() {
               }}
             >
               <Plus style={{ width: "16px", height: "16px" }} />
-              添加高级监控
+              Add advanced monitor
             </button>
           </div>
         </section>
@@ -1234,7 +1234,7 @@ export default function PaperMonitorPanel() {
           }}
         >
           <BookOpen style={{ width: "16px", height: "16px" }} />
-          保存按钮会继续复用现有“保存到文献库”的后端流程，监控卡片和手动查询卡片走的是同一套落库逻辑。
+          The save button reuses the existing "save to Literature Library" backend flow; monitor cards and manual search cards share the same persistence logic.
         </div>
       </div>
     </Card>

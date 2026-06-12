@@ -24,7 +24,7 @@ export default function SchedulerTimeline() {
         if (!cancelled) setJobs(data.jobs);
       } catch (e) {
         console.error("Failed to load scheduler jobs:", e);
-        if (!cancelled) setError("加载失败，请稍后重试");
+        if (!cancelled) setError("Failed to load. Please try again later.");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -41,20 +41,20 @@ export default function SchedulerTimeline() {
       setJobs(data.jobs);
     } catch (e) {
       console.error("Failed to load scheduler jobs:", e);
-      setError("加载失败，请稍后重试");
+      setError("Failed to load. Please try again later.");
     } finally {
       setLoading(false);
     }
   }
 
   function formatNextRun(iso: string | null): string {
-    if (!iso) return "未安排";
+    if (!iso) return "Not scheduled";
     const d = new Date(iso);
     return d.toLocaleString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
   }
 
   if (loading) {
-    return <div style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>加载定时任务...</div>;
+    return <div style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>Loading scheduled tasks...</div>;
   }
 
   if (error) {
@@ -74,14 +74,14 @@ export default function SchedulerTimeline() {
             cursor: "pointer",
           }}
         >
-          重试
+          Retry
         </button>
       </div>
     );
   }
 
   if (jobs.length === 0) {
-    return <div style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>暂无定时任务</div>;
+    return <div style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>No scheduled tasks</div>;
   }
 
   return (
@@ -131,7 +131,7 @@ export default function SchedulerTimeline() {
           cursor: "pointer",
         }}
       >
-        刷新
+        Refresh
       </button>
       <style>{`
         .timeline-refresh-btn:focus-visible {

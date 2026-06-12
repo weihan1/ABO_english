@@ -14,20 +14,20 @@ type SortOption = {
 const sortOptions: SortOption[] = [
   {
     value: "default",
-    label: "最新",
-    description: "按时间排序",
+    label: "Latest",
+    description: "Sort by time",
     icon: <Clock className="w-4 h-4" />,
   },
   {
     value: "prioritized",
-    label: "智能",
-    description: "按偏好排序",
+    label: "Smart",
+    description: "Sort by preference",
     icon: <Sparkles className="w-4 h-4" />,
   },
   {
     value: "mixed",
-    label: "混合",
-    description: "AI+偏好混合",
+    label: "Hybrid",
+    description: "AI + preference blend",
     icon: <GitCommit className="w-4 h-4" />,
   },
 ];

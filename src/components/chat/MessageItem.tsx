@@ -1,9 +1,9 @@
 /**
- * MessageItem - 聊天消息单项组件
- * 严格遵循 AionUi 设计规范
- * - 用户消息: 右对齐, 白色背景, 带[你]标签
- * - 助手消息: 左对齐, 带边框
- * - Markdown 渲染 + 代码高亮 + 流式光标 + 工具调用显示
+ * MessageItem - single chat message component
+ * Strictly follows the AionUi design spec
+ * - User messages: right-aligned, white background, with a [You] tag
+ * - Assistant messages: left-aligned, with border
+ * - Markdown rendering + code highlighting + streaming cursor + tool call display
  */
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -17,7 +17,7 @@ interface MessageItemProps {
 }
 
 /**
- * 格式化时间戳
+ * Format timestamp
  */
 function formatTimestamp(timestamp: number): string {
   const date = new Date(timestamp);
@@ -28,7 +28,7 @@ function formatTimestamp(timestamp: number): string {
 }
 
 /**
- * 代码块渲染组件
+ * Code block rendering component
  */
 function CodeBlock({
   inline,
@@ -85,8 +85,8 @@ function ProcessDisplay({ message }: { message: Message }) {
   const isTool = message.contentType === 'tool_call';
   const { command, output } = isTool ? splitToolContent(message) : { command: '', output: message.content.trim() };
   const label = isTool
-    ? processText(message.metadata?.label, message.status === 'completed' ? '命令完成' : '命令执行中')
-    : message.status === 'completed' ? '思考过程' : '正在思考';
+    ? processText(message.metadata?.label, message.status === 'completed' ? 'Command finished' : 'Command running')
+    : message.status === 'completed' ? 'Thought process' : 'Thinking';
   const metadata = processJson(message.metadata);
 
   return (
@@ -97,7 +97,7 @@ function ProcessDisplay({ message }: { message: Message }) {
       <div className="mt-2 space-y-2">
         {command && (
           <div>
-            <div className="mb-1 text-xs font-semibold text-[#777777]">命令</div>
+            <div className="mb-1 text-xs font-semibold text-[#777777]">Command</div>
             <pre className="whitespace-pre-wrap break-words rounded-md bg-white/70 p-2 text-xs leading-relaxed text-[#555555]">
               {command}
             </pre>
@@ -105,17 +105,17 @@ function ProcessDisplay({ message }: { message: Message }) {
         )}
         {output ? (
           <div>
-            <div className="mb-1 text-xs font-semibold text-[#777777]">{isTool ? 'Output' : '思考'}</div>
+            <div className="mb-1 text-xs font-semibold text-[#777777]">{isTool ? 'Output' : 'Thinking'}</div>
             <pre className="whitespace-pre-wrap break-words rounded-md bg-white/70 p-2 text-xs leading-relaxed text-[#555555]">
               {output}
             </pre>
           </div>
         ) : (
-          <div className="text-xs text-[#777777]">等待输出...</div>
+          <div className="text-xs text-[#777777]">Waiting for output...</div>
         )}
         {metadata !== '{}' && (
           <details>
-            <summary className="cursor-pointer text-xs font-semibold text-[#777777]">原始事件</summary>
+            <summary className="cursor-pointer text-xs font-semibold text-[#777777]">Raw events</summary>
             <pre className="mt-2 whitespace-pre-wrap break-words rounded-md bg-white/70 p-2 text-xs leading-relaxed text-[#777777]">
               {metadata}
             </pre>
@@ -141,7 +141,7 @@ export function MessageItem({ message, isStreaming }: MessageItemProps) {
     <div
       className={`flex ${isUser ? 'flex-row-reverse' : 'flex-row'} gap-3`}
     >
-      {/* 消息气泡 */}
+      {/* Message bubble */}
       <div
         className={`max-w-[80%] rounded-lg px-4 py-3 ${
           isUser
@@ -153,12 +153,12 @@ export function MessageItem({ message, isStreaming }: MessageItemProps) {
       >
         {(isToolCall || isThinking) && <ProcessDisplay message={message} />}
 
-        {/* 错误显示 */}
+        {/* Error display */}
         {isError && (
-          <div className="text-red-600 text-sm mb-2">⚠️ 错误</div>
+          <div className="text-red-600 text-sm mb-2">⚠️ Error</div>
         )}
 
-        {/* 消息内容 */}
+        {/* Message content */}
         <div className="prose prose-sm max-w-none">
           {!isToolCall && !isThinking && (
             <ReactMarkdown
@@ -170,7 +170,7 @@ export function MessageItem({ message, isStreaming }: MessageItemProps) {
             </ReactMarkdown>
           )}
 
-          {/* 流式光标 */}
+          {/* Streaming cursor */}
           {isStreaming && !isToolCall && !isThinking && (
             <span className="inline-block w-2 h-5 ml-1 bg-[#7B5EA7] animate-pulse">
               ▋
@@ -178,13 +178,13 @@ export function MessageItem({ message, isStreaming }: MessageItemProps) {
           )}
         </div>
 
-        {/* 时间戳 */}
+        {/* Timestamp */}
         <div
           className={`mt-2 text-xs text-[#666666] ${
             isUser ? 'text-right' : 'text-left'
           }`}
         >
-          {isUser && <span className="mr-1">[你]</span>}
+          {isUser && <span className="mr-1">[You]</span>}
           {timestamp}
         </div>
       </div>

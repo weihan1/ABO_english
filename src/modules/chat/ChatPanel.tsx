@@ -1,7 +1,7 @@
 /**
- * ChatPanel - 聊天主面板 (带多对话标签页)
- * 流程: ChatHome -> 开始对话 -> ChatSession (平滑过渡)
- * 支持多个对话标签页，像浏览器一样切换
+ * ChatPanel - main chat panel (with multi-conversation tabs)
+ * Flow: ChatHome -> start conversation -> ChatSession (smooth transition)
+ * Supports multiple conversation tabs, switchable like a browser
  */
 import { useState, useCallback, useEffect } from 'react';
 import { ChatHome } from './ChatHome';
@@ -28,27 +28,27 @@ export function ChatPanel() {
     clearError,
   } = useChat();
 
-  // 本地状态
+  // Local state
   const [hasStarted, setHasStarted] = useState(false);
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
-  // 同步消息到本地状态
+  // Sync messages into local state
   useEffect(() => {
     setLocalMessages(messages);
   }, [messages]);
 
-  // 同步活动对话状态
+  // Sync active conversation state
   useEffect(() => {
     if (activeConversation) {
       setHasStarted(true);
     }
   }, [activeConversation]);
 
-  // 开始新对话
+  // Start a new conversation
   const handleStartChat = useCallback(async (initialMessage: string, cliId?: string) => {
-    // 使用传入的 cliId 或当前选中的 CLI
+    // Use the given cliId or the currently selected CLI
     const targetCliId = cliId || selectedCli?.id;
     if (!targetCliId && availableClis.length === 0) {
       return;
@@ -57,14 +57,14 @@ export function ChatPanel() {
     setIsCreating(true);
 
     try {
-      // 先创建对话（这会连接 WebSocket）
+      // Create the conversation first (this connects the WebSocket)
       const conv = await createNewConversation(
         targetCliId,
         initialMessage.slice(0, 30)
       );
 
       if (conv) {
-        // 发送消息（此时 WebSocket 应该已连接）
+        // Send the message (WebSocket should be connected by now)
         await sendMessage(initialMessage, conv);
       }
     } catch (e) {
@@ -74,58 +74,58 @@ export function ChatPanel() {
     }
   }, [selectedCli, availableClis, createNewConversation, sendMessage]);
 
-  // 继续对话
+  // Continue conversation
   const handleSend = useCallback(async () => {
     if (!input.trim() || !activeConversation) return;
 
     const content = input;
     setInput('');
 
-    // 发送到后端
+    // Send to backend
     await sendMessage(content);
   }, [input, activeConversation, sendMessage]);
 
-  // 切换对话
+  // Switch conversation
   const handleSwitchConversation = useCallback(async (convId: string) => {
     await switchConversation(convId);
   }, [switchConversation]);
 
-  // 关闭对话
+  // Close conversation
   const handleCloseConversation = useCallback((e: React.MouseEvent, convId: string) => {
     e.stopPropagation();
     void closeConversation(convId);
 
-    // 如果关闭的是最后一个对话，返回主页
+    // If the last conversation was closed, go back home
     if (conversations.length <= 1) {
       setHasStarted(false);
       setLocalMessages([]);
     }
   }, [closeConversation, conversations.length]);
 
-  // 新建对话
+  // New conversation
   const handleNewConversation = useCallback(async () => {
     if (!selectedCli && availableClis.length === 0) return;
 
     setIsCreating(true);
     try {
-      await createNewConversation(selectedCli?.id, '新对话');
+      await createNewConversation(selectedCli?.id, 'New conversation');
     } finally {
       setIsCreating(false);
     }
   }, [selectedCli, availableClis, createNewConversation]);
 
-  // 返回主页
+  // Back to home
   const handleBack = useCallback(() => {
     setHasStarted(false);
     setLocalMessages([]);
   }, []);
 
-  // 清除当前对话
+  // Clear current conversation
   const handleClear = useCallback(() => {
     setLocalMessages([]);
   }, []);
 
-  // 如果有错误，显示错误提示
+  // Show error message if there is one
   if (error) {
     return (
       <div className="flex h-full items-center justify-center bg-[var(--bg-app)]">
@@ -135,7 +135,7 @@ export function ChatPanel() {
             onClick={clearError}
             className="px-4 py-2 rounded-xl bg-[var(--color-primary)] text-white"
           >
-            重试
+            Retry
           </button>
         </div>
       </div>
@@ -146,7 +146,7 @@ export function ChatPanel() {
 
   return (
     <div className="h-full flex flex-col bg-[var(--bg-app)]">
-      {/* 对话标签栏 - 浏览器风格 */}
+      {/* Conversation tab bar - browser style */}
       {conversations.length > 0 && (
         <div className="flex items-center gap-1 px-2 py-2 bg-white/60 backdrop-blur-xl border-b border-[var(--border-color)] overflow-x-auto">
           {conversations.map((conv) => {
@@ -178,7 +178,7 @@ export function ChatPanel() {
             );
           })}
 
-          {/* 新建对话按钮 */}
+          {/* New conversation button */}
           <button
             onClick={handleNewConversation}
             disabled={isCreating}
@@ -187,26 +187,26 @@ export function ChatPanel() {
             <Plus className="w-4 h-4 text-[var(--text-muted)]" />
           </button>
 
-          {/* 连接状态指示器 */}
+          {/* Connection status indicator */}
           <div className="ml-auto flex items-center gap-2 px-3">
             {isConnected ? (
               <>
                 <Wifi className="w-3.5 h-3.5 text-green-500" />
-                <span className="text-xs text-green-600">已连接</span>
+                <span className="text-xs text-green-600">Connected</span>
               </>
             ) : (
               <>
                 <WifiOff className="w-3.5 h-3.5 text-red-400" />
-                <span className="text-xs text-red-500">未连接</span>
+                <span className="text-xs text-red-500">Disconnected</span>
               </>
             )}
           </div>
         </div>
       )}
 
-      {/* 主内容区 */}
+      {/* Main content */}
       <div className="flex-1 relative overflow-hidden">
-        {/* ChatHome - 输入界面 */}
+        {/* ChatHome - input view */}
         <div
           className={`absolute inset-0 transition-all duration-500 ease-out ${
             hasStarted ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'
@@ -218,7 +218,7 @@ export function ChatPanel() {
           />
         </div>
 
-        {/* ChatSession - 对话界面 */}
+        {/* ChatSession - conversation view */}
         {hasStarted && activeConversation && (
           <div
             className={`absolute inset-0 transition-all duration-500 ease-out ${

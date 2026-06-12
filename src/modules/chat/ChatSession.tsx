@@ -1,6 +1,6 @@
 /**
- * ChatSession - 完整对话会话界面
- * 显示历史消息 + 输入框，支持流式打字机效果
+ * ChatSession - full conversation view
+ * Shows message history + input box, with streaming typewriter effect
  */
 import { useRef, useEffect, useCallback } from 'react';
 import { Send, Bot, User, ArrowLeft, Trash2, MessageSquare, Square } from 'lucide-react';
@@ -67,14 +67,14 @@ export function ChatSession({
       <button
         onClick={onBack}
         className="p-2 rounded-xl text-[var(--text-muted)] hover:bg-[var(--color-primary)]/10 hover:text-[var(--color-primary)] transition-all"
-        title="返回"
+        title="Back"
       >
         <ArrowLeft className="w-5 h-5" />
       </button>
       <button
         onClick={onClear}
         className="p-2 rounded-xl text-[var(--text-muted)] hover:bg-red-50 hover:text-red-500 transition-all"
-        title="清除对话"
+        title="Clear conversation"
       >
         <Trash2 className="w-5 h-5" />
       </button>
@@ -85,7 +85,7 @@ export function ChatSession({
     <PageContainer>
       <PageHeader
         title={cli.name}
-        subtitle={isConnected ? "已连接" : "未连接"}
+        subtitle={isConnected ? "Connected" : "Disconnected"}
         icon={MessageSquare}
         actions={headerActions}
       />
@@ -125,7 +125,7 @@ export function ChatSession({
                 onChange={(e) => onInputChange(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onInput={handleInput}
-                placeholder="继续对话..."
+                placeholder="Continue the conversation..."
                 disabled={!isConnected || isStreaming}
                 rows={1}
                 className="flex-1 resize-none bg-transparent px-3 py-2.5 text-[var(--text-main)] placeholder:text-[var(--text-muted)]/60 outline-none text-sm"
@@ -138,7 +138,7 @@ export function ChatSession({
                   bg-[var(--color-primary)] text-white
                   transition-all hover:bg-[var(--color-primary-dark)] hover:scale-105
                   disabled:opacity-40 disabled:cursor-not-allowed"
-                title={isStreaming ? "终止当前回复" : "发送"}
+                title={isStreaming ? "Stop current reply" : "Send"}
               >
                 {isStreaming ? (
                   <Square className="h-4 w-4 fill-current" />
@@ -148,7 +148,7 @@ export function ChatSession({
               </button>
             </div>
             <p className="text-center text-xs text-[var(--text-muted)] mt-2">
-              按 Enter 发送，Shift + Enter 换行
+              Enter to send, Shift + Enter for new line
             </p>
           </div>
         </Card>
@@ -191,8 +191,8 @@ function ProcessMessage({ message }: { message: Message }) {
   const isTool = message.contentType === 'tool_call';
   const { command, output } = isTool ? splitToolContent(message) : { command: '', output: message.content.trim() };
   const label = isTool
-    ? processText(message.metadata?.label, message.status === 'completed' ? '命令完成' : '命令执行中')
-    : message.status === 'completed' ? '思考过程' : '正在思考';
+    ? processText(message.metadata?.label, message.status === 'completed' ? 'Command finished' : 'Command running')
+    : message.status === 'completed' ? 'Thought process' : 'Thinking';
   const metadata = processJson(message.metadata);
 
   return (
@@ -204,7 +204,7 @@ function ProcessMessage({ message }: { message: Message }) {
       <div className="mt-3 space-y-3">
         {command && (
           <div>
-            <div className="mb-1 text-xs font-semibold text-[var(--text-muted)]">命令</div>
+            <div className="mb-1 text-xs font-semibold text-[var(--text-muted)]">Command</div>
             <pre className="whitespace-pre-wrap break-words rounded-lg border border-[var(--border-color)] bg-blue-50/50 p-2 text-xs leading-relaxed text-slate-700">
               {command}
             </pre>
@@ -213,18 +213,18 @@ function ProcessMessage({ message }: { message: Message }) {
 
         {output ? (
           <div>
-            <div className="mb-1 text-xs font-semibold text-[var(--text-muted)]">{isTool ? 'Output' : '思考'}</div>
+            <div className="mb-1 text-xs font-semibold text-[var(--text-muted)]">{isTool ? 'Output' : 'Thinking'}</div>
             <pre className="whitespace-pre-wrap break-words rounded-lg border border-[var(--border-color)] bg-slate-50 p-2 text-xs leading-relaxed text-slate-700">
               {output}
             </pre>
           </div>
         ) : (
-          <div className="text-xs text-[var(--text-muted)]">等待输出...</div>
+          <div className="text-xs text-[var(--text-muted)]">Waiting for output...</div>
         )}
 
         {metadata !== '{}' && (
           <details>
-            <summary className="cursor-pointer text-xs font-semibold text-[var(--text-muted)]">原始事件</summary>
+            <summary className="cursor-pointer text-xs font-semibold text-[var(--text-muted)]">Raw events</summary>
             <pre className="mt-2 whitespace-pre-wrap break-words rounded-lg border border-[var(--border-color)] bg-slate-50 p-2 text-xs leading-relaxed text-[var(--text-muted)]">
               {metadata}
             </pre>

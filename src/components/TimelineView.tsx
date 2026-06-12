@@ -22,14 +22,14 @@ interface TimelineData {
 }
 
 const activityLabels: Record<string, string> = {
-  card_view: "浏览",
-  card_like: "点赞",
-  card_save: "收藏",
-  card_dislike: "不感兴趣",
-  chat_message: "对话",
-  chat_start: "开始对话",
-  module_run: "运行爬虫",
-  checkin: "签到",
+  card_view: "Viewed",
+  card_like: "Liked",
+  card_save: "Saved",
+  card_dislike: "Not interested",
+  chat_message: "Chat",
+  chat_start: "Started chat",
+  module_run: "Ran crawler",
+  checkin: "Check-in",
 };
 
 interface PeriodData {
@@ -42,9 +42,9 @@ interface PeriodData {
 
 function groupByPeriod(activities: Activity[]): PeriodData[] {
   const periods: PeriodData[] = [
-    { key: "morning", label: "上午", icon: <Sun className="w-3.5 h-3.5" />, counts: {}, total: 0 },
-    { key: "afternoon", label: "下午", icon: <CloudSun className="w-3.5 h-3.5" />, counts: {}, total: 0 },
-    { key: "evening", label: "晚上", icon: <Moon className="w-3.5 h-3.5" />, counts: {}, total: 0 },
+    { key: "morning", label: "Morning", icon: <Sun className="w-3.5 h-3.5" />, counts: {}, total: 0 },
+    { key: "afternoon", label: "Afternoon", icon: <CloudSun className="w-3.5 h-3.5" />, counts: {}, total: 0 },
+    { key: "evening", label: "Evening", icon: <Moon className="w-3.5 h-3.5" />, counts: {}, total: 0 },
   ];
 
   for (const act of activities) {
@@ -68,8 +68,8 @@ function getHourCounts(activities: Activity[]): Map<number, number> {
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
-  const days = ["日", "一", "二", "三", "四", "五", "六"];
-  return `${d.getMonth() + 1}月${d.getDate()}日 · 周${days[d.getDay()]}`;
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  return `${d.getMonth() + 1}/${d.getDate()} · ${days[d.getDay()]}`;
 }
 
 export default function TimelineView() {
@@ -112,7 +112,7 @@ export default function TimelineView() {
         height: "120px", color: "var(--text-muted)",
       }}>
         <Clock style={{ width: "16px", height: "16px", animation: "spin 1s linear infinite", marginRight: "8px" }} />
-        <span style={{ fontSize: "0.875rem" }}>加载中...</span>
+        <span style={{ fontSize: "0.875rem" }}>Loading...</span>
       </div>
     );
   }
@@ -121,9 +121,9 @@ export default function TimelineView() {
     return (
       <div style={{ textAlign: "center", padding: "24px 0", color: "var(--text-muted)" }}>
         <Calendar style={{ width: "36px", height: "36px", margin: "0 auto 8px", opacity: 0.3 }} />
-        <p style={{ fontSize: "0.875rem" }}>今日暂无活动</p>
+        <p style={{ fontSize: "0.875rem" }}>No activity today</p>
         <p style={{ fontSize: "0.75rem", marginTop: "4px", color: "var(--text-light)" }}>
-          开始浏览或对话吧
+          Start browsing or chatting
         </p>
       </div>
     );
@@ -149,7 +149,7 @@ export default function TimelineView() {
           fontSize: "0.6875rem", padding: "2px 8px", borderRadius: "8px",
           background: "var(--bg-hover)", color: "var(--text-muted)",
         }}>
-          {timeline.activities.length} 项活动
+          {timeline.activities.length} activities
         </span>
       </div>
 
@@ -174,7 +174,7 @@ export default function TimelineView() {
                   opacity: count > 0 ? 0.35 + (count / maxHourCount) * 0.65 : 0.4,
                   transition: "height 0.3s ease",
                 }}
-                title={count > 0 ? `${h}:00 — ${count} 项活动` : `${h}:00`}
+                title={count > 0 ? `${h}:00 — ${count} activities` : `${h}:00`}
               />
             );
           })}
@@ -248,7 +248,7 @@ export default function TimelineView() {
           background: "var(--bg-hover)",
         }}>
           <div style={{ fontSize: "0.6875rem", color: "var(--text-light)", marginBottom: "4px" }}>
-            对话路径
+            Conversation paths
           </div>
           <div style={{
             fontSize: "0.75rem",
@@ -265,7 +265,7 @@ export default function TimelineView() {
                   {c.time.slice(11, 16)}
                 </span>
                 {" "}
-                {c.topic || "对话"}
+                {c.topic || "Chat"}
               </span>
             ))}
           </div>
@@ -283,7 +283,7 @@ export default function TimelineView() {
           <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
             <Sparkles style={{ width: "13px", height: "13px", color: "var(--color-primary)" }} />
             <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)" }}>
-              今日总结
+              Today's summary
             </span>
             <span style={{ fontSize: "0.625rem", marginLeft: "auto", color: "var(--text-light)" }}>
               {timeline.summary_generated_at?.slice(11, 16)}
@@ -318,7 +318,7 @@ export default function TimelineView() {
                 display: "inline", verticalAlign: "middle",
                 marginRight: "6px", animation: "spin 1s linear infinite",
               }} />
-              生成中...
+              Generating...
             </>
           ) : (
             <>
@@ -327,7 +327,7 @@ export default function TimelineView() {
                 display: "inline", verticalAlign: "middle",
                 marginRight: "6px", color: "var(--color-primary)",
               }} />
-              生成今日总结
+              Generate today's summary
             </>
           )}
         </button>
