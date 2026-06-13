@@ -57,8 +57,8 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
       console.error("Failed to load onboarding status:", error);
       addToast({
         kind: "error",
-        title: "加载配置失败",
-        message: "请检查后端服务是否运行",
+        title: "Failed to load configuration",
+        message: "Check whether the backend service is running",
       });
     } finally {
       setIsLoading(false);
@@ -94,8 +94,8 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
 
       addToast({
         kind: options?.skipped ? "info" : "success",
-        title: options?.skipped ? "已跳过新手向导" : "欢迎加入 ABO！",
-        message: options?.skipped ? "你可以随时在设置里重新打开。" : "你的研究之旅即将开始",
+        title: options?.skipped ? "Onboarding skipped" : "Welcome to ABO!",
+        message: options?.skipped ? "You can reopen it anytime in Settings." : "Your research journey is about to begin",
       });
 
       if (onComplete) {
@@ -105,8 +105,8 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
       console.error("Failed to complete onboarding:", error);
       addToast({
         kind: "error",
-        title: "保存失败",
-        message: "请稍后重试",
+        title: "Save failed",
+        message: "Please try again later",
       });
     }
   };
@@ -163,7 +163,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
               animation: "spin 1s linear infinite",
             }}
           />
-          <p style={{ fontSize: "0.9375rem", color: "var(--text-muted)" }}>加载中...</p>
+          <p style={{ fontSize: "0.9375rem", color: "var(--text-muted)" }}>Loading...</p>
         </div>
         <style>{`
           @keyframes spin {
@@ -245,7 +245,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
           event.currentTarget.style.color = "var(--text-secondary)";
         }}
       >
-        跳过向导
+        Skip wizard
       </button>
 
       {/* Step Content */}

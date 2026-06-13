@@ -8,16 +8,16 @@ interface ModulePerformanceProps {
 
 // Module name mapping
 const MODULE_NAMES: Record<string, string> = {
-  "arxiv-tracker": "arXiv 追踪",
+  "arxiv-tracker": "arXiv Tracking",
   "semantic-scholar-tracker": "Semantic Scholar",
-  "xiaohongshu-tracker": "小红书追踪",
-  "bilibili-tracker": "哔哩哔哩追踪",
-  "xiaoyuzhou-tracker": "小宇宙追踪",
-  "zhihu-tracker": "知乎追踪",
-  "folder-monitor": "文件夹监控",
+  "xiaohongshu-tracker": "Xiaohongshu Tracking",
+  "bilibili-tracker": "Bilibili Tracking",
+  "xiaoyuzhou-tracker": "Xiaoyuzhou Tracking",
+  "zhihu-tracker": "Zhihu Tracking",
+  "folder-monitor": "Folder Monitor",
   "arxiv": "arXiv API",
-  "rss": "RSS 订阅",
-  "podcast": "播客追踪",
+  "rss": "RSS Feeds",
+  "podcast": "Podcast Tracking",
 };
 
 // Module colors
@@ -66,7 +66,7 @@ export default function ModulePerformance({ byModule }: ModulePerformanceProps) 
           color: "var(--text-muted)",
         }}
       >
-        <p>暂无模块数据</p>
+        <p>No module data yet</p>
       </div>
     );
   }
@@ -88,10 +88,10 @@ export default function ModulePerformance({ byModule }: ModulePerformanceProps) 
         <Layers style={{ width: "20px", height: "20px", color: "var(--color-primary)" }} />
         <div>
           <span style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 600 }}>
-            {moduleData.entries.length} 个活跃模块
+            {moduleData.entries.length} active modules
           </span>
           <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginLeft: "8px" }}>
-            共 {moduleData.total} 张卡片
+            {moduleData.total} cards total
           </span>
         </div>
       </div>
@@ -206,7 +206,7 @@ export default function ModulePerformance({ byModule }: ModulePerformanceProps) 
         ))}
         {moduleData.entries.length > 4 && (
           <span style={{ fontSize: "0.6875rem", color: "var(--text-muted)" }}>
-            +{moduleData.entries.length - 4} 更多
+            +{moduleData.entries.length - 4} more
           </span>
         )}
       </div>

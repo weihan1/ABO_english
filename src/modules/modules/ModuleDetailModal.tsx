@@ -55,10 +55,10 @@ type HistoryResponse = {
 };
 
 const STATUS_MAP: Record<ModuleStatus, { label: string; color: string; bg: string }> = {
-  active: { label: "运行中", color: "#22c55e", bg: "rgba(34,197,94,0.1)" },
-  paused: { label: "已暂停", color: "#f59e0b", bg: "rgba(245,158,11,0.1)" },
-  error: { label: "需要处理", color: "#ef4444", bg: "rgba(239,68,68,0.1)" },
-  unconfigured: { label: "待设置", color: "var(--text-muted)", bg: "var(--bg-hover)" },
+  active: { label: "Running", color: "#22c55e", bg: "rgba(34,197,94,0.1)" },
+  paused: { label: "Paused", color: "#f59e0b", bg: "rgba(245,158,11,0.1)" },
+  error: { label: "Needs attention", color: "#ef4444", bg: "rgba(239,68,68,0.1)" },
+  unconfigured: { label: "Needs setup", color: "var(--text-muted)", bg: "var(--bg-hover)" },
 };
 
 const MODULE_ICONS: Record<string, FC<{ style?: CSSProperties }>> = {
@@ -134,7 +134,7 @@ export function ModuleDetailModal({
       setHasMore(cards.length === 30);
       setHistoryOffset(offset + cards.length);
     } catch {
-      addToast({ kind: "error", title: "加载失败", message: "无法加载历史记录" });
+      addToast({ kind: "error", title: "Load failed", message: "Could not load history" });
     } finally {
       setHistoryLoading(false);
     }
@@ -155,7 +155,7 @@ export function ModuleDetailModal({
           {
             name: "diagnosis",
             status: "fail",
-            message: error instanceof Error ? error.message : "诊断失败",
+            message: error instanceof Error ? error.message : "Diagnostics failed",
           },
         ],
         recommendations: [],
@@ -182,11 +182,11 @@ export function ModuleDetailModal({
           {
             fix: "all",
             status: "failed",
-            message: error instanceof Error ? error.message : "修复失败",
+            message: error instanceof Error ? error.message : "Fix failed",
           },
         ],
         moduleStatus: module.status,
-        nextSteps: ["请进入工具页检查监控配置"],
+        nextSteps: ["Open the tool page to check the monitor configuration"],
       });
     } finally {
       setIsFixing(false);
@@ -200,10 +200,10 @@ export function ModuleDetailModal({
   const filteredHistory = filterHistoryCards(historyCards, historySearch);
   const historyPreview = historyCards.slice(0, 3);
   const primaryActionLabel = module.status === "unconfigured"
-    ? "进入工具"
+    ? "Open tool"
     : module.status === "active"
-      ? "暂停模块"
-      : "启动模块";
+      ? "Pause module"
+      : "Start module";
 
   return (
     <div
@@ -315,9 +315,9 @@ export function ModuleDetailModal({
           <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
             <button onClick={onOpenTool} style={ghostHeaderButtonStyle}>
               <ExternalLink style={{ width: "15px", height: "15px" }} />
-              进入工具
+              Open tool
             </button>
-            <button onClick={handleClose} style={iconHeaderButtonStyle} aria-label="关闭">
+            <button onClick={handleClose} style={iconHeaderButtonStyle} aria-label="Close">
               <X style={{ width: "16px", height: "16px" }} />
             </button>
           </div>
@@ -325,8 +325,8 @@ export function ModuleDetailModal({
 
         <div style={{ display: "flex", gap: "6px", padding: "16px 28px 0", borderBottom: "1px solid var(--border-light)" }}>
           {[
-            { id: "overview" as const, label: "运行概览" },
-            { id: "history" as const, label: "历史记录" },
+            { id: "overview" as const, label: "Run overview" },
+            { id: "history" as const, label: "History" },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -366,10 +366,10 @@ export function ModuleDetailModal({
               >
                 <div>
                   <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--text-main)", marginBottom: "4px" }}>
-                    这里只保留开关和记录
+                    Only toggles and records here
                   </div>
                   <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
-                    关键词、关注源、Cookie 和监控细节都放到对应工具页处理，模块管理页只看效果和运行状态。
+                    Keywords, sources, cookies, and monitor details are handled on the tool pages; Module Management only shows results and run status.
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -391,7 +391,7 @@ export function ModuleDetailModal({
                   </button>
                   <button onClick={onRun} style={ghostActionButtonStyle}>
                     <RefreshCw style={{ width: "15px", height: "15px" }} />
-                    立即运行
+                    Run now
                   </button>
                 </div>
               </div>
@@ -402,10 +402,10 @@ export function ModuleDetailModal({
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "10px" }}>
                 {[
-                  { label: "待看", value: usage.unreadCount, tone: "#f59e0b" },
-                  { label: "累计已看", value: usage.readCount, tone: "var(--text-main)" },
-                  { label: "近7天浏览", value: usage.viewCount7d, tone: "#2563eb" },
-                  { label: "近7天收藏", value: usage.saveCount7d, tone: "#7c3aed" },
+                  { label: "Pending", value: usage.unreadCount, tone: "#f59e0b" },
+                  { label: "Total read", value: usage.readCount, tone: "var(--text-main)" },
+                  { label: "Views (7d)", value: usage.viewCount7d, tone: "#2563eb" },
+                  { label: "Saves (7d)", value: usage.saveCount7d, tone: "#7c3aed" },
                 ].map((item) => (
                   <MetricBlock key={item.label} label={item.label} value={item.value} tone={item.tone} />
                 ))}
@@ -413,17 +413,17 @@ export function ModuleDetailModal({
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "10px" }}>
                 {[
-                  { label: "本周新增", value: module.stats.thisWeek },
-                  { label: "最近一条", value: formatRelativeDate(usage.lastCardAt) },
-                  { label: "上次运行", value: formatRelativeDate(module.lastRun) },
-                  { label: "下次运行", value: formatDateTime(module.nextRun) },
+                  { label: "New this week", value: module.stats.thisWeek },
+                  { label: "Latest", value: formatRelativeDate(usage.lastCardAt) },
+                  { label: "Last run", value: formatRelativeDate(module.lastRun) },
+                  { label: "Next run", value: formatDateTime(module.nextRun) },
                 ].map((item) => (
                   <MetricBlock key={item.label} label={item.label} value={item.value} tone="var(--text-main)" />
                 ))}
               </div>
 
               <section style={sectionStyle}>
-                <SectionTitle title="监控内容" helper="在这里看范围，具体改动去工具页完成" />
+                <SectionTitle title="Monitor content" helper="View the scope here; make changes on the tool page" />
                 {focusTokens.length > 0 ? (
                   <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                     {focusTokens.map((token) => (
@@ -444,15 +444,15 @@ export function ModuleDetailModal({
                   </div>
                 ) : (
                   <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                    还没有设置监控目标。进入工具页后可以添加关键词、关注源或监控列表。
+                    No monitor targets set yet. Open the tool page to add keywords, sources, or monitor lists.
                   </div>
                 )}
               </section>
 
               <section style={sectionStyle}>
                 <SectionTitle
-                  title="最近记录"
-                  helper={historyCards.length > 0 ? `已抓到 ${historyCards.length} 条，点击可打开原链接` : "最近抓到的内容会先出现在这里"}
+                  title="Recent records"
+                  helper={historyCards.length > 0 ? `Captured ${historyCards.length}; click to open the original link` : "Recently captured content appears here first"}
                 />
                 {historyLoading && historyCards.length === 0 ? (
                   <CenteredLoader />
@@ -462,7 +462,7 @@ export function ModuleDetailModal({
                       <HistoryCard key={card.id} card={card} moduleId={module.id} compact />
                     ))}
                     <button onClick={() => setActiveTab("history")} style={ghostActionButtonStyle}>
-                      查看全部记录
+                      View all records
                     </button>
                   </div>
                 ) : (
@@ -472,15 +472,15 @@ export function ModuleDetailModal({
 
               <section style={sectionStyle}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
-                  <SectionTitle title="运行健康" helper="异常时先看这里，再决定是否去工具页处理" />
+                  <SectionTitle title="Run health" helper="Check here first when something's wrong, then decide whether to go to the tool page" />
                   <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                     <button onClick={runQuickFix} disabled={isFixing} style={{ ...solidActionButtonStyle, background: "#16a34a" }}>
                       {isFixing ? <Loader2 style={spinningIconStyle} /> : <CheckCircle style={{ width: "15px", height: "15px" }} />}
-                      快速修复
+                      Quick fix
                     </button>
                     <button onClick={runDiagnosis} disabled={isDiagnosing} style={ghostActionButtonStyle}>
                       {isDiagnosing ? <Loader2 style={spinningIconStyle} /> : <AlertCircle style={{ width: "15px", height: "15px" }} />}
-                      运行诊断
+                      Run diagnostics
                     </button>
                   </div>
                 </div>
@@ -501,7 +501,7 @@ export function ModuleDetailModal({
                         ? <CheckCircle style={{ width: "18px", height: "18px", color: "#16a34a" }} />
                         : <XCircle style={{ width: "18px", height: "18px", color: "#dc2626" }} />}
                       <span style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-main)" }}>
-                        {diagnosisResult.overallStatus === "pass" ? "当前运行正常" : "发现了需要处理的问题"}
+                        {diagnosisResult.overallStatus === "pass" ? "Running normally" : "Found issues that need attention"}
                       </span>
                     </div>
                     {diagnosisResult.checks.map((check) => (
@@ -525,7 +525,7 @@ export function ModuleDetailModal({
                   </div>
                 ) : (
                   <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                    还没有跑诊断。模块报错、长期没产出或 Cookie 失效时可以先在这里检查。
+                    No diagnostics run yet. Check here first when a module errors, produces nothing for a while, or its cookie expires.
                   </div>
                 )}
 
@@ -562,10 +562,10 @@ export function ModuleDetailModal({
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "10px" }}>
                 {[
-                  { label: "待看", value: usage.unreadCount },
-                  { label: "累计已看", value: usage.readCount },
-                  { label: "近7天浏览", value: usage.viewCount7d },
-                  { label: "本周新增", value: module.stats.thisWeek },
+                  { label: "Pending", value: usage.unreadCount },
+                  { label: "Total read", value: usage.readCount },
+                  { label: "Views (7d)", value: usage.viewCount7d },
+                  { label: "New this week", value: module.stats.thisWeek },
                 ].map((item) => (
                   <MetricBlock key={item.label} label={item.label} value={item.value} tone="var(--text-main)" />
                 ))}
@@ -587,7 +587,7 @@ export function ModuleDetailModal({
                   type="text"
                   value={historySearch}
                   onChange={(event) => setHistorySearch(event.target.value)}
-                  placeholder="搜标题、摘要、标签"
+                  placeholder="Search title, summary, tags"
                   style={{
                     width: "100%",
                     height: "40px",
@@ -609,13 +609,13 @@ export function ModuleDetailModal({
                 <EmptyHistory />
               ) : filteredHistory.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "42px 0", color: "var(--text-muted)", fontSize: "0.875rem" }}>
-                  没有匹配的记录
+                  No matching records
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   {historySearch && (
                     <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                      找到 {filteredHistory.length} 条匹配记录
+                      Found {filteredHistory.length} matching records
                     </div>
                   )}
                   {filteredHistory.map((card) => (
@@ -626,10 +626,10 @@ export function ModuleDetailModal({
                       {historyLoading ? (
                         <>
                           <Loader2 style={spinningIconStyle} />
-                          加载中
+                          Loading
                         </>
                       ) : (
-                        "加载更多"
+                        "Load more"
                       )}
                     </button>
                   )}
@@ -833,7 +833,7 @@ function HistoryCard({
                 fontWeight: 700,
               }}
             >
-              {card.read ? "已看" : "待看"}
+              {card.read ? "Read" : "Pending"}
             </span>
           </div>
         </div>
@@ -854,8 +854,8 @@ function EmptyHistory() {
   return (
     <div style={{ textAlign: "center", padding: "42px 0", color: "var(--text-muted)" }}>
       <Clock style={{ width: "34px", height: "34px", margin: "0 auto 10px", opacity: 0.4 }} />
-      <div style={{ fontSize: "0.875rem", marginBottom: "4px" }}>还没有历史记录</div>
-      <div style={{ fontSize: "0.75rem" }}>模块开始产出内容后，这里会自动累积。</div>
+      <div style={{ fontSize: "0.875rem", marginBottom: "4px" }}>No history yet</div>
+      <div style={{ fontSize: "0.75rem" }}>This accumulates automatically once the module starts producing content.</div>
     </div>
   );
 }

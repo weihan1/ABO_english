@@ -131,11 +131,11 @@ interface JumpShortcut {
 const MODULE_LABELS: Record<string, string> = {
   "arxiv-tracker": "ArXiv",
   "semantic-scholar-tracker": "Semantic Scholar",
-  "xiaohongshu-tracker": "小红书",
-  "bilibili-tracker": "哔哩哔哩",
-  "xiaoyuzhou-tracker": "小宇宙",
-  "zhihu-tracker": "知乎",
-  "folder-monitor": "文件监控",
+  "xiaohongshu-tracker": "Xiaohongshu",
+  "bilibili-tracker": "Bilibili",
+  "xiaoyuzhou-tracker": "Xiaoyuzhou",
+  "zhihu-tracker": "Zhihu",
+  "folder-monitor": "Folder monitor",
 };
 
 const WORKFLOWS_PER_PAGE = 6;
@@ -192,8 +192,8 @@ function panelHeader(title: string, icon: ReactNode, extra?: ReactNode) {
 function CollapseToggle({
   expanded,
   onClick,
-  expandLabel = "展开",
-  collapseLabel = "收起",
+  expandLabel = "Expand",
+  collapseLabel = "Collapse",
 }: {
   expanded: boolean;
   onClick: () => void;
@@ -241,12 +241,12 @@ function relativeTime(rawValue: number): string {
   const value = toMillis(rawValue);
   const diff = Date.now() - value;
   const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return "刚刚";
-  if (minutes < 60) return `${minutes} 分钟前`;
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} 小时前`;
+  if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} 天前`;
+  if (days < 7) return `${days}d ago`;
   return new Date(value).toLocaleDateString("zh-CN");
 }
 
@@ -254,22 +254,22 @@ function summarizeCategories(snapshot: WikiSnapshot): string {
   const entries = Object.entries(snapshot.byCategory)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 2);
-  if (entries.length === 0) return "尚未沉淀页面";
+  if (entries.length === 0) return "No pages consolidated yet";
   return entries.map(([name, count]) => `${name} ${count}`).join(" · ");
 }
 
 function buildSpotlightPrompt(card: AssistantSpotlightCard): string {
-  const tagLine = card.tags.length > 0 ? `标签：${card.tags.join(" / ")}` : "标签：暂无";
+  const tagLine = card.tags.length > 0 ? `Tags: ${card.tags.join(" / ")}` : "Tags: none";
   return [
-    "请把这条今日情报处理成可执行结果：",
-    "1. 判断它更适合进入 Internet Wiki、Literature Wiki，还是只保留为今日情报。",
-    "2. 提炼 3 个关键点和 2 个下一步动作。",
-    "3. 如果值得沉淀，请给出建议的 Wiki 页面标题和分类。",
+    "Process this Daily Briefing item into actionable output:",
+    "1. Decide whether it belongs in the Internet Wiki, the Literature Wiki, or should stay as Daily Briefing only.",
+    "2. Extract 3 key points and 2 next actions.",
+    "3. If worth consolidating, suggest a Wiki page title and category.",
     "",
-    `标题：${card.title}`,
-    `摘要：${card.summary}`,
+    `Title: ${card.title}`,
+    `Summary: ${card.summary}`,
     tagLine,
-    `来源模块：${readableModuleName(card.moduleId)}`,
+    `Source module: ${readableModuleName(card.moduleId)}`,
   ].join("\n");
 }
 
@@ -277,226 +277,226 @@ function buildWorkflowRecipes(data: AssistantOverviewResponse | null): WorkflowR
   const spotlight = data?.inbox.spotlight ?? [];
   const intelCount = data?.wiki.intel.total ?? 0;
   const litCount = data?.wiki.lit.total ?? 0;
-  const topKeyword = data?.insights.topKeyword ?? "当前偏好";
+  const topKeyword = data?.insights.topKeyword ?? "current preferences";
   const topTitles =
     spotlight
       .slice(0, 3)
       .map((item, index) => `${index + 1}. ${item.title}`)
-      .join("\n") || "暂无新的高优先级情报";
+      .join("\n") || "No new high-priority intel";
 
   return [
     {
       id: "mentor-followup",
-      title: "导师式 Follow-up 论文整理",
-      description: "给一组 follow-up 论文笔记目录，用 mentor-zh 做中文研究综述、关系图和 idea 生成。",
+      title: "Mentor-style follow-up paper review",
+      description: "Point at a folder of follow-up paper notes and use mentor-zh for a research review, relationship map, and idea generation.",
       accent: "#0f766e",
       skill: "$mentor-zh",
       skillLabel: "mentor-zh",
-      intent: "基于一个论文 markdown 文件夹做导师式 follow-up 调研，识别源论文，分析每篇论文的 challenge、场景、技术路径、insight，并生成可写回 Obsidian/Literature Wiki 的结构化结果。",
+      intent: "Do mentor-style follow-up research on a folder of paper markdown files: identify the source paper, analyze each paper's challenge, setting, technical approach, and insight, and produce structured output that can be written back to Obsidian/Literature Wiki.",
       fields: [
         {
           id: "paperFolder",
-          label: "论文文件夹路径",
+          label: "Paper folder path",
           placeholder: "/Users/huanc/Library/Mobile Documents/iCloud~md~obsidian/Documents/Research/Literature/xxx-followups",
-          helper: "目录里放一组论文 markdown，通常包含源论文和 follow-up 论文。",
+          helper: "A directory of paper markdown files, usually the source paper plus follow-up papers.",
           required: true,
         },
       ],
       outputSpec: [
-        "先运行 mentor-zh 的论文上下文收集流程，再综合分析。",
-        "输出源论文识别、逐篇 challenge/场景/技术洞察、follow-up 关系图、Obsidian 双链建议。",
-        "生成 10 个足够具体的研究 idea，并标出最值得推进的 3 个。",
-        "如果填写了我的 idea，请单独评估它的可行性、缺口和下一步实验。",
+        "Run mentor-zh's paper context collection flow first, then synthesize.",
+        "Output: source paper identification, per-paper challenge/setting/technical insights, follow-up relationship map, Obsidian backlink suggestions.",
+        "Generate 10 sufficiently specific research ideas and flag the 3 most worth pursuing.",
+        "If I filled in my own idea, separately assess its feasibility, gaps, and next experiments.",
       ],
       wikiLinkage: [
-        "结果要给出 Literature Wiki 页面结构。",
-        "关系图要兼容 Obsidian 双链。",
-        "最后列出应该回写到哪些论文 note 的链接块。",
+        "Results must include a Literature Wiki page structure.",
+        "The relationship map must be compatible with Obsidian backlinks.",
+        "Finally list the link blocks that should be written back to which paper notes.",
       ],
       defaultExtra: "",
     },
     {
       id: "profile-ops",
-      title: "整理个人情报档案",
-      description: "把近期信号归并成稳定的人设、项目和兴趣结构。",
+      title: "Organize personal intel profile",
+      description: "Merge recent signals into a stable profile of persona, projects, and interests.",
       accent: "#0f766e",
       skill: "assistant-profile-intel",
-      skillLabel: "个人情报整理",
-      intent: "把用户近期的兴趣、项目、习惯、研究状态和待推进事项整理成可长期维护的个人情报档案。",
+      skillLabel: "Personal intel organization",
+      intent: "Organize the user's recent interests, projects, habits, research status, and pending items into a long-term maintainable personal intel profile.",
       fields: [
         {
           id: "profileScope",
-          label: "整理范围",
-          placeholder: "例如：最近 30 天的研究方向、内容输入、项目推进和精力状态",
-          defaultValue: `当前偏好关键词：${topKeyword}`,
+          label: "Scope",
+          placeholder: "e.g. research directions, content inputs, project progress, and energy levels over the last 30 days",
+          defaultValue: `Current preference keywords: ${topKeyword}`,
         },
         {
           id: "sourceMaterial",
-          label: "补充材料或路径",
-          placeholder: "可以填 Internet Wiki 路径、Vault 路径、最近对话主题，或直接粘贴一段材料。",
+          label: "Extra materials or paths",
+          placeholder: "Internet Wiki path, Vault path, recent chat topics, or paste material directly.",
           multiline: true,
         },
         {
           id: "maintenanceGoal",
-          label: "维护目标",
-          placeholder: "例如：形成个人主题树、更新研究画像、整理接下来两周的优先级",
+          label: "Maintenance goal",
+          placeholder: "e.g. build a personal topic tree, update the research profile, prioritize the next two weeks",
           multiline: true,
         },
       ],
       outputSpec: [
-        "输出推荐的个人档案结构。",
-        "列出现在最值得维护的 5 个主题。",
-        "把每个主题拆成证据、判断、下一步动作。",
+        "Output a recommended personal profile structure.",
+        "List the 5 topics most worth maintaining right now.",
+        "Break each topic into evidence, judgments, and next actions.",
       ],
       wikiLinkage: [
-        `结合当前 Internet Wiki 页面数：${intelCount}。`,
-        "给出建议新增或更新的 Internet Wiki 页面标题。",
-        "标注哪些内容只适合留在今日情报，不应沉淀为长期页面。",
+        `Take into account the current Internet Wiki page count: ${intelCount}.`,
+        "Suggest Internet Wiki page titles to add or update.",
+        "Mark which content should stay in Daily Briefing only and not become long-term pages.",
       ],
     },
     {
       id: "intel-wiki",
-      title: "维护 Internet Wiki",
-      description: "把最近的个人情报和兴趣信号沉淀成稳定知识。",
+      title: "Maintain Internet Wiki",
+      description: "Consolidate recent personal intel and interest signals into stable knowledge.",
       accent: "#c2410c",
       skill: "assistant-intel-wiki",
-      skillLabel: "Internet Wiki 维护",
-      intent: "把最近的个人情报、兴趣信号、创作者信息和行动线索沉淀为 Internet Wiki 页面。",
+      skillLabel: "Internet Wiki maintenance",
+      intent: "Consolidate recent personal intel, interest signals, creator info, and action leads into Internet Wiki pages.",
       fields: [
         {
           id: "intelSource",
-          label: "待处理情报",
-          placeholder: "粘贴情报标题/摘要，或写明从今日情报、某个模块、某个路径读取。",
+          label: "Intel to process",
+          placeholder: "Paste intel titles/summaries, or specify reading from Daily Briefing, a module, or a path.",
           defaultValue: topTitles,
           multiline: true,
         },
         {
           id: "wikiCategory",
-          label: "目标分类",
-          placeholder: "例如：研究方向 / 创作者 / 工具链 / 长期观察 / 项目线索",
+          label: "Target categories",
+          placeholder: "e.g. research directions / creators / toolchain / long-term watch / project leads",
         },
         {
           id: "decisionRule",
-          label: "沉淀规则",
-          placeholder: "例如：只保留可复用判断，不要把临时新闻写成长期页面。",
+          label: "Consolidation rules",
+          placeholder: "e.g. keep only reusable judgments; don't turn transient news into long-term pages.",
           multiline: true,
         },
       ],
       outputSpec: [
-        "列出最值得新增或更新的 Internet Wiki 页面。",
-        "每页给出分类、标题、核心提纲和需要追加的证据。",
-        "给出不值得沉淀的内容及原因。",
+        "List the Internet Wiki pages most worth adding or updating.",
+        "For each page give the category, title, core outline, and evidence to append.",
+        "List content not worth consolidating and why.",
       ],
       wikiLinkage: [
-        `结合当前 Internet Wiki 页面数：${intelCount}。`,
-        "给出页面之间的双链关系。",
-        "需要把今日情报转成页面更新任务，而不是只做摘要。",
+        `Take into account the current Internet Wiki page count: ${intelCount}.`,
+        "Provide backlink relations between pages.",
+        "Turn Daily Briefing items into page-update tasks, not just summaries.",
       ],
     },
     {
       id: "literature-ops",
-      title: "组织本周文献",
-      description: "按主题聚类、补齐缺口，并决定哪些要写进文献库。",
+      title: "Organize this week's papers",
+      description: "Cluster by topic, fill gaps, and decide what goes into the Literature Library.",
       accent: "#7c3aed",
       skill: "assistant-literature-organizer",
-      skillLabel: "文献组织",
-      intent: "把本周论文情报按研究主题聚类，判断哪些需要进入 Literature Wiki，哪些只是待读线索。",
+      skillLabel: "Literature organization",
+      intent: "Cluster this week's paper intel by research topic and decide what enters the Literature Wiki versus what stays as reading leads.",
       fields: [
         {
           id: "paperSources",
-          label: "论文来源",
-          placeholder: "粘贴论文列表，或填 arXiv/Semantic Scholar 追踪结果、文献库路径。",
+          label: "Paper sources",
+          placeholder: "Paste a paper list, or point at arXiv/Semantic Scholar tracking results or a Literature Library path.",
           defaultValue: topTitles,
           multiline: true,
         },
         {
           id: "researchTheme",
-          label: "研究主题",
-          placeholder: "例如：3D scene understanding / robot foundation model / long-horizon planning",
+          label: "Research topics",
+          placeholder: "e.g. 3D scene understanding / robot foundation model / long-horizon planning",
         },
         {
           id: "readingConstraint",
-          label: "阅读约束",
-          placeholder: "例如：只选 5 篇最值得读的；优先找 survey gap；按实验可复现性排序。",
+          label: "Reading constraints",
+          placeholder: "e.g. pick only the 5 most worth reading; prioritize survey gaps; rank by experimental reproducibility.",
           multiline: true,
         },
       ],
       outputSpec: [
-        "按研究主题聚类论文。",
-        "指出最值得补看的空缺和为什么。",
-        "给出 Literature Wiki 页面标题、页面结构和阅读优先级。",
+        "Cluster the papers by research topic.",
+        "Point out the gaps most worth filling and why.",
+        "Provide Literature Wiki page titles, page structure, and reading priority.",
       ],
       wikiLinkage: [
-        `结合当前 Literature Wiki 页面数：${litCount}。`,
-        "把论文和已有 Literature Wiki/Internet Wiki 主题建立链接。",
-        "输出可以直接转成阅读待办的清单。",
+        `Take into account the current Literature Wiki page count: ${litCount}.`,
+        "Link the papers to existing Literature Wiki/Internet Wiki topics.",
+        "Output a list that converts directly into reading to-dos.",
       ],
     },
     {
       id: "today-brief",
-      title: "总结今日情报",
-      description: "先收束，再给出下一步，不让 Feed 停留在浏览层。",
+      title: "Summarize Daily Briefing",
+      description: "Converge first, then give next steps — don't let the Feed stay at the browsing level.",
       accent: "#2563eb",
       skill: "assistant-daily-intel",
-      skillLabel: "今日情报收束",
-      intent: "把今日情报从浏览状态收束成信号判断、Wiki 更新和下一步动作。",
+      skillLabel: "Daily Briefing wrap-up",
+      intent: "Converge Daily Briefing from browsing into signal judgments, Wiki updates, and next actions.",
       fields: [
         {
           id: "todayScope",
-          label: "今日范围",
-          placeholder: "例如：今天所有未读情报 / 小红书和 arXiv / 我手动挑出的几条",
-          defaultValue: `未读情报数：${data?.inbox.totalUnread ?? 0}；今日活动数：${data?.insights.activityCount ?? 0}；模块运行次数：${data?.insights.moduleRunCount ?? 0}`,
+          label: "Today's scope",
+          placeholder: "e.g. all unread intel today / Xiaohongshu and arXiv / a few items I picked manually",
+          defaultValue: `Unread intel: ${data?.inbox.totalUnread ?? 0}; activities today: ${data?.insights.activityCount ?? 0}; module runs: ${data?.insights.moduleRunCount ?? 0}`,
         },
         {
           id: "priorityQuestion",
-          label: "优先判断",
-          placeholder: "例如：哪些能推动我的研究？哪些只是噪声？哪些应该写进 Wiki？",
+          label: "Priority judgment",
+          placeholder: "e.g. Which items advance my research? Which are noise? Which belong in the Wiki?",
           multiline: true,
         },
       ],
       outputSpec: [
-        "输出今天最重要的 3 条信号。",
-        "每条信号给出行动建议和沉淀位置。",
-        "拆分成 Wiki 更新、待办、忽略三类。",
+        "Output today's 3 most important signals.",
+        "For each signal give an action suggestion and where to consolidate it.",
+        "Split into three buckets: Wiki updates, to-dos, ignore.",
       ],
       wikiLinkage: [
-        "Internet Wiki 承接个人情报和长期观察。",
-        "Literature Wiki 承接论文、方法和研究脉络。",
-        "不够稳定的内容只留作今日情报备注。",
+        "The Internet Wiki holds personal intel and long-term observations.",
+        "The Literature Wiki holds papers, methods, and research threads.",
+        "Insufficiently stable content stays as Daily Briefing notes only.",
       ],
     },
     {
       id: "analytics-review",
-      title: "复盘数据洞察",
-      description: "根据阅读 streak、活跃度和偏好，调整接下来的关注方向。",
+      title: "Review data insights",
+      description: "Adjust upcoming focus based on reading streak, activity, and preferences.",
       accent: "#be123c",
       skill: "assistant-research-rhythm",
-      skillLabel: "研究节奏复盘",
-      intent: "结合阅读 streak、活跃度、偏好关键词和新增卡片，判断用户的信息摄入节奏和下一步研究动作。",
+      skillLabel: "Research cadence review",
+      intent: "Combine reading streak, activity, preference keywords, and new cards to judge the user's information intake cadence and next research actions.",
       fields: [
         {
           id: "metrics",
-          label: "当前数据",
-          placeholder: "累计卡片、本周新增、连续阅读天数、偏好关键词等。",
-          defaultValue: `累计卡片：${data?.insights.totalCards ?? 0}；本周新增：${data?.insights.thisWeek ?? 0}；连续阅读：${data?.insights.readingStreak ?? 0} 天；高优先级关键词：${topKeyword}`,
+          label: "Current data",
+          placeholder: "Total cards, new this week, reading streak days, preference keywords, etc.",
+          defaultValue: `Total cards: ${data?.insights.totalCards ?? 0}; new this week: ${data?.insights.thisWeek ?? 0}; reading streak: ${data?.insights.readingStreak ?? 0} days; high-priority keywords: ${topKeyword}`,
           multiline: true,
         },
         {
           id: "reviewGoal",
-          label: "复盘目标",
-          placeholder: "例如：减少噪声输入，决定下周主题，找出最该推进的一条研究线。",
+          label: "Review goal",
+          placeholder: "e.g. cut noisy inputs, pick next week's theme, find the single research thread most worth pushing.",
           multiline: true,
         },
       ],
       outputSpec: [
-        "判断当前信息摄入状态。",
-        "指出应该加强和减少的方向。",
-        "给出接下来 3 个最值得推进的动作。",
+        "Assess the current information intake state.",
+        "Point out what to do more of and less of.",
+        "Give the 3 most worthwhile next actions.",
       ],
       wikiLinkage: [
-        "把稳定偏好写入个人情报档案。",
-        "把研究主题变化同步到 Internet Wiki。",
-        "把文献阅读计划同步到 Literature Wiki。",
+        "Write stable preferences into the personal intel profile.",
+        "Sync research topic changes to the Internet Wiki.",
+        "Sync the literature reading plan to the Literature Wiki.",
       ],
     },
   ];
@@ -516,34 +516,34 @@ function buildSkillWorkflowPrompt(
 ): string {
   const fieldLines = workflow.fields.map((field) => {
     const value = workflowValue(values, field).trim();
-    return `- ${field.label}${field.required ? "（必填）" : ""}：${value || "未填写"}`;
+    return `- ${field.label}${field.required ? " (required)" : ""}: ${value || "not filled in"}`;
   });
   const skillLine = workflow.skill.startsWith("$")
-    ? `请使用 ${workflow.skill} 这个 skill 完成任务。`
-    : `请按 \`${workflow.skill}\` 工作流完成任务；如果本地存在同名 skill 或工具，请优先调用，否则使用助手工作台上下文执行。`;
+    ? `Use the ${workflow.skill} skill to complete this task.`
+    : `Follow the \`${workflow.skill}\` workflow to complete this task; if a local skill or tool with the same name exists, call it first, otherwise execute with the assistant workspace context.`;
 
   return [
     skillLine,
     "",
-    `任务：${workflow.title}`,
-    `目标：${workflow.intent}`,
+    `Task: ${workflow.title}`,
+    `Goal: ${workflow.intent}`,
     "",
-    "用户填写的模板内容：",
+    "Template content filled in by the user:",
     ...fieldLines,
     "",
-    "需要的产出：",
+    "Required output:",
     ...workflow.outputSpec.map((item, index) => `${index + 1}. ${item}`),
     "",
-    "与 ABO 知识系统的联动要求：",
+    "Integration requirements with the ABO knowledge system:",
     ...workflow.wikiLinkage.map((item) => `- ${item}`),
     "",
-    "额外补充：",
-    (extra || workflow.defaultExtra || "无").trim(),
+    "Extra notes:",
+    (extra || workflow.defaultExtra || "none").trim(),
     "",
-    "执行要求：",
-    "- 先判断缺失信息；如果关键信息不足，列出最少需要用户补充的内容，同时尽量基于现有内容推进。",
-    "- 输出要能直接转成 Wiki 页面、待办或下一轮对话指令。",
-    "- 不要只总结，要给出可执行的整理结果。",
+    "Execution requirements:",
+    "- Check for missing information first; if key information is insufficient, list the minimum the user must add, while pushing forward with what exists.",
+    "- Output must convert directly into Wiki pages, to-dos, or next-round chat instructions.",
+    "- Don't just summarize; produce actionable organization results.",
   ].join("\n");
 }
 
@@ -609,7 +609,7 @@ function ProcessBlock({
       <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "10px" }}>
         {command && (
           <div>
-            <div style={{ fontSize: "0.72rem", fontWeight: 800, color: "#64748b", marginBottom: "5px" }}>命令</div>
+            <div style={{ fontSize: "0.72rem", fontWeight: 800, color: "#64748b", marginBottom: "5px" }}>Command</div>
             <pre
               style={{
                 margin: 0,
@@ -632,7 +632,7 @@ function ProcessBlock({
         {output ? (
           <div>
             <div style={{ fontSize: "0.72rem", fontWeight: 800, color: "#64748b", marginBottom: "5px" }}>
-              {isTool ? "Output" : "思考"}
+              {isTool ? "Output" : "Thinking"}
             </div>
             <pre
               style={{
@@ -652,13 +652,13 @@ function ProcessBlock({
             </pre>
           </div>
         ) : (
-          <div style={{ fontSize: "0.8rem", color: "#64748b" }}>等待输出...</div>
+          <div style={{ fontSize: "0.8rem", color: "#64748b" }}>Waiting for output...</div>
         )}
 
         {metadataText !== "{}" && (
           <details>
             <summary style={{ cursor: "pointer", color: "#64748b", fontSize: "0.76rem", fontWeight: 800 }}>
-              原始事件
+              Raw events
             </summary>
             <pre
               style={{
@@ -688,8 +688,8 @@ function MessageBubble({ message, streaming }: { message: Message; streaming: bo
   const isError = message.contentType === "error";
   const isToolCall = message.contentType === "tool_call";
   const isThinking = message.contentType === "thinking";
-  const toolLabel = compactProcessText(message.metadata?.label, message.status === "completed" ? "命令完成" : "命令执行中");
-  const thinkingLabel = message.status === "completed" ? "思考过程" : "正在思考";
+  const toolLabel = compactProcessText(message.metadata?.label, message.status === "completed" ? "Command finished" : "Command running");
+  const thinkingLabel = message.status === "completed" ? "Thought process" : "Thinking";
 
   if (!isUser && !isError && !isToolCall && !isThinking && !message.content.trim()) {
     return null;
@@ -800,10 +800,10 @@ function MessageBubble({ message, streaming }: { message: Message; streaming: bo
 }
 
 function formatRunSeconds(seconds: number): string {
-  if (seconds < 60) return `${seconds} 秒`;
+  if (seconds < 60) return `${seconds}s`;
   const minutes = Math.floor(seconds / 60);
   const rest = seconds % 60;
-  return `${minutes} 分 ${rest} 秒`;
+  return `${minutes}m ${rest}s`;
 }
 
 function RunStatusBar({ status }: { status: ChatRunStatus }) {
@@ -841,7 +841,7 @@ function RunStatusBar({ status }: { status: ChatRunStatus }) {
               fontWeight: 700,
             }}
           >
-            <span>工作机 {formatRunSeconds(status.elapsedSeconds)}</span>
+            <span>Worker {formatRunSeconds(status.elapsedSeconds)}</span>
             <span style={{ color: "#2563eb" }}>{status.label}</span>
           </div>
           {status.detail && (
@@ -933,36 +933,36 @@ export default function AssistantWorkspace() {
     () => [
       {
         id: "overview",
-        title: "回到情报流",
-        description: overview ? `未读 ${overview.inbox.totalUnread} 条，继续筛选今天的输入。` : "继续处理今日输入与信号。",
+        title: "Back to intel feed",
+        description: overview ? `${overview.inbox.totalUnread} unread — keep filtering today's inputs.` : "Keep processing today's inputs and signals.",
         tab: "overview",
         accent: "#2563eb",
         icon: <Inbox style={{ width: "18px", height: "18px" }} />,
       },
       {
         id: "wiki",
-        title: "打开 Wiki",
+        title: "Open Wiki",
         description: overview
-          ? `Internet Wiki ${overview.wiki.intel.total} 页，Literature Wiki ${overview.wiki.lit.total} 页。`
-          : "查看已沉淀的知识页面。",
+          ? `Internet Wiki ${overview.wiki.intel.total} pages, Literature Wiki ${overview.wiki.lit.total} pages.`
+          : "View consolidated knowledge pages.",
         tab: "wiki",
         accent: "#c2410c",
         icon: <BookHeart style={{ width: "18px", height: "18px" }} />,
       },
       {
         id: "literature",
-        title: "查看文献库",
-        description: overview ? `当前 Literature Wiki ${overview.wiki.lit.total} 页。` : "继续整理论文和阅读记录。",
+        title: "View Literature Library",
+        description: overview ? `Literature Wiki currently has ${overview.wiki.lit.total} pages.` : "Keep organizing papers and reading records.",
         tab: "literature",
         accent: "#7c3aed",
         icon: <BookOpen style={{ width: "18px", height: "18px" }} />,
       },
       {
         id: "dashboard",
-        title: "看数据总览",
+        title: "View data overview",
         description: overview?.insights.topKeyword
-          ? `当前关注 ${overview.insights.topKeyword}，适合做一次复盘。`
-          : "回到总览页看整体状态。",
+          ? `Currently focused on ${overview.insights.topKeyword} — a good time for a review.`
+          : "Go back to the overview page for overall status.",
         tab: "dashboard",
         accent: "#be123c",
         icon: <BarChart3 style={{ width: "18px", height: "18px" }} />,
@@ -978,7 +978,7 @@ export default function AssistantWorkspace() {
       const response = await api.get<AssistantOverviewResponse>("/api/assistant/overview");
       setOverview(response);
     } catch (error) {
-      setLoadError(error instanceof Error ? error.message : "加载助手数据失败");
+      setLoadError(error instanceof Error ? error.message : "Failed to load assistant data");
     } finally {
       setLoading(false);
     }
@@ -991,7 +991,7 @@ export default function AssistantWorkspace() {
       setRecentSessions(response.items ?? []);
       setSessionCount(response.count ?? 0);
     } catch (error) {
-      setLoadError((current) => current ?? (error instanceof Error ? error.message : "加载最近对话失败"));
+      setLoadError((current) => current ?? (error instanceof Error ? error.message : "Failed to load recent conversations"));
     } finally {
       setSessionsLoading(false);
     }
@@ -1182,7 +1182,7 @@ export default function AssistantWorkspace() {
       }}
     >
       <Bot style={{ width: "14px", height: "14px" }} />
-      <span>{overview?.system.providerLabel ?? selectedCli?.name ?? "AI 助手"}</span>
+      <span>{overview?.system.providerLabel ?? selectedCli?.name ?? "AI assistant"}</span>
     </div>
   );
 
@@ -1195,7 +1195,7 @@ export default function AssistantWorkspace() {
       }}
     >
       {isConnected ? <Wifi style={{ width: "14px", height: "14px" }} /> : <WifiOff style={{ width: "14px", height: "14px" }} />}
-      <span>{isConnected ? "已连接" : "未连接"}</span>
+      <span>{isConnected ? "Connected" : "Disconnected"}</span>
     </div>
   );
 
@@ -1208,15 +1208,15 @@ export default function AssistantWorkspace() {
       }}
     >
       <Loader2 style={{ width: "14px", height: "14px", animation: "spin 1s linear infinite" }} />
-      <span>{overview ? "刷新中" : "载入上下文"}</span>
+      <span>{overview ? "Refreshing" : "Loading context"}</span>
     </div>
   ) : null;
 
   return (
     <PageContainer>
       <PageHeader
-        title="助手"
-        subtitle="让 Codex 帮你整理信息、维护 Wiki，并把今日情报推进成行动"
+        title="Assistant"
+        subtitle="Let your AI assistant organize information, maintain the Wiki, and turn Daily Briefing into action"
         icon={Bot}
         actions={
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "10px" }}>
@@ -1235,7 +1235,7 @@ export default function AssistantWorkspace() {
               }}
             >
               <RefreshCcw style={{ width: "14px", height: "14px" }} />
-              <span>刷新</span>
+              <span>Refresh</span>
             </button>
           </div>
         }
@@ -1254,26 +1254,26 @@ export default function AssistantWorkspace() {
         >
           <section style={shellStyle}>
             {panelHeader(
-              "常用助手",
+              "Common assistants",
               <Compass style={{ width: "18px", height: "18px", color: "#0f766e" }} />,
               <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", justifyContent: "flex-end" }}>
                 <StatusPill
                   label="Internet Wiki"
                   value={
-                    contextPending ? "载入中" : overview?.system.vaultReady ? "已就绪" : "待配置"
+                    contextPending ? "Loading" : overview?.system.vaultReady ? "Ready" : "Needs setup"
                   }
                   accent="#c2410c"
                 />
                 <StatusPill
                   label="Literature Wiki"
                   value={
-                    contextPending ? "载入中" : overview?.system.literatureReady ? "已就绪" : "待配置"
+                    contextPending ? "Loading" : overview?.system.literatureReady ? "Ready" : "Needs setup"
                   }
                   accent="#7c3aed"
                 />
                 <StatusPill
-                  label="今日情报"
-                  value={contextPending ? "补充中" : `${overview?.inbox.totalUnread ?? 0} 条未读`}
+                  label="Daily Briefing"
+                  value={contextPending ? "Updating" : `${overview?.inbox.totalUnread ?? 0} unread`}
                   accent="#2563eb"
                 />
               </div>,
@@ -1293,7 +1293,7 @@ export default function AssistantWorkspace() {
                   }}
                 >
                   <span>
-                    每页 {WORKFLOWS_PER_PAGE} 个 · 第 {safeWorkflowPage + 1} / {workflowPageCount} 页
+                    {WORKFLOWS_PER_PAGE} per page · page {safeWorkflowPage + 1} / {workflowPageCount}
                   </span>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                     <button
@@ -1314,7 +1314,7 @@ export default function AssistantWorkspace() {
                         cursor: safeWorkflowPage === 0 ? "not-allowed" : "pointer",
                       }}
                     >
-                      上一页
+                      Previous
                     </button>
                     {Array.from({ length: workflowPageCount }).map((_, index) => {
                       const active = index === safeWorkflowPage;
@@ -1337,7 +1337,7 @@ export default function AssistantWorkspace() {
                             fontWeight: 800,
                             cursor: "pointer",
                           }}
-                          aria-label={`切换到第 ${index + 1} 页`}
+                          aria-label={`Go to page ${index + 1}`}
                         >
                           {index + 1}
                         </button>
@@ -1361,7 +1361,7 @@ export default function AssistantWorkspace() {
                         cursor: safeWorkflowPage >= workflowPageCount - 1 ? "not-allowed" : "pointer",
                       }}
                     >
-                      下一页
+                      Next
                     </button>
                   </div>
                 </div>
@@ -1415,8 +1415,8 @@ export default function AssistantWorkspace() {
                           textAlign: "left",
                         }}
                         aria-expanded={expanded}
-                        aria-label={expanded ? "收起模板" : "展开模板"}
-                        title={expanded ? "收起模板" : "展开模板"}
+                        aria-label={expanded ? "Collapse template" : "Expand template"}
+                        title={expanded ? "Collapse template" : "Expand template"}
                       >
                         <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: "7px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
@@ -1544,11 +1544,11 @@ export default function AssistantWorkspace() {
                           })}
 
                           <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                            <span style={{ fontSize: "0.78rem", fontWeight: 800, color: "#334155" }}>额外补充</span>
+                            <span style={{ fontSize: "0.78rem", fontWeight: 800, color: "#334155" }}>Extra notes</span>
                             <textarea
                               value={extra}
                               onChange={(event) => updateWorkflowExtra(workflow.id, event.target.value)}
-                              placeholder="可以写输出格式、侧重点、排除项，或让它进一步调用 Wiki/文献库上下文。"
+                              placeholder="Output format, emphasis, exclusions, or ask it to pull more Wiki/Literature Library context."
                               rows={3}
                               style={{
                                 width: "100%",
@@ -1586,7 +1586,7 @@ export default function AssistantWorkspace() {
                               cursor: "pointer",
                             }}
                           >
-                            写入对话框
+                            Write to chat box
                           </button>
                           <button
                             type="button"
@@ -1605,9 +1605,9 @@ export default function AssistantWorkspace() {
                               cursor: isLaunching || availableClis.length === 0 || missingRequired ? "not-allowed" : "pointer",
                               opacity: isLaunching || availableClis.length === 0 || missingRequired ? 0.5 : 1,
                             }}
-                            title={missingRequired ? "先填写必填项" : "执行模板"}
+                            title={missingRequired ? "Fill in required fields first" : "Run template"}
                           >
-                            执行模板
+                            Run template
                           </button>
                         </div>
                       )}
@@ -1620,12 +1620,12 @@ export default function AssistantWorkspace() {
 
           <section style={{ ...shellStyle, minHeight: "72vh", display: "flex", flexDirection: "column" }}>
             {panelHeader(
-              "对话推进",
+              "Conversations",
               <MessageSquareText style={{ width: "18px", height: "18px", color: "#2563eb" }} />,
                 <div style={{ fontSize: "0.8rem", color: "#64748b", fontWeight: 700 }}>
                 {sessionCount
-                  ? `${sessionCount} 个活动会话`
-                  : "新开一条就能开始"}
+                  ? `${sessionCount} active sessions`
+                  : "Open a new one to get started"}
               </div>,
             )}
 
@@ -1648,8 +1648,8 @@ export default function AssistantWorkspace() {
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
-                  <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b" }}>最近对话</div>
-                  <div style={{ fontSize: "0.8rem", color: "#94a3b8" }}>点卡片直接进入，悬停即删</div>
+                  <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#64748b" }}>Recent conversations</div>
+                  <div style={{ fontSize: "0.8rem", color: "#94a3b8" }}>Click a card to enter, hover to delete</div>
                 </div>
                 <button
                   onClick={() => setRecentConversationsCollapsed((current) => !current)}
@@ -1666,14 +1666,14 @@ export default function AssistantWorkspace() {
                     fontWeight: 700,
                     cursor: "pointer",
                   }}
-                  aria-label={recentConversationsCollapsed ? "展开最近对话" : "收起最近对话"}
+                  aria-label={recentConversationsCollapsed ? "Expand recent conversations" : "Collapse recent conversations"}
                 >
                   {recentConversationsCollapsed ? (
                     <ChevronRight style={{ width: "14px", height: "14px" }} />
                   ) : (
                     <ChevronDown style={{ width: "14px", height: "14px" }} />
                   )}
-                  <span>{recentConversationsCollapsed ? "展开" : "收起"}</span>
+                  <span>{recentConversationsCollapsed ? "Expand" : "Collapse"}</span>
                 </button>
               </div>
 
@@ -1750,8 +1750,8 @@ export default function AssistantWorkspace() {
                             transition: "opacity 140ms ease",
                             boxShadow: "0 4px 10px rgba(15, 23, 42, 0.08)",
                           }}
-                          aria-label="删除对话"
-                          title="删除对话"
+                          aria-label="Delete conversation"
+                          title="Delete conversation"
                         >
                           <X style={{ width: "12px", height: "12px" }} />
                         </button>
@@ -1789,12 +1789,12 @@ export default function AssistantWorkspace() {
               ) : (
                 <div style={{ fontSize: "0.84rem", color: "#64748b", lineHeight: 1.6 }}>
                   {recentConversationsCollapsed
-                    ? "最近对话已收起。"
+                    ? "Recent conversations collapsed."
                     : sessionsLoading
-                    ? "正在读取本地最近对话..."
+                    ? "Reading local recent conversations..."
                     : sessionCount
-                    ? `正在同步 ${sessionCount} 条最近对话...`
-                    : "还没有历史对话。上面的任一助手动作都能直接开一条。"}
+                    ? `Syncing ${sessionCount} recent conversations...`
+                    : "No conversation history yet. Any assistant action above starts one."}
                 </div>
               )}
             </div>
@@ -1848,12 +1848,12 @@ export default function AssistantWorkspace() {
                         <Bot style={{ width: "28px", height: "28px" }} />
                       </div>
                       <div style={{ fontSize: "1.24rem", fontWeight: 800, color: "#17324d", lineHeight: 1.35 }}>
-                        先挑一项任务，或者直接告诉 Codex 你想整理什么。
+                        Pick a task first, or just tell the assistant what you want organized.
                       </div>
                       <div style={{ fontSize: "0.95rem", lineHeight: 1.7 }}>
                         {contextPending
-                          ? "你可以直接发起对话。"
-                          : "上下文已经就位。你可以从常用助手起步，也可以直接发一条更具体的操作指令。"}
+                          ? "You can start a conversation directly."
+                          : "Context is ready. Start from a common assistant, or send a more specific instruction directly."}
                       </div>
                     </div>
                   </div>
@@ -1902,7 +1902,7 @@ export default function AssistantWorkspace() {
                       );
                     })
                   ) : (
-                    <div style={{ fontSize: "0.84rem", color: "#be123c", fontWeight: 700 }}>未检测到可用的 AI 助手</div>
+                    <div style={{ fontSize: "0.84rem", color: "#be123c", fontWeight: 700 }}>No usable AI assistant detected</div>
                   )}
                 </div>
 
@@ -1940,7 +1940,7 @@ export default function AssistantWorkspace() {
                         void handleSendDraft();
                       }
                     }}
-                    placeholder="例如：帮我把今天的高价值情报整理成 Wiki 计划，再给出下一步动作。"
+                    placeholder="e.g. Turn today's high-value intel into a Wiki plan, then give me next actions."
                     rows={4}
                     style={{
                       resize: "vertical",
@@ -1977,10 +1977,10 @@ export default function AssistantWorkspace() {
                           minWidth: "96px",
                           fontWeight: 800,
                         }}
-                        title="终止当前回复"
+                        title="Stop current reply"
                       >
                         <Square style={{ width: "15px", height: "15px", fill: "currentColor" }} />
-                        <span>终止</span>
+                        <span>Stop</span>
                       </button>
                     )}
                     <button
@@ -2010,7 +2010,7 @@ export default function AssistantWorkspace() {
                       ) : (
                         <Send style={{ width: "18px", height: "18px" }} />
                       )}
-                      <span>{isLaunching ? "处理中" : "发送"}</span>
+                      <span>{isLaunching ? "Processing" : "Send"}</span>
                     </button>
                   </div>
                 </div>
@@ -2020,7 +2020,7 @@ export default function AssistantWorkspace() {
 
           <section style={shellStyle}>
             {panelHeader(
-              "直接转跳",
+              "Quick jump",
               <BookOpen style={{ width: "18px", height: "18px", color: "#c2410c" }} />,
               <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "flex-end", gap: "8px" }}>
                 {loadError && (
@@ -2046,7 +2046,7 @@ export default function AssistantWorkspace() {
             {jumpSectionExpanded && (
               <div style={{ padding: "14px", display: "flex", flexDirection: "column", gap: "12px" }}>
                 <div style={{ maxWidth: "760px", color: "#516579", fontSize: "0.86rem", lineHeight: 1.65 }}>
-                  直接跳到对应工作面板继续处理，回到助手时保留当前对话草稿。
+                  Jump straight to the matching workspace; your chat draft is kept when you return to the assistant.
                 </div>
 
                 <div
@@ -2102,11 +2102,11 @@ export default function AssistantWorkspace() {
 
           <section style={shellStyle}>
             {panelHeader(
-              "上下文概览",
+              "Context overview",
               <Database style={{ width: "18px", height: "18px", color: "#17324d" }} />,
               <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "flex-end", gap: "8px" }}>
                 <div style={{ fontSize: "0.78rem", color: "#94a3b8" }}>
-                  {contextPending ? "后台补充中" : "可送进对话"}
+                  {contextPending ? "Updating in background" : "Ready to feed into chat"}
                 </div>
                 <CollapseToggle
                   expanded={contextOverviewExpanded}
@@ -2124,11 +2124,11 @@ export default function AssistantWorkspace() {
                   gap: "12px",
                 }}
               >
-                <ContextCard title="今日情报" accent="#2563eb" icon={<Inbox style={{ width: "18px", height: "18px" }} />}>
+                <ContextCard title="Daily Briefing" accent="#2563eb" icon={<Inbox style={{ width: "18px", height: "18px" }} />}>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "10px" }}>
-                    <MetricTile label="未读" value={overview?.inbox.totalUnread ?? 0} color="#2563eb" loading={contextPending} />
+                    <MetricTile label="Unread" value={overview?.inbox.totalUnread ?? 0} color="#2563eb" loading={contextPending} />
                     <MetricTile
-                      label="活跃模块"
+                      label="Active modules"
                       value={Object.keys(overview?.inbox.unreadByModule ?? {}).length}
                       color="#0f766e"
                       loading={contextPending}
@@ -2173,12 +2173,12 @@ export default function AssistantWorkspace() {
                     </div>
                   ) : (
                     <div style={{ fontSize: "0.84rem", color: "#64748b", lineHeight: 1.6 }}>
-                      还没有新的高优先级情报。回到情报流继续整理后，这里会自动补齐。
+                      No new high-priority intel. Keep organizing in the intel feed and this fills in automatically.
                     </div>
                   )}
                 </ContextCard>
 
-                <ContextCard title="知识库状态" accent="#c2410c" icon={<BookHeart style={{ width: "18px", height: "18px" }} />}>
+                <ContextCard title="Knowledge Base Status" accent="#c2410c" icon={<BookHeart style={{ width: "18px", height: "18px" }} />}>
                   <WikiBlock
                     title="Internet Wiki"
                     snapshot={overview?.wiki.intel ?? { ready: false, total: 0, byCategory: {} }}
@@ -2201,12 +2201,12 @@ export default function AssistantWorkspace() {
                   />
                 </ContextCard>
 
-                <ContextCard title="数据洞察" accent="#be123c" icon={<Brain style={{ width: "18px", height: "18px" }} />}>
+                <ContextCard title="Data Insights" accent="#be123c" icon={<Brain style={{ width: "18px", height: "18px" }} />}>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "10px" }}>
-                    <MetricTile label="累计卡片" value={overview?.insights.totalCards ?? 0} color="#be123c" loading={contextPending} />
-                    <MetricTile label="连续天数" value={overview?.insights.readingStreak ?? 0} color="#0f766e" loading={contextPending} />
-                    <MetricTile label="本周新增" value={overview?.insights.thisWeek ?? 0} color="#2563eb" loading={contextPending} />
-                    <MetricTile label="对话次数" value={overview?.insights.chatCount ?? 0} color="#c2410c" loading={contextPending} />
+                    <MetricTile label="Total cards" value={overview?.insights.totalCards ?? 0} color="#be123c" loading={contextPending} />
+                    <MetricTile label="Streak days" value={overview?.insights.readingStreak ?? 0} color="#0f766e" loading={contextPending} />
+                    <MetricTile label="New this week" value={overview?.insights.thisWeek ?? 0} color="#2563eb" loading={contextPending} />
+                    <MetricTile label="Chats" value={overview?.insights.chatCount ?? 0} color="#c2410c" loading={contextPending} />
                   </div>
 
                   {contextPending ? (
@@ -2227,13 +2227,13 @@ export default function AssistantWorkspace() {
                         gap: "8px",
                       }}
                     >
-                      <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#64748b" }}>偏好焦点</div>
+                      <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#64748b" }}>Preference focus</div>
                       <div style={{ fontSize: "1rem", fontWeight: 800, color: "#17324d" }}>
-                        {overview?.insights.topKeyword ?? "还没有稳定偏好"}
+                        {overview?.insights.topKeyword ?? "No stable preference yet"}
                       </div>
                       <div style={{ fontSize: "0.84rem", lineHeight: 1.65, color: "#516579" }}>
                         {overview?.insights.todaySummary ??
-                          "今天还没有自动总结。现在发起一次对话，助手会结合今日情报和你的工作流一起推进。"}
+                          "No auto-summary today yet. Start a conversation and the assistant will combine Daily Briefing with your workflows."}
                       </div>
                     </div>
                   )}
@@ -2410,7 +2410,7 @@ function WikiBlock({
         ) : (
           <div style={{ ...badgeBaseStyle, padding: "5px 10px", background: `${color}12`, color }}>
             <Database style={{ width: "13px", height: "13px" }} />
-            <span>{snapshot.ready ? `${snapshot.total} 页` : "未连接"}</span>
+            <span>{snapshot.ready ? `${snapshot.total} pages` : "Not connected"}</span>
           </div>
         )}
       </div>
@@ -2419,7 +2419,7 @@ function WikiBlock({
         <SkeletonBlock height="14px" width="82%" />
       ) : (
         <div style={{ fontSize: "0.84rem", lineHeight: 1.6, color: "#516579" }}>
-          {snapshot.ready ? summarizeCategories(snapshot) : "先配置本地 Vault，助手才能把结果沉淀成 Wiki。"}
+          {snapshot.ready ? summarizeCategories(snapshot) : "Configure a local Vault first so the assistant can consolidate results into the Wiki."}
         </div>
       )}
 
@@ -2439,7 +2439,7 @@ function WikiBlock({
           opacity: loading ? 0.6 : 1,
         }}
       >
-        生成维护指令
+        Generate maintenance instruction
       </button>
     </div>
   );

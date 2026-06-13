@@ -97,7 +97,7 @@ export function ZhihuTool() {
 
   const handleSearch = async () => {
     if (!keyword.trim()) {
-      toast.info("请输入搜索关键词");
+      toast.info("Please enter search keywords");
       return;
     }
 
@@ -111,9 +111,9 @@ export function ZhihuTool() {
         limit: 20,
       });
       setSearchResults(response);
-      toast.success("搜索完成", `找到 ${response.total_found} 条结果`);
+      toast.success("Search finished", `Found ${response.total_found} results`);
     } catch (error) {
-      toast.error("搜索失败", error instanceof Error ? error.message : "未知错误");
+      toast.error("Search failed", error instanceof Error ? error.message : "Unknown error");
     } finally {
       setIsSearching(false);
     }
@@ -125,9 +125,9 @@ export function ZhihuTool() {
       await api.post("/api/tools/zhihu/config", { cookie });
       setIsConfigured(!!cookie);
       setShowConfigModal(false);
-      toast.success("配置已保存");
+      toast.success("Configuration saved");
     } catch (error) {
-      toast.error("保存配置失败", error instanceof Error ? error.message : "未知错误");
+      toast.error("Failed to save configuration", error instanceof Error ? error.message : "Unknown error");
     } finally {
       setIsSavingConfig(false);
     }
@@ -138,9 +138,9 @@ export function ZhihuTool() {
     try {
       const response = await api.post<{ cookie: string }>("/api/tools/zhihu/config/from-browser", {});
       setCookie(response.cookie);
-      toast.success("已从浏览器获取 Cookie");
+      toast.success("Cookie fetched from browser");
     } catch (error) {
-      toast.error("获取 Cookie 失败", error instanceof Error ? error.message : "未知错误");
+      toast.error("Failed to get cookie", error instanceof Error ? error.message : "Unknown error");
     } finally {
       setIsFetchingFromBrowser(false);
     }
@@ -148,7 +148,7 @@ export function ZhihuTool() {
 
   const handleAnalyzeTrends = async () => {
     if (!searchResults || searchResults.contents.length === 0) {
-      toast.info("没有可分析的内容");
+      toast.info("No content to analyze");
       return;
     }
 
@@ -161,9 +161,9 @@ export function ZhihuTool() {
       setTrendsData(response);
       setShowTrends(true);
       setExpandedTrends(true);
-      toast.success("Trends 分析完成");
+      toast.success("Trends analysis finished");
     } catch (error) {
-      toast.error("分析失败", error instanceof Error ? error.message : "未知错误");
+      toast.error("Analysis failed", error instanceof Error ? error.message : "Unknown error");
     } finally {
       setIsAnalyzingTrends(false);
     }
@@ -185,19 +185,19 @@ export function ZhihuTool() {
   const getContentTypeLabel = (type: string) => {
     switch (type) {
       case 'answer':
-        return '回答';
+        return 'Answer';
       case 'article':
-        return '文章';
+        return 'Article';
       case 'video':
-        return '视频';
+        return 'Video';
       default:
-        return '内容';
+        return 'Content';
     }
   };
 
   const formatNumber = (num: number) => {
     if (num >= 10000) {
-      return (num / 10000).toFixed(1) + '万';
+      return (num / 10000).toFixed(1) + 'w';
     }
     return num.toString();
   };
@@ -210,8 +210,8 @@ export function ZhihuTool() {
   return (
     <PageContainer>
       <PageHeader
-        title="知乎工具"
-        subtitle="搜索知乎内容，分析热门话题和趋势"
+        title="Zhihu Tools"
+        subtitle="Search Zhihu content, analyze hot topics and trends"
       />
 
       <PageContent>
@@ -229,7 +229,7 @@ export function ZhihuTool() {
                     handleSearch();
                   }
                 }}
-                placeholder="输入关键词搜索知乎..."
+                placeholder="Enter keywords to search Zhihu..."
                 className="w-full px-4 py-3 pl-11 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               />
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
@@ -242,12 +242,12 @@ export function ZhihuTool() {
               {isSearching ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  搜索中...
+                  Searching...
                 </>
               ) : (
                 <>
                   <Search className="w-4 h-4" />
-                  搜索
+                  Search
                 </>
               )}
             </button>
@@ -260,7 +260,7 @@ export function ZhihuTool() {
               }`}
             >
               <Cookie className="w-4 h-4" />
-              {isConfigured ? "已配置" : "配置"}
+              {isConfigured ? "Configured" : "Configure"}
             </button>
           </div>
         </Card>
@@ -271,7 +271,7 @@ export function ZhihuTool() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-200 flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-indigo-400" />
-                Trends 分析
+                Trends analysis
               </h3>
               {!showTrends ? (
                 <button
@@ -282,12 +282,12 @@ export function ZhihuTool() {
                   {isAnalyzingTrends ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      分析中...
+                      Analyzing...
                     </>
                   ) : (
                     <>
                       <TrendingUp className="w-4 h-4" />
-                      分析 Trends
+                      Analyze Trends
                     </>
                   )}
                 </button>
@@ -319,7 +319,7 @@ export function ZhihuTool() {
                   <div>
                     <h4 className="text-sm font-medium text-slate-400 mb-2 flex items-center gap-2">
                       <Zap className="w-4 h-4 text-amber-400" />
-                      热门话题
+                      Hot topics
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {trendsData.analysis.hot_topics.map((topic, index) => (
@@ -339,7 +339,7 @@ export function ZhihuTool() {
                   <div>
                     <h4 className="text-sm font-medium text-slate-400 mb-2 flex items-center gap-2">
                       <Hash className="w-4 h-4 text-emerald-400" />
-                      热门标签
+                      Hot tags
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {trendsData.analysis.trending_tags.map((item, index) => (
@@ -359,7 +359,7 @@ export function ZhihuTool() {
                   <div>
                     <h4 className="text-sm font-medium text-slate-400 mb-2 flex items-center gap-2">
                       <Lightbulb className="w-4 h-4 text-blue-400" />
-                      内容模式
+                      Content patterns
                     </h4>
                     <ul className="space-y-1">
                       {trendsData.analysis.content_patterns.map((pattern, index) => (
@@ -377,7 +377,7 @@ export function ZhihuTool() {
                   <div>
                     <h4 className="text-sm font-medium text-slate-400 mb-2 flex items-center gap-2">
                       <Users className="w-4 h-4 text-purple-400" />
-                      受众洞察
+                      Audience insights
                     </h4>
                     <ul className="space-y-1">
                       {trendsData.analysis.audience_insights.map((insight, index) => (
@@ -395,7 +395,7 @@ export function ZhihuTool() {
                   <div>
                     <h4 className="text-sm font-medium text-slate-400 mb-2 flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-rose-400" />
-                      互动因素
+                      Engagement factors
                     </h4>
                     <ul className="space-y-1">
                       {trendsData.analysis.engagement_factors.map((factor, index) => (
@@ -409,7 +409,7 @@ export function ZhihuTool() {
                 )}
 
                 <div className="text-xs text-slate-500 pt-2 border-t border-slate-700">
-                  基于 {trendsData.based_on_contents} 条内容分析
+                  Based on analysis of {trendsData.based_on_contents} items
                 </div>
               </div>
             )}
@@ -418,20 +418,20 @@ export function ZhihuTool() {
 
         {/* Search Results */}
         {isSearching ? (
-          <LoadingState message="正在搜索知乎..." />
+          <LoadingState message="Searching Zhihu..." />
         ) : searchResults ? (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-slate-200">
-                搜索结果 ({searchResults.total_found})
+                Search results ({searchResults.total_found})
               </h3>
             </div>
 
             {searchResults.contents.length === 0 ? (
               <EmptyState
                 icon={SearchIcon}
-                title="未找到结果"
-                description="尝试使用其他关键词搜索"
+                title="No Results Found"
+                description="Try searching with different keywords"
               />
             ) : (
               <div className="space-y-4">
@@ -507,8 +507,8 @@ export function ZhihuTool() {
         ) : (
           <EmptyState
             icon={SearchIcon}
-            title="开始搜索"
-            description="输入关键词搜索知乎内容"
+            title="Start Searching"
+            description="Enter keywords to search Zhihu content"
           />
         )}
       </PageContent>
@@ -523,8 +523,8 @@ export function ZhihuTool() {
                   <Cookie className="w-5 h-5 text-indigo-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-200">Cookie 配置</h3>
-                  <p className="text-sm text-slate-400">配置知乎 Cookie 以获取更完整的搜索结果</p>
+                  <h3 className="text-lg font-semibold text-slate-200">Cookie Configuration</h3>
+                  <p className="text-sm text-slate-400">Configure a Zhihu cookie for more complete search results</p>
                 </div>
               </div>
 
@@ -532,7 +532,7 @@ export function ZhihuTool() {
                 <div className="flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5" />
                   <p className="text-sm text-amber-300">
-                    Cookie 仅存储在本地，用于访问知乎 API。请勿分享您的 Cookie。
+                    The cookie is stored locally only and used to access the Zhihu API. Never share your cookie.
                   </p>
                 </div>
               </div>
@@ -543,7 +543,7 @@ export function ZhihuTool() {
 
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-slate-300">知乎 Cookie</label>
+                  <label className="text-sm font-medium text-slate-300">Zhihu Cookie</label>
                   <button
                     onClick={handleFetchFromBrowser}
                     disabled={isFetchingFromBrowser}
@@ -552,12 +552,12 @@ export function ZhihuTool() {
                     {isFetchingFromBrowser ? (
                       <>
                         <div className="w-3 h-3 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin" />
-                        获取中...
+                        Fetching...
                       </>
                     ) : (
                       <>
                         <ExternalLink className="w-3 h-3" />
-                        从浏览器获取
+                        Get from browser
                       </>
                     )}
                   </button>
@@ -565,7 +565,7 @@ export function ZhihuTool() {
                 <textarea
                   value={cookie}
                   onChange={(e) => setCookie(e.target.value)}
-                  placeholder="在此粘贴知乎 Cookie..."
+                  placeholder="Paste your Zhihu cookie here..."
                   rows={6}
                   className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-mono"
                 />
@@ -576,14 +576,14 @@ export function ZhihuTool() {
                   onClick={() => setShowConfigModal(false)}
                   className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-lg transition-colors"
                 >
-                  取消
+                  Cancel
                 </button>
                 <button
                   onClick={handleSaveConfig}
                   disabled={isSavingConfig}
                   className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
                 >
-                  {isSavingConfig ? "保存中..." : "保存配置"}
+                  {isSavingConfig ? "Saving..." : "Save configuration"}
                 </button>
               </div>
             </div>

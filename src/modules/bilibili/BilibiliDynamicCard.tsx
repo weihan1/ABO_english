@@ -51,10 +51,10 @@ const DYNAMIC_TYPE_META: Record<
   BilibiliCardDynamic["dynamic_type"],
   { label: string; icon: typeof Play; color: string }
 > = {
-  video: { label: "视频", icon: Play, color: "#00AEEC" },
-  image: { label: "图文", icon: ImageIcon, color: "#FB7299" },
-  text: { label: "文字", icon: MessageSquare, color: "#FF7F50" },
-  article: { label: "专栏", icon: FileText, color: "#52C41A" },
+  video: { label: "Video", icon: Play, color: "#00AEEC" },
+  image: { label: "Image post", icon: ImageIcon, color: "#FB7299" },
+  text: { label: "Text", icon: MessageSquare, color: "#FF7F50" },
+  article: { label: "Article", icon: FileText, color: "#52C41A" },
 };
 
 function proxiedImage(url: string): string {
@@ -63,7 +63,7 @@ function proxiedImage(url: string): string {
 }
 
 function formatDate(dateStr: string | null) {
-  if (!dateStr) return "未知时间";
+  if (!dateStr) return "Unknown time";
   const date = new Date(dateStr);
   return date.toLocaleString("zh-CN", {
     month: "short",
@@ -99,7 +99,7 @@ function renderActionButton(action: ActionConfig, fallbackPrimary = false) {
       }}
     >
       {action.icon}
-      {action.pending ? (action.pendingLabel || "处理中...") : action.label}
+      {action.pending ? (action.pendingLabel || "Processing...") : action.label}
     </button>
   );
 }
@@ -107,7 +107,7 @@ function renderActionButton(action: ActionConfig, fallbackPrimary = false) {
 export default function BilibiliDynamicCard({
   dynamic,
   selected = false,
-  selectLabel = "选中待入库",
+  selectLabel = "Select for saving",
   onToggleSelect,
   onOpenSource,
   sourceDisabled = false,
@@ -229,7 +229,7 @@ export default function BilibiliDynamicCard({
               cursor: sourceDisabled ? "not-allowed" : "pointer",
             }}
           >
-            跳转原文
+            Open original
             <ExternalLink size={14} />
           </button>
         ) : null}
@@ -274,7 +274,7 @@ export default function BilibiliDynamicCard({
                 fontWeight: 700,
               }}
             >
-              命中词 · {keyword}
+              Matched word · {keyword}
             </span>
           ))}
           {(dynamic.matched_tags || []).slice(0, 6).map((tag) => (
@@ -291,7 +291,7 @@ export default function BilibiliDynamicCard({
                 fontWeight: 700,
               }}
             >
-              命中标签 · {tag}
+              Matched tag · {tag}
             </span>
           ))}
         </div>
@@ -396,7 +396,7 @@ export default function BilibiliDynamicCard({
       <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap", fontSize: "0.8125rem", color: "var(--text-muted)" }}>
         <span>{dynamic.dynamic_type}</span>
         {dynamic.bvid ? <span>{dynamic.bvid}</span> : null}
-        {dynamic.monitor_subfolder ? <span>入库目录：{dynamic.monitor_subfolder}</span> : null}
+        {dynamic.monitor_subfolder ? <span>Save folder: {dynamic.monitor_subfolder}</span> : null}
         {authorGroupLabel ? (
           <span style={{ color: authorGroupAccent, fontWeight: 700 }}>
             {authorGroupLabel}

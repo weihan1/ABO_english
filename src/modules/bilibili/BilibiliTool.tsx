@@ -70,10 +70,10 @@ import {
 } from "../../api/bilibili";
 
 const DYNAMIC_TYPE_MAP: Record<string, { label: string; icon: typeof Play; color: string }> = {
-  video: { label: "视频", icon: Play, color: "#00AEEC" },
-  image: { label: "图文", icon: ImageIcon, color: "#FB7299" },
-  text: { label: "文字", icon: MessageSquare, color: "#FF7F50" },
-  article: { label: "专栏", icon: FileText, color: "#52C41A" },
+  video: { label: "Video", icon: Play, color: "#00AEEC" },
+  image: { label: "Image post", icon: ImageIcon, color: "#FB7299" },
+  text: { label: "Text", icon: MessageSquare, color: "#FF7F50" },
+  article: { label: "Article", icon: FileText, color: "#52C41A" },
 };
 
 const PRESET_KEYWORDS = [
@@ -85,11 +85,11 @@ const PRESET_KEYWORDS = [
 ];
 
 const TIME_RANGE_OPTIONS = [
-  { value: 1, label: "1天" },
-  { value: 3, label: "3天" },
-  { value: 7, label: "7天" },
-  { value: 14, label: "14天" },
-  { value: 30, label: "30天" },
+  { value: 1, label: "1 day" },
+  { value: 3, label: "3 days" },
+  { value: 7, label: "7 days" },
+  { value: 14, label: "14 days" },
+  { value: 30, label: "30 days" },
 ];
 
 const LIMIT_OPTIONS = [10, 20, 50];
@@ -111,25 +111,25 @@ interface DynamicFetchMeta {
 }
 
 const DEFAULT_SMART_GROUP_OPTIONS: BilibiliSmartGroupOption[] = [
-  { value: "ai-tech", label: "AI科技" },
-  { value: "study", label: "学习知识" },
-  { value: "digital", label: "数码影音" },
-  { value: "game", label: "游戏" },
-  { value: "finance", label: "财经商业" },
-  { value: "creative", label: "设计创作" },
-  { value: "entertainment", label: "生活娱乐" },
-  { value: "other", label: "其他" },
+  { value: "ai-tech", label: "AI & Tech" },
+  { value: "study", label: "Learning" },
+  { value: "digital", label: "Digital & AV" },
+  { value: "game", label: "Gaming" },
+  { value: "finance", label: "Finance & Business" },
+  { value: "creative", label: "Design & Creation" },
+  { value: "entertainment", label: "Lifestyle & Entertainment" },
+  { value: "other", label: "Other" },
 ];
 
 const DEFAULT_SMART_GROUP_META: Record<string, { label: string; accent: string; bg: string }> = {
-  "ai-tech": { label: "AI科技", accent: "#0EA5E9", bg: "rgba(14, 165, 233, 0.14)" },
-  study: { label: "学习知识", accent: "#10B981", bg: "rgba(16, 185, 129, 0.14)" },
-  digital: { label: "数码影音", accent: "#F59E0B", bg: "rgba(245, 158, 11, 0.14)" },
-  game: { label: "游戏", accent: "#EF4444", bg: "rgba(239, 68, 68, 0.14)" },
-  finance: { label: "财经商业", accent: "#8B5CF6", bg: "rgba(139, 92, 246, 0.14)" },
-  creative: { label: "设计创作", accent: "#EC4899", bg: "rgba(236, 72, 153, 0.14)" },
-  entertainment: { label: "生活娱乐", accent: "#F97316", bg: "rgba(249, 115, 22, 0.14)" },
-  other: { label: "其他", accent: "#64748B", bg: "rgba(100, 116, 139, 0.14)" },
+  "ai-tech": { label: "AI & Tech", accent: "#0EA5E9", bg: "rgba(14, 165, 233, 0.14)" },
+  study: { label: "Learning", accent: "#10B981", bg: "rgba(16, 185, 129, 0.14)" },
+  digital: { label: "Digital & AV", accent: "#F59E0B", bg: "rgba(245, 158, 11, 0.14)" },
+  game: { label: "Gaming", accent: "#EF4444", bg: "rgba(239, 68, 68, 0.14)" },
+  finance: { label: "Finance & Business", accent: "#8B5CF6", bg: "rgba(139, 92, 246, 0.14)" },
+  creative: { label: "Design & Creation", accent: "#EC4899", bg: "rgba(236, 72, 153, 0.14)" },
+  entertainment: { label: "Lifestyle & Entertainment", accent: "#F97316", bg: "rgba(249, 115, 22, 0.14)" },
+  other: { label: "Other", accent: "#64748B", bg: "rgba(100, 116, 139, 0.14)" },
 };
 
 const FOLLOWED_DYNAMICS_TASK_KEY = "bilibili_followed_dynamics_task_id";
@@ -137,7 +137,7 @@ const FOLLOWED_UPS_TASK_KEY = "bilibili_followed_ups_task_id";
 const SMART_GROUP_TASK_KEY = "bilibili_followed_smart_group_task_id";
 const BILIBILI_DYNAMICS_CACHE_KEY = "bilibili_dynamics_cache";
 const BILIBILI_FOLLOWED_CACHE_KEY = "bilibili_followed_cache";
-const DEFAULT_DYNAMIC_FETCH_META: DynamicFetchMeta = { scope: "global", label: "全关注流" };
+const DEFAULT_DYNAMIC_FETCH_META: DynamicFetchMeta = { scope: "global", label: "Full follow feed" };
 const MAX_DYNAMIC_KEEP_LIMIT = 1000;
 const PAGINATION_SIZE_OPTIONS = [20, 50];
 const FIXED_UP_IMPORT_GROUPS_PAGE_SIZE = 10;
@@ -158,7 +158,7 @@ function sleep(ms: number): Promise<void> {
 }
 
 function getErrorMessage(err: unknown): string {
-  return err instanceof Error ? err.message : String(err || "未知错误");
+  return err instanceof Error ? err.message : String(err || "Unknown error");
 }
 
 function createTerminalTaskError(message: string): Error & { taskTerminal: true } {
@@ -336,7 +336,7 @@ function normalizeDailyDynamicMonitor(
 ): BilibiliDailyDynamicMonitor {
   const keywords = Array.isArray(seed.keywords) ? parseStringListInput(seed.keywords.join(", ")) : [];
   const tagFilters = Array.isArray(seed.tag_filters) ? parseStringListInput(seed.tag_filters.join(", ")) : [];
-  const label = String(seed.label || keywords[0] || tagFilters[0] || "每日动态监控").trim() || "每日动态监控";
+  const label = String(seed.label || keywords[0] || tagFilters[0] || "Daily feed monitor").trim() || "Daily feed monitor";
   return {
     id: String(seed.id || createLocalMonitorId("bili-dm")),
     label,
@@ -458,7 +458,7 @@ function normalizeFollowedGroupMonitor(
     || (seed as { group?: string }).group
     || ""
   ).trim();
-  const label = String(seed.label || labelLookup[groupValue] || groupValue || "未命名分组").trim() || "未命名分组";
+  const label = String(seed.label || labelLookup[groupValue] || groupValue || "Unnamed group").trim() || "Unnamed group";
   return {
     id: String(seed.id || createLocalMonitorId("bili-gm")),
     group_value: groupValue,
@@ -848,7 +848,7 @@ export function BilibiliTool() {
     void resumeFollowedDynamicsTask({
       taskId,
       scope: dynamicFetchMeta.scope,
-      label: dynamicFetchMeta.label || "全关注流",
+      label: dynamicFetchMeta.label || "Full follow feed",
       authorCount: dynamicFetchMeta.authorCount,
       daysBackValue: dynamicFetchMeta.daysBack ?? daysBack,
       keepLimit: dynamicFetchMeta.keepLimit ?? limit,
@@ -1013,12 +1013,12 @@ export function BilibiliTool() {
         }
 
         setShowCookieModal(false);
-        toast.success("浏览器 Cookie 已连接", res.message || `获取到 ${res.cookie_count} 个 Cookie`);
+        toast.success("Browser cookie connected", res.message || `Got ${res.cookie_count} cookies`);
       } else {
-        toast.error("获取失败", res.error || "未找到 Cookie");
+        toast.error("Fetch failed", res.error || "Cookie not found");
       }
     } catch (err) {
-      toast.error("获取失败", err instanceof Error ? err.message : "未知错误");
+      toast.error("Fetch failed", err instanceof Error ? err.message : "Unknown error");
     } finally {
       setGettingFromBrowser(false);
     }
@@ -1031,7 +1031,7 @@ export function BilibiliTool() {
     const fullCookie = res.cookie || "";
     const extracted = extractSessdataFromCookie(fullCookie);
     if (!res.success || !extracted) {
-      throw new Error(res.error || "未能从浏览器获取 SESSDATA，请确认 Chrome 或 Edge 已登录 B 站");
+      throw new Error(res.error || "Could not get SESSDATA from the browser. Make sure Chrome or Edge is logged in to Bilibili");
     }
 
     setCookieInput(fullCookie);
@@ -1050,7 +1050,7 @@ export function BilibiliTool() {
     if (nextTerms.length === 0) return;
     const mergedTerms = parseStringListInput([...dynamicSearchTerms, ...nextTerms].join(", "));
     if (mergedTerms.length === dynamicSearchTerms.length) {
-      toast.info("这个词已经存在");
+      toast.info("This word already exists");
       return;
     }
     setKeywords(mergedTerms);
@@ -1066,7 +1066,7 @@ export function BilibiliTool() {
 
   const handleAddPresetKeyword = (kw: string) => {
     if (dynamicSearchTerms.includes(kw)) {
-      toast.info(`"${kw}" 已添加`);
+      toast.info(`"${kw}" added`);
       return;
     }
     const nextTerms = [...dynamicSearchTerms, kw];
@@ -1076,7 +1076,7 @@ export function BilibiliTool() {
 
   const handleAddSuggestedTagFilter = (tag: string) => {
     if (dynamicSearchTerms.some((item) => item.toLowerCase() === tag.toLowerCase())) {
-      toast.info(`"${tag}" 已添加`);
+      toast.info(`"${tag}" added`);
       return;
     }
     const nextTerms = parseStringListInput([...dynamicSearchTerms, tag].join(", "));
@@ -1100,11 +1100,11 @@ export function BilibiliTool() {
     const terms = parseStringListInput(dailyMonitorTermInput);
     const label = terms.join(" + ").trim();
     if (!label || terms.length === 0) {
-      toast.error("先输入一个监控词。这个输入框同时兼容关键词和标签");
+      toast.error("Enter a monitor word first. This input accepts both keywords and tags");
       return;
     }
     if (trackerConfig.daily_dynamic_monitors.some((monitor) => monitor.label.trim().toLowerCase() === label.toLowerCase())) {
-      toast.error("已经有同名的日抓监控了，换个名字再建");
+      toast.error("A daily monitor with this name already exists — pick another name");
       return;
     }
     const nextMonitor = normalizeDailyDynamicMonitor({
@@ -1119,7 +1119,7 @@ export function BilibiliTool() {
       ...trackerConfig.daily_dynamic_monitors.filter((monitor) => monitor.id !== nextMonitor.id),
       nextMonitor,
     ];
-    await updateDailyDynamicMonitors(nextMonitors, "已添加每日动态监控");
+    await updateDailyDynamicMonitors(nextMonitors, "Daily feed monitor added");
     setDailyMonitorTermInput("");
     setDailyMonitorDaysBackInput("7");
     setDailyMonitorLimitInput("50");
@@ -1129,12 +1129,12 @@ export function BilibiliTool() {
     const nextMonitors = trackerConfig.daily_dynamic_monitors.map((monitor) => (
       monitor.id === monitorId ? { ...monitor, enabled: !monitor.enabled } : monitor
     ));
-    await updateDailyDynamicMonitors(nextMonitors, "已更新监控开关");
+    await updateDailyDynamicMonitors(nextMonitors, "Monitor toggle updated");
   };
 
   const handleRemoveDailyDynamicMonitor = async (monitorId: string) => {
     const nextMonitors = trackerConfig.daily_dynamic_monitors.filter((monitor) => monitor.id !== monitorId);
-    await updateDailyDynamicMonitors(nextMonitors, "已移除每日动态监控");
+    await updateDailyDynamicMonitors(nextMonitors, "Daily feed monitor removed");
   };
 
   const handleRemoveMonitorTerm = async (monitorId: string, term: string) => {
@@ -1147,7 +1147,7 @@ export function BilibiliTool() {
           })
         : monitor
     )).filter((monitor) => monitor.keywords.length > 0 || monitor.tag_filters.length > 0);
-    await updateDailyDynamicMonitors(nextMonitors, "已更新监控词");
+    await updateDailyDynamicMonitors(nextMonitors, "Monitor words updated");
   };
 
   const handleUpdateDailyMonitorDaysBack = async (monitorId: string, value: string) => {
@@ -1167,7 +1167,7 @@ export function BilibiliTool() {
           })
         : monitor
     ));
-    await updateDailyDynamicMonitors(nextMonitors, "已更新监控时间范围");
+    await updateDailyDynamicMonitors(nextMonitors, "Monitor time range updated");
   };
 
   const handleUpdateDailyMonitorLimit = async (monitorId: string, value: string) => {
@@ -1187,7 +1187,7 @@ export function BilibiliTool() {
           })
         : monitor
     ));
-    await updateDailyDynamicMonitors(nextMonitors, "已更新监控条数上限");
+    await updateDailyDynamicMonitors(nextMonitors, "Monitor item limit updated");
   };
 
   const handleUpdateFixedUpMonitorDaysBack = async (value: string) => {
@@ -1202,7 +1202,7 @@ export function BilibiliTool() {
     }
     await saveTrackerConfig(
       { fixed_up_days_back: nextDaysBack },
-      "已更新固定 UP 监督时间范围",
+      "Pinned creator time range updated",
     );
   };
 
@@ -1328,21 +1328,21 @@ export function BilibiliTool() {
     if ((res.dynamics || []).length === 0) {
       if (scope === "links") {
         const inputCount = res.fetch_stats?.input_count ?? 0;
-        toast.info("没有解析出可预览的链接", inputCount > 0 ? `本次共尝试 ${inputCount} 条链接` : undefined);
+        toast.info("No previewable links parsed", inputCount > 0 ? `Tried ${inputCount} links` : undefined);
       } else {
-        toast.info(scope === "global" ? "未找到符合条件的动态" : `${label} 最近没有匹配动态`);
+        toast.info(scope === "global" ? "No matching posts found" : `${label} has no recent matching posts`);
       }
     } else if (scope === "global") {
-      toast.success(`命中 ${res.total_found} 条动态，当前保留前 ${res.dynamics.length} 条`);
+      toast.success(`Matched ${res.total_found} posts; keeping the first ${res.dynamics.length}`);
     } else if (scope === "links") {
       const inputCount = res.fetch_stats?.input_count ?? res.dynamics.length;
       const failedCount = res.fetch_stats?.failed_count ?? 0;
       toast.success(
-        `指定链接已解析 ${res.dynamics.length}/${inputCount} 条`,
-        failedCount > 0 ? `另有 ${failedCount} 条失败` : label,
+        `Parsed ${res.dynamics.length}/${inputCount} specified links`,
+        failedCount > 0 ? `${failedCount} more failed` : label,
       );
     } else {
-      toast.success(`定向动态已就绪 · 命中 ${res.total_found} 条`, label);
+      toast.success(`Targeted posts ready · matched ${res.total_found}`, label);
     }
   };
 
@@ -1404,7 +1404,7 @@ export function BilibiliTool() {
           if (task.status === "completed") {
             finalizeFollowedDynamicsTask(taskId);
             if (!task.result) {
-              throw createTerminalTaskError("后台任务已完成，但没有返回结果");
+              throw createTerminalTaskError("Background task finished but returned no result");
             }
             applyDynamicsPreviewResult({
               res: task.result,
@@ -1420,12 +1420,12 @@ export function BilibiliTool() {
 
           if (task.status === "failed") {
             finalizeFollowedDynamicsTask(taskId);
-            throw createTerminalTaskError(task.error || "动态抓取失败");
+            throw createTerminalTaskError(task.error || "Post crawl failed");
           }
 
           if (task.status === "cancelled") {
             finalizeFollowedDynamicsTask(taskId);
-            throw createTerminalTaskError(task.error || "后台任务已停止");
+            throw createTerminalTaskError(task.error || "Background task stopped");
           }
 
           await sleep(TASK_POLL_INTERVAL_MS);
@@ -1448,11 +1448,11 @@ export function BilibiliTool() {
       }
     } catch (err) {
       const message = consecutiveErrors > 0
-        ? `${getErrorMessage(err)}；后台任务可能仍在执行，可稍后自动恢复`
+        ? `${getErrorMessage(err)}; the background task may still be running and can resume automatically later`
         : getErrorMessage(err);
       resetDynamicsPreviewResult({ scope, label, authorCount });
       if (!silent) {
-        toast.error(scope === "global" ? "获取失败" : "定向爬取失败", message);
+        toast.error(scope === "global" ? "Fetch failed" : "Targeted crawl failed", message);
       }
     }
   };
@@ -1576,7 +1576,7 @@ export function BilibiliTool() {
         label,
         authorCount: authorIds?.length || undefined,
       });
-      toast.error(scope === "global" ? "获取失败" : "定向爬取失败", getErrorMessage(err));
+      toast.error(scope === "global" ? "Fetch failed" : "Targeted crawl failed", getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -1584,8 +1584,8 @@ export function BilibiliTool() {
 
   const handleFetch = async () => {
     const label = dynamicSearchTerms.length > 0
-      ? `全关注流筛选 · 词 / 标签：${dynamicSearchTerms.join(" / ")}`
-      : "全关注流";
+      ? `Full follow-feed filter · words / tags: ${dynamicSearchTerms.join(" / ")}`
+      : "Full follow feed";
     await runDynamicsPreview({
       label,
       scope: "global",
@@ -1595,11 +1595,11 @@ export function BilibiliTool() {
 
   const handleFetchDirectLinks = async (saveImmediately = false) => {
     if (directLinkUrls.length === 0) {
-      toast.error("请输入至少一个 Bilibili 链接");
+      toast.error("Please enter at least one Bilibili link");
       return;
     }
 
-    const resultLabel = `指定链接 ${directLinkUrls.length} 条`;
+    const resultLabel = `${directLinkUrls.length} specified links`;
     setLoading(true);
     setFollowedDynamicsTask(null);
     setDirectLinkRunning(saveImmediately ? "save" : "preview");
@@ -1619,14 +1619,14 @@ export function BilibiliTool() {
       setLoading(false);
 
       if (saveImmediately && (res.dynamics || []).length > 0) {
-        await saveDynamicsToVault(res.dynamics, `指定链接已自动入库 ${res.dynamics.length} 条`);
+        await saveDynamicsToVault(res.dynamics, `Auto-saved ${res.dynamics.length} posts from specified links`);
       }
     } catch (err) {
       resetDynamicsPreviewResult({
         scope: "links",
         label: resultLabel,
       });
-      toast.error("链接抓取失败", getErrorMessage(err));
+      toast.error("Link crawl failed", getErrorMessage(err));
     } finally {
       setDirectLinkRunning(null);
       setLoading(false);
@@ -1635,7 +1635,7 @@ export function BilibiliTool() {
 
   const handlePreviewDailyMonitor = async (monitor: BilibiliDailyDynamicMonitor) => {
     const normalizedMonitor = normalizeDailyDynamicMonitor(monitor);
-    const label = `每日关键词监控：${normalizedMonitor.label}`;
+    const label = `Daily keyword monitor: ${normalizedMonitor.label}`;
     await runDynamicsPreview({
       keywordsOverride: normalizedMonitor.keywords,
       tagFiltersOverride: normalizedMonitor.tag_filters,
@@ -1678,19 +1678,19 @@ export function BilibiliTool() {
             setFollowedUpsLoaded(true);
             finalizeFollowedUpsTask(taskId);
             if (!silent) {
-              toast.success("关注 UP 已加载", `共 ${result?.total || 0} 个关注`);
+              toast.success("Followed creators loaded", `${result?.total || 0} follows total`);
             }
             break;
           }
 
           if (task.status === "failed") {
             finalizeFollowedUpsTask(taskId);
-            throw createTerminalTaskError(task.error || "关注列表抓取失败");
+            throw createTerminalTaskError(task.error || "Failed to fetch follow list");
           }
 
           if (task.status === "cancelled") {
             finalizeFollowedUpsTask(taskId);
-            throw createTerminalTaskError(task.error || "后台任务已停止");
+            throw createTerminalTaskError(task.error || "Background task stopped");
           }
 
           await sleep(TASK_POLL_INTERVAL_MS);
@@ -1714,9 +1714,9 @@ export function BilibiliTool() {
     } catch (err) {
       if (!silent) {
         const message = consecutiveErrors > 0
-          ? `${getErrorMessage(err)}；后台任务可能仍在执行，可稍后自动恢复`
+          ? `${getErrorMessage(err)}; the background task may still be running and can resume automatically later`
           : getErrorMessage(err);
-        toast.error("加载关注失败", message);
+        toast.error("Failed to load follows", message);
       }
     } finally {
       setFollowedUpsLoading(false);
@@ -1751,12 +1751,12 @@ export function BilibiliTool() {
         setFollowedUps(result.ups || []);
         setFollowedUpsLoaded(true);
         if (!silent) {
-          toast.success("关注 UP 已加载", `共 ${result.total || 0} 个关注`);
+          toast.success("Followed creators loaded", `${result.total || 0} follows total`);
         }
       }
     } catch (err) {
       if (!silent) {
-        toast.error("加载关注失败", err instanceof Error ? err.message : "未知错误");
+        toast.error("Failed to load follows", err instanceof Error ? err.message : "Unknown error");
       }
     } finally {
       setFollowedUpsLoading(false);
@@ -1802,8 +1802,8 @@ export function BilibiliTool() {
             if (!silent) {
               const workflowMode = task.result?.workflow_mode || task.workflow_mode;
               toast.success(
-                workflowMode === "creator-only" ? "博主 / UP 已重新整理" : "智能分组已更新",
-                task.result?.message || "已同步到日常爬虫监视",
+                workflowMode === "creator-only" ? "Creators re-organized" : "Smart groups updated",
+                task.result?.message || "Synced to the daily crawler monitor",
               );
             }
             break;
@@ -1811,12 +1811,12 @@ export function BilibiliTool() {
 
           if (task.status === "failed") {
             finalizeSmartGroupTask(taskId);
-            throw createTerminalTaskError(task.error || "智能分组失败");
+            throw createTerminalTaskError(task.error || "Smart grouping failed");
           }
 
           if (task.status === "cancelled") {
             finalizeSmartGroupTask(taskId);
-            throw createTerminalTaskError(task.error || "后台任务已停止");
+            throw createTerminalTaskError(task.error || "Background task stopped");
           }
 
           await sleep(TASK_POLL_INTERVAL_MS);
@@ -1840,9 +1840,9 @@ export function BilibiliTool() {
     } catch (err) {
       if (!silent) {
         const message = consecutiveErrors > 0
-          ? `${getErrorMessage(err)}；后台任务可能仍在执行，可稍后自动恢复`
+          ? `${getErrorMessage(err)}; the background task may still be running and can resume automatically later`
           : getErrorMessage(err);
-        toast.error("智能分组失败", message);
+        toast.error("Smart grouping failed", message);
       }
     } finally {
       setSmartGroupRunning(false);
@@ -1862,7 +1862,7 @@ export function BilibiliTool() {
       setSmartGroupTask(null);
       await resumeSmartGroupTask(started.task_id);
     } catch (err) {
-      toast.error("智能分组失败", err instanceof Error ? err.message : "未知错误");
+      toast.error("Smart grouping failed", err instanceof Error ? err.message : "Unknown error");
     }
   };
 
@@ -1890,9 +1890,9 @@ export function BilibiliTool() {
         },
       });
       await refreshTrackerConfig();
-      toast.success("共享映射已保存", "下次执行“共享智能分组”会优先使用这份映射。");
+      toast.success("Shared mapping saved", "The next \"shared smart grouping\" run will use this mapping first.");
     } catch (err) {
-      toast.error("保存失败", err instanceof Error ? err.message : "未知错误");
+      toast.error("Save failed", err instanceof Error ? err.message : "Unknown error");
     } finally {
       setSavingSignalMappings(false);
     }
@@ -1913,33 +1913,33 @@ export function BilibiliTool() {
     try {
       await saveManualMonitoredUps(next);
     } catch (err) {
-      toast.error("保存失败", err instanceof Error ? err.message : "未知错误");
+      toast.error("Save failed", err instanceof Error ? err.message : "Unknown error");
     }
   };
 
   const handleAddFrequentUpToManualMonitor = async (upId: string, displayName?: string) => {
     const normalizedUpId = String(upId || "").trim();
     if (!normalizedUpId) {
-      toast.error("这个 UP 还没有解析出 mid");
+      toast.error("No mid resolved for this creator yet");
       return;
     }
     const current = Array.from(new Set((trackerConfig.up_uids || []).map((item) => String(item || "").trim()).filter(Boolean)));
     if (current.includes(normalizedUpId)) {
-      toast.info(`${displayName || "这个 UP"} 已在固定监督里`);
+      toast.info(`${displayName || "This creator"} is already pinned`);
       return;
     }
     try {
-      await saveManualMonitoredUps([...current, normalizedUpId], "已加入固定监督 UP");
+      await saveManualMonitoredUps([...current, normalizedUpId], "Creator pinned");
     } catch (err) {
-      toast.error("保存失败", err instanceof Error ? err.message : "未知错误");
+      toast.error("Save failed", err instanceof Error ? err.message : "Unknown error");
     }
   };
 
   const handleClearManualMonitoredUps = async () => {
     try {
-      await saveManualMonitoredUps([], "已清空固定监督 UP");
+      await saveManualMonitoredUps([], "Pinned creators cleared");
     } catch (err) {
-      toast.error("清空失败", err instanceof Error ? err.message : "未知错误");
+      toast.error("Clear failed", err instanceof Error ? err.message : "Unknown error");
     }
   };
 
@@ -1950,18 +1950,18 @@ export function BilibiliTool() {
       .map((up) => up.mid)
       .filter((upId) => upId && !currentSet.has(upId));
     if (importableIds.length === 0) {
-      toast.info("这个智能组里的 UP 都已在固定监督里");
+      toast.info("All creators in this smart group are already pinned");
       return;
     }
     try {
       await saveManualMonitoredUps(
         [...currentSet, ...importableIds],
-        `已从智能组导入 ${importableIds.length} 个固定监督 UP`,
+        `Imported ${importableIds.length} pinned creators from the smart group`,
       );
       setExpandedFixedUpImportGroup(groupValue);
       setShowFixedUpMonitorSavedList(true);
     } catch (err) {
-      toast.error("导入失败", err instanceof Error ? err.message : "未知错误");
+      toast.error("Import failed", err instanceof Error ? err.message : "Unknown error");
     }
   };
 
@@ -1971,9 +1971,9 @@ export function BilibiliTool() {
       const activeSessdata = await ensureSessdataFromEdge();
       const result = await bilibiliDebugTest(activeSessdata);
       setDebugResult(result);
-      toast.success("诊断测试完成");
+      toast.success("Diagnostics finished");
     } catch (err) {
-      toast.error("诊断失败", err instanceof Error ? err.message : "未知错误");
+      toast.error("Diagnostics failed", err instanceof Error ? err.message : "Unknown error");
     } finally {
       setDebugLoading(false);
     }
@@ -2134,7 +2134,7 @@ export function BilibiliTool() {
   const saveEditedUpGrouping = async () => {
     const up = followedUpByAuthorId[editingGroupedUpId];
     if (!up) {
-      toast.error("未找到要编辑的 UP");
+      toast.error("Creator to edit not found");
       return;
     }
 
@@ -2142,7 +2142,7 @@ export function BilibiliTool() {
       new Set(editingSmartGroupValues.map((value) => value.trim()).filter(Boolean))
     );
     if (nextSmartGroups.length === 0) {
-      toast.info("至少保留一个智能分组");
+      toast.info("Keep at least one smart group");
       return;
     }
 
@@ -2175,9 +2175,9 @@ export function BilibiliTool() {
 
     setSavingGroupingEditor(true);
     try {
-      await saveTrackerConfig({ creator_profiles: nextProfiles }, "UP 分组已保存");
+      await saveTrackerConfig({ creator_profiles: nextProfiles }, "Creator groups saved");
     } catch (err) {
-      toast.error("保存失败", err instanceof Error ? err.message : "未知错误");
+      toast.error("Save failed", err instanceof Error ? err.message : "Unknown error");
     } finally {
       setSavingGroupingEditor(false);
     }
@@ -2233,10 +2233,10 @@ export function BilibiliTool() {
     return acc;
   }, {});
   const selectedOriginalGroupLabel = selectedOriginalGroup === "all"
-    ? "全部默认分组"
-    : originalGroups.find((group) => group.tag_id === selectedOriginalGroup)?.name || "已选默认分组";
+    ? "All default groups"
+    : originalGroups.find((group) => group.tag_id === selectedOriginalGroup)?.name || "Selected default group";
   const selectedSmartGroupLabel = selectedFollowedGroup === "all"
-    ? "全部智能分组"
+    ? "All smart groups"
     : getSmartGroupLabel(selectedFollowedGroup);
   const activeFollowedFilterCount = [
     selectedOriginalGroup !== "all",
@@ -2244,15 +2244,15 @@ export function BilibiliTool() {
     followedUpSearch.trim().length > 0,
   ].filter(Boolean).length;
   const targetedDynamicGroupLabel = targetedDynamicGroup === "all"
-    ? "全部智能组"
+    ? "All smart groups"
     : targetedDynamicGroup
       ? getSmartGroupLabel(targetedDynamicGroup)
-      : "未选智能组";
+      : "No smart group selected";
   const targetedDynamicGroupMeta = targetedDynamicGroup === "all"
-    ? { label: "全部智能组", accent: "#0EA5E9", bg: "rgba(14, 165, 233, 0.10)" }
+    ? { label: "All smart groups", accent: "#0EA5E9", bg: "rgba(14, 165, 233, 0.10)" }
     : targetedDynamicGroup
       ? resolveSmartGroupMeta(targetedDynamicGroup, targetedDynamicGroupLabel)
-      : resolveSmartGroupMeta("other", "未选智能组");
+      : resolveSmartGroupMeta("other", "No smart group selected");
   const targetedDynamicGroupMembers = targetedDynamicGroup === "all"
     ? followedUps
     : targetedDynamicGroup
@@ -2310,12 +2310,12 @@ export function BilibiliTool() {
   }, [dynamics, dynamicFetchMeta.label, selectedOriginalGroup, selectedFollowedGroup]);
 
   const followStatusTitle = followedUpsLoading
-    ? "正在获取关注列表"
+    ? "Fetching follow list"
     : followedUpsLoaded
-      ? "最近一次获取完成"
-      : "尚未开始获取";
+      ? "Last fetch finished"
+      : "Not fetched yet";
   const followStatusStage = followedUpsTask?.stage
-    || (followedUpsLoaded ? "关注列表已就绪，可继续筛选分组。" : "点击上方按钮开始获取当前账号关注列表。");
+    || (followedUpsLoaded ? "Follow list ready — continue filtering groups." : "Click the button above to fetch this account's follow list.");
   const followStatusCount = followedUpsTask?.fetched_count ?? followedUps.length;
   const followStatusPage = followedUpsTask?.current_page ?? 0;
   const followStatusProgress = followedUpsLoading
@@ -2324,14 +2324,14 @@ export function BilibiliTool() {
       ? 100
       : 0;
   const smartGroupStatusTitle = smartGroupRunning
-    ? "正在增量维护共享智能分组"
+    ? "Incrementally maintaining shared smart groups"
     : smartGroupTask?.status === "completed"
-      ? "最近一次共享智能分组完成"
-      : "尚未生成共享智能分组";
+      ? "Last shared smart grouping finished"
+      : "Shared smart groups not generated yet";
   const smartGroupStatusStage = smartGroupTask?.stage
     || (smartGroupOptions.length > 0 && trackerConfig.creator_profiles && Object.keys(trackerConfig.creator_profiles).length > 0
-      ? "已生成共享智能分组，可直接用于关注监控，并与小红书共用同一套组别。"
-      : "点击“共享智能分组”做完整重建；如果只想把新 UP 挂到已有组，直接点“仅整理博主 / UP”。");
+      ? "Shared smart groups generated — usable for follow monitors and shared with Xiaohongshu."
+      : "Click \"Shared smart grouping\" for a full rebuild; to only attach new creators to existing groups, click \"Organize creators only\".");
   const smartGroupStatusProgress = smartGroupRunning
     ? smartGroupTask?.progress || 18
     : smartGroupTask?.status === "completed"
@@ -2343,17 +2343,17 @@ export function BilibiliTool() {
     ?? (smartGroupTask?.status === "completed" ? smartGroupTotalUpCount : 0);
   const smartGroupCollectedUpCount = smartGroupTask?.fetched_count ?? followedUps.length;
   const smartGroupCurrentUpName = String(smartGroupTask?.current_followed_name || "").trim();
-  const smartGroupMetricLabel = smartGroupRunning && smartGroupTotalUpCount > 0 ? "已处理 UP" : "匹配 UP";
+  const smartGroupMetricLabel = smartGroupRunning && smartGroupTotalUpCount > 0 ? "Processed creators" : "Matched creators";
   const smartGroupMetricValue = smartGroupRunning && smartGroupTotalUpCount > 0
     ? smartGroupProcessedUpCount
     : (smartGroupTask?.matched_followed_count || Object.keys(trackerConfig.creator_profiles || {}).length);
   const smartGroupStatusDetails = [
-    smartGroupCollectedUpCount > 0 ? `已收集 UP ${smartGroupCollectedUpCount} 个` : "",
+    smartGroupCollectedUpCount > 0 ? `Collected ${smartGroupCollectedUpCount} creators` : "",
     (smartGroupTask?.total_groups || smartGroupOptions.length) > 0
-      ? `共享分类 ${smartGroupTask?.total_groups || smartGroupOptions.length} 个`
+      ? `${smartGroupTask?.total_groups || smartGroupOptions.length} shared categories`
       : "",
-    smartGroupTotalUpCount > 0 ? `已处理 UP ${smartGroupProcessedUpCount} / ${smartGroupTotalUpCount}` : "",
-    smartGroupCurrentUpName ? `当前：${smartGroupCurrentUpName}` : "",
+    smartGroupTotalUpCount > 0 ? `Processed ${smartGroupProcessedUpCount} / ${smartGroupTotalUpCount} creators` : "",
+    smartGroupCurrentUpName ? `Current: ${smartGroupCurrentUpName}` : "",
   ].filter(Boolean);
   const sharedTagIndexPath = trackerConfig.shared_creator_grouping.shared_data_paths?.tag_index_path
     || trackerConfig.shared_creator_grouping.vault_signal_database?.tag_index_path
@@ -2510,7 +2510,7 @@ export function BilibiliTool() {
   const managedSmartGroupOption = smartGroupOptions.find((group) => group.value === managedSmartGroup) || smartGroupOptions[0];
   const managedSmartGroupMeta = managedSmartGroupOption
     ? resolveSmartGroupMeta(managedSmartGroupOption.value, managedSmartGroupOption.label)
-    : resolveSmartGroupMeta("other", "其他");
+    : resolveSmartGroupMeta("other", "Other");
   const managedSmartGroupMembers = managedSmartGroupOption
     ? followedUps.filter((up) => getUpSmartGroups(up).includes(managedSmartGroupOption.value))
     : [];
@@ -2628,7 +2628,7 @@ export function BilibiliTool() {
 
   const handleFetchTrackedUpsDynamics = async () => {
     if (trackedUpMembers.length === 0) {
-      toast.info("先把要监视的智能组或手动 UP 放进情报 Feed");
+      toast.info("First add the smart groups or manual creators you want monitored to the intel Feed");
       return;
     }
     await runDynamicsPreview({
@@ -2639,7 +2639,7 @@ export function BilibiliTool() {
         365,
       ),
       limitOverride: MAX_DYNAMIC_KEEP_LIMIT,
-      label: `每日监视 UP · ${trackedUpMembers.length} 个 UP`,
+      label: `Daily monitored creators · ${trackedUpMembers.length}`,
       scope: "ups",
       monitorSubfolder: buildTrackedUpsSubfolder(`已启用监视UP ${trackedUpMembers.length} 个`),
       switchToResult: true,
@@ -2648,22 +2648,22 @@ export function BilibiliTool() {
 
   const handleFetchTargetedGroupDynamics = async () => {
     if (!targetedDynamicGroup) {
-      toast.error("先选一个浏览范围");
+      toast.error("Pick a browse scope first");
       return;
     }
     const { safeDaysBack, safeLimit } = normalizeTargetedGroupRequestInputs();
     if (targetedDynamicFetchMembers.length === 0) {
       toast.info(
         targetedDynamicSearchActive
-          ? `${targetedDynamicGroupLabel} 里没有匹配当前搜索词的 UP`
-          : `${targetedDynamicGroupLabel} 里还没有可抓取的 UP`
+          ? `No creators in ${targetedDynamicGroupLabel} match the current search`
+          : `No crawlable creators in ${targetedDynamicGroupLabel} yet`
       );
       return;
     }
-    const scopeLabel = targetedDynamicSearchActive ? "当前筛选" : "整组";
+    const scopeLabel = targetedDynamicSearchActive ? "current filter" : "whole group";
     const label = targetedDynamicGroup === "all"
-      ? `全部智能组 · ${scopeLabel} ${targetedDynamicFetchMembers.length} 个 UP`
-      : `${targetedDynamicGroupLabel} · ${scopeLabel} ${targetedDynamicFetchMembers.length} 个 UP`;
+      ? `All smart groups · ${scopeLabel} ${targetedDynamicFetchMembers.length} creators`
+      : `${targetedDynamicGroupLabel} · ${scopeLabel} ${targetedDynamicFetchMembers.length} creators`;
     await runDynamicsPreview({
       authorIds: targetedDynamicFetchMembers.map((up) => up.mid),
       daysBackOverride: safeDaysBack,
@@ -2671,7 +2671,7 @@ export function BilibiliTool() {
       label,
       scope: "group",
       monitorSubfolder: buildTargetedGroupSubfolder(
-        targetedDynamicGroup === "all" ? "全部智能组" : targetedDynamicGroupLabel,
+        targetedDynamicGroup === "all" ? "All smart groups" : targetedDynamicGroupLabel,
       ),
       switchToResult: true,
     });
@@ -2679,14 +2679,14 @@ export function BilibiliTool() {
 
   const handleFetchSelectedUpsDynamics = async () => {
     if (targetedDynamicSelectedUps.length === 0) {
-      toast.error("先勾选至少一个 UP");
+      toast.error("Select at least one creator first");
       return;
     }
     const { safeDaysBack, safeLimit } = normalizeTargetedGroupRequestInputs();
     const sampleNames = targetedDynamicSelectedUps.slice(0, 3).map((up) => up.uname);
     const overflowCount = targetedDynamicSelectedUps.length - sampleNames.length;
     const label = overflowCount > 0
-      ? `${sampleNames.join(" / ")} 等 ${targetedDynamicSelectedUps.length} 个 UP`
+      ? `${sampleNames.join(" / ")} and ${targetedDynamicSelectedUps.length} creators total`
       : sampleNames.join(" / ");
     await runDynamicsPreview({
       authorIds: targetedDynamicSelectedUps.map((up) => up.mid),
@@ -2701,7 +2701,7 @@ export function BilibiliTool() {
 
   const saveDynamicsToVault = async (targetDynamics: BiliDynamic[], successLabel: string) => {
     if (targetDynamics.length === 0) {
-      toast.error("没有可入库的动态");
+      toast.error("No posts to save");
       return;
     }
     setVaultCrawling(true);
@@ -2711,11 +2711,11 @@ export function BilibiliTool() {
       });
       setVaultResult(result);
       toast.success(
-        "Bilibili 已写入情报库",
+        "Bilibili saved to Intel Library",
         withLocationSuffix(successLabel, result.output_dir, "vault", config),
       );
     } catch (err) {
-      toast.error("入库失败", err instanceof Error ? err.message : "未知错误");
+      toast.error("Save failed", err instanceof Error ? err.message : "Unknown error");
     } finally {
       setVaultCrawling(false);
     }
@@ -2724,28 +2724,28 @@ export function BilibiliTool() {
   const handleSaveSelectedDynamics = async () => {
     const selectedDynamics = displayedDynamics.filter((dynamic) => selectedDynamicIds.has(dynamic.id));
     if (selectedDynamics.length === 0) {
-      toast.error("请先选择要入库的动态");
+      toast.error("Select posts to save first");
       return;
     }
-    await saveDynamicsToVault(selectedDynamics, `已入库 ${selectedDynamics.length} 条已选动态`);
+    await saveDynamicsToVault(selectedDynamics, `Saved ${selectedDynamics.length} selected posts`);
   };
 
   const handleSaveAllDisplayedDynamics = async () => {
     if (displayedDynamics.length === 0) {
-      toast.error("当前没有可入库的动态");
+      toast.error("No posts available to save");
       return;
     }
-    await saveDynamicsToVault(displayedDynamics, `已一键入库当前结果 ${displayedDynamics.length} 条`);
+    await saveDynamicsToVault(displayedDynamics, `One-click saved ${displayedDynamics.length} current results`);
   };
 
   const handleSaveSingleDynamic = async (dynamic: BiliDynamic) => {
-    await saveDynamicsToVault([dynamic], `已入库 1 条动态：${dynamic.title || dynamic.author}`);
+    await saveDynamicsToVault([dynamic], `Saved 1 post: ${dynamic.title || dynamic.author}`);
   };
 
   const handleOpenDynamicSource = async (dynamic: BiliDynamic) => {
     const targetUrl = resolveDynamicSourceUrl(dynamic);
     if (!targetUrl) {
-      toast.info("这条动态暂时没有可跳转的原文链接");
+      toast.info("This post has no original link to open yet");
       return;
     }
     try {
@@ -2757,7 +2757,7 @@ export function BilibiliTool() {
       } catch {
         // fall through
       }
-      toast.error("打开原文失败", err instanceof Error ? err.message : "未知错误");
+      toast.error("Failed to open original", err instanceof Error ? err.message : "Unknown error");
     }
   };
 
@@ -2801,9 +2801,9 @@ export function BilibiliTool() {
 
   const renderTabs = () => {
     const tabs = [
-      { key: "dynamics" as const, label: "动态追踪", icon: Tv, accent: "#00AEEC", bg: "rgba(0, 174, 236, 0.12)" },
-      { key: "favorites" as const, label: "收藏整理", icon: FolderHeart, accent: "#FB7299", bg: "rgba(251, 114, 153, 0.12)" },
-      { key: "following" as const, label: "关注监控", icon: Users, accent: "#10B981", bg: "rgba(16, 185, 129, 0.12)" },
+      { key: "dynamics" as const, label: "Post tracking", icon: Tv, accent: "#00AEEC", bg: "rgba(0, 174, 236, 0.12)" },
+      { key: "favorites" as const, label: "Favorites organizing", icon: FolderHeart, accent: "#FB7299", bg: "rgba(251, 114, 153, 0.12)" },
+      { key: "following" as const, label: "Follow monitors", icon: Users, accent: "#10B981", bg: "rgba(16, 185, 129, 0.12)" },
     ];
 
     return (
@@ -2865,12 +2865,12 @@ export function BilibiliTool() {
   const renderTargetedDynamicCrawlBody = () => (
     followedUpsLoading && followedUps.length === 0 ? (
       <div style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>
-        正在读取关注列表...
+        Reading follow list...
       </div>
     ) : followedUps.length === 0 ? (
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         <div style={{ fontSize: "0.875rem", color: "var(--text-secondary)", lineHeight: 1.7 }}>
-          先抓一次关注列表，这里才能按智能组或指定 UP 做每日动态范围调度。
+          Fetch the follow list once first; then daily post scoping by smart group or specific creator becomes available here.
         </div>
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
           <button
@@ -2889,15 +2889,15 @@ export function BilibiliTool() {
               opacity: followedUpsLoading ? 0.7 : 1,
             }}
           >
-            {followedUpsLoading ? "读取中..." : "先读取关注列表"}
+            {followedUpsLoading ? "Reading..." : "Read follow list first"}
           </button>
         </div>
       </div>
     ) : (
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.7 }}>
-          这块只控制临时动态预览范围，不会改动固定监督和情报 Feed 配置。
-          {!smartGroupsReady && " 还没执行“共享智能分组”时，会先按当前 B 站信息临时归类。"}
+          This only controls the temporary post preview scope; it does not change pinned creators or intel Feed config.
+          {!smartGroupsReady && " Before \"shared smart grouping\" has run, items are temporarily classified from current Bilibili info."}
         </div>
 
         <div
@@ -2926,9 +2926,9 @@ export function BilibiliTool() {
             }}
           >
             <div>
-              <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>快速当日爬取</div>
+              <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>Quick same-day crawl</div>
               <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
-                先统一最近多久时间、抓取条数和动态类型，再直接抓当前监督范围。
+                Set the time window, item count, and post types first, then crawl the current monitored scope directly.
               </div>
             </div>
             <span
@@ -2946,7 +2946,7 @@ export function BilibiliTool() {
               }}
             >
               {showTargetedDynamicQuickSection ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-              当前监督 {trackedUpMembers.length} 个 UP
+              Currently monitoring {trackedUpMembers.length} creators
             </span>
           </button>
 
@@ -2978,7 +2978,7 @@ export function BilibiliTool() {
                     cursor: loading || trackedUpMembers.length === 0 ? "not-allowed" : "pointer",
                   }}
                 >
-                  {loading ? "爬取中..." : `抓当前监督范围 · ${trackedUpMembers.length}`}
+                  {loading ? "Crawling..." : `Crawl current monitored scope · ${trackedUpMembers.length}`}
                 </button>
                 <button
                   type="button"
@@ -2995,7 +2995,7 @@ export function BilibiliTool() {
                     cursor: hasFetchedDynamics ? "pointer" : "not-allowed",
                   }}
                 >
-                  查看动态结果
+                  View post results
                 </button>
               </div>
 
@@ -3026,7 +3026,7 @@ export function BilibiliTool() {
                       fontWeight: 800,
                     }}
                   >
-                    固定监督 · {manualPoolMembers.length}
+                    Pinned · {manualPoolMembers.length}
                   </span>
                 )}
                 {monitorCategoryCount === 0 && (
@@ -3040,7 +3040,7 @@ export function BilibiliTool() {
                       fontWeight: 700,
                     }}
                   >
-                    先选智能组或固定监督 UP，临时抓取范围才会出现
+                    Pick smart groups or pinned creators first and the temporary crawl scope appears
                   </span>
                 )}
               </div>
@@ -3054,7 +3054,7 @@ export function BilibiliTool() {
                 }}
               >
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                  <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: "var(--text-main)" }}>最近多久时间</div>
+                  <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: "var(--text-main)" }}>Time window</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                     {TIME_RANGE_OPTIONS.map((opt) => (
                       <button
@@ -3087,7 +3087,7 @@ export function BilibiliTool() {
                       value={daysBackInput}
                       onChange={(e) => setDaysBackInput(e.target.value)}
                       onBlur={() => normalizePositiveInput(daysBackInput, daysBack, setDaysBack, setDaysBackInput)}
-                      placeholder="自定义天数"
+                      placeholder="Custom days"
                       style={{
                         width: "110px",
                         padding: "8px 10px",
@@ -3098,12 +3098,12 @@ export function BilibiliTool() {
                         fontSize: "0.8125rem",
                       }}
                     />
-                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>天内</span>
+                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>days</span>
                   </div>
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                  <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: "var(--text-main)" }}>过滤后最多保留</div>
+                  <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: "var(--text-main)" }}>Max kept after filtering</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                     {LIMIT_OPTIONS.map((opt) => (
                       <button
@@ -3126,7 +3126,7 @@ export function BilibiliTool() {
                           cursor: "pointer",
                         }}
                       >
-                        {opt} 条
+                        {opt}
                       </button>
                     ))}
                   </div>
@@ -3149,16 +3149,16 @@ export function BilibiliTool() {
                         fontSize: "0.8125rem",
                       }}
                     />
-                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>条</span>
+                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>items</span>
                   </div>
                   <div style={{ fontSize: "0.74rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                    系统可能会扫描更多动态；这里控制的是过滤完成后最终保留多少条，上限 {MAX_DYNAMIC_KEEP_LIMIT}。
+                    The system may scan more posts; this controls how many are finally kept after filtering, capped at {MAX_DYNAMIC_KEEP_LIMIT}.
                   </div>
                 </div>
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: "var(--text-main)" }}>动态类型</div>
+                <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: "var(--text-main)" }}>Post types</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                   {Object.entries(DYNAMIC_TYPE_MAP).map(([type, config]) => {
                     const Icon = config.icon;
@@ -3220,9 +3220,9 @@ export function BilibiliTool() {
             }}
           >
             <div>
-              <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>自选分组爬取</div>
+              <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>Custom group crawl</div>
               <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
-                分组按钮固定在名单上方。可以跨智能组连续勾选，切组不会清空已选 UP。
+                Group buttons stay above the list. Select across smart groups continuously — switching groups does not clear selected creators.
               </div>
             </div>
             <span
@@ -3240,7 +3240,7 @@ export function BilibiliTool() {
               }}
             >
               {showTargetedDynamicGroupSection ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-              当前 {targetedDynamicGroupLabel}
+              Current: {targetedDynamicGroupLabel}
             </span>
           </button>
 
@@ -3255,7 +3255,7 @@ export function BilibiliTool() {
               }}
             >
               <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6, paddingTop: "16px" }}>
-                当前每页显示 12 个 UP。整组抓取不受上方关键词影响；如果这里输入了 UP 搜索词，就只抓当前搜索命中的名单。
+                Shows 12 creators per page. Whole-group crawls ignore the keywords above; if you type a creator search term here, only the matching list is crawled.
               </div>
 
               <div
@@ -3266,7 +3266,7 @@ export function BilibiliTool() {
                 }}
               >
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                  <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: "var(--text-main)" }}>这组最近多久时间</div>
+                  <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: "var(--text-main)" }}>Time window for this group</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                     {TIME_RANGE_OPTIONS.map((opt) => (
                       <button
@@ -3305,7 +3305,7 @@ export function BilibiliTool() {
                         setTargetedGroupDaysBackInput,
                         365,
                       )}
-                      placeholder="自定义天数"
+                      placeholder="Custom days"
                       style={{
                         width: "110px",
                         padding: "8px 10px",
@@ -3316,12 +3316,12 @@ export function BilibiliTool() {
                         fontSize: "0.8125rem",
                       }}
                     />
-                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>天内</span>
+                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>days</span>
                   </div>
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                  <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: "var(--text-main)" }}>这组前端最多展示</div>
+                  <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: "var(--text-main)" }}>Max shown for this group</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                     {LIMIT_OPTIONS.map((opt) => (
                       <button
@@ -3344,7 +3344,7 @@ export function BilibiliTool() {
                           cursor: "pointer",
                         }}
                       >
-                        {opt} 条
+                        {opt}
                       </button>
                     ))}
                   </div>
@@ -3373,10 +3373,10 @@ export function BilibiliTool() {
                         fontSize: "0.8125rem",
                       }}
                     />
-                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>条</span>
+                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>items</span>
                   </div>
                   <div style={{ fontSize: "0.74rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                    指定分组会先按作者空间默认扫 3 页，再把符合条件的结果按时间排序，前端最多展示这里设定的条数。
+                    Targeted groups scan 3 pages of each author space by default, then sort matching results by time; the frontend shows at most this many.
                   </div>
                 </div>
               </div>
@@ -3386,9 +3386,9 @@ export function BilibiliTool() {
                   totalCount={smartGroupOptions.length}
                   page={safeTargetedDynamicGroupPage}
                   pageSize={TARGETED_DYNAMIC_GROUPS_PAGE_SIZE}
-                  itemLabel="个分组"
+                  itemLabel="groups"
                   onPageChange={setTargetedDynamicGroupPage}
-                  emptyText="当前没有可选智能组"
+                  emptyText="No smart groups available"
                 />
               )}
 
@@ -3408,7 +3408,7 @@ export function BilibiliTool() {
                     cursor: "pointer",
                   }}
                 >
-                  全部智能组 · {followedUps.length}
+                  All smart groups · {followedUps.length}
                 </button>
                 {pagedTargetedDynamicGroups.map((group) => {
                   const active = targetedDynamicGroup === group.value;
@@ -3440,7 +3440,7 @@ export function BilibiliTool() {
                 type="text"
                 value={targetedDynamicUpSearch}
                 onChange={(e) => setTargetedDynamicUpSearch(e.target.value)}
-                placeholder={`在 ${targetedDynamicGroupLabel} 里搜 UP 名 / 简介`}
+                placeholder={`Search creator names / bios in ${targetedDynamicGroupLabel}`}
                 style={{
                   width: "100%",
                   padding: "10px 12px",
@@ -3466,12 +3466,12 @@ export function BilibiliTool() {
                 }}
               >
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-                  <span style={{ color: targetedDynamicGroupMeta.accent, fontWeight: 800 }}>当前范围 {targetedDynamicGroupLabel}</span>
-                  <span>范围内 {targetedDynamicGroupMembers.length} 个 UP</span>
-                  <span>搜索命中 {targetedDynamicCandidates.length} 个</span>
-                  <span>本次整组抓取 {targetedDynamicFetchMembers.length} 个</span>
-                  <span>当前页已选 {targetedDynamicVisibleSelectedCount} 个</span>
-                  <span>累计已选 {targetedDynamicSelectedUps.length} 个</span>
+                  <span style={{ color: targetedDynamicGroupMeta.accent, fontWeight: 800 }}>Current scope: {targetedDynamicGroupLabel}</span>
+                  <span>{targetedDynamicGroupMembers.length} creators in scope</span>
+                  <span>{targetedDynamicCandidates.length} search hits</span>
+                  <span>{targetedDynamicFetchMembers.length} in this whole-group crawl</span>
+                  <span>{targetedDynamicVisibleSelectedCount} selected on this page</span>
+                  <span>{targetedDynamicSelectedUps.length} selected total</span>
                 </div>
                 <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                   <button
@@ -3489,7 +3489,7 @@ export function BilibiliTool() {
                       cursor: targetedDynamicCandidates.length === 0 ? "not-allowed" : "pointer",
                     }}
                   >
-                    全选当前名单
+                    Select all in current list
                   </button>
                   <button
                     type="button"
@@ -3506,7 +3506,7 @@ export function BilibiliTool() {
                       cursor: targetedDynamicUpIds.size === 0 ? "not-allowed" : "pointer",
                     }}
                   >
-                    清空已选
+                    Clear selection
                   </button>
                 </div>
               </div>
@@ -3517,9 +3517,9 @@ export function BilibiliTool() {
                     totalCount={targetedDynamicCandidates.length}
                     page={safeTargetedDynamicPage}
                     pageSize={TARGETED_DYNAMIC_RESULTS_PAGE_SIZE}
-                    itemLabel="个 UP"
+                    itemLabel="creators"
                     onPageChange={setTargetedDynamicPage}
-                    emptyText="当前没有匹配的 UP"
+                    emptyText="No matching creators"
                   />
                   <div
                     style={{
@@ -3553,7 +3553,7 @@ export function BilibiliTool() {
                             {up.uname}
                           </div>
                           <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                            {(up.tag_names[0] || "未分组")} · {selected ? "已勾选" : "点击加入本次抓取"}
+                            {(up.tag_names[0] || "Ungrouped")} · {selected ? "Selected" : "Click to add to this crawl"}
                           </div>
                           {(up.sign || up.official_desc) && (
                             <div
@@ -3578,16 +3578,16 @@ export function BilibiliTool() {
                     totalCount={targetedDynamicCandidates.length}
                     page={safeTargetedDynamicPage}
                     pageSize={TARGETED_DYNAMIC_RESULTS_PAGE_SIZE}
-                    itemLabel="个 UP"
+                    itemLabel="creators"
                     onPageChange={setTargetedDynamicPage}
-                    emptyText="当前没有匹配的 UP"
+                    emptyText="No matching creators"
                   />
                 </>
               ) : (
                 <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
                   {targetedDynamicGroupMembers.length > 0
-                    ? "这个范围里没有匹配当前搜索词的 UP。"
-                    : "当前范围里还没有可抓取的关注 UP。"}
+                    ? "No creators in this scope match the current search."
+                    : "No crawlable followed creators in the current scope yet."}
                 </div>
               )}
 
@@ -3610,12 +3610,12 @@ export function BilibiliTool() {
                   }}
                 >
                   {loading
-                    ? "爬取中..."
+                    ? "Crawling..."
                     : targetedDynamicSearchActive
-                      ? `抓当前筛选 ${targetedDynamicFetchMembers.length} 个 UP`
+                      ? `Crawl current filter: ${targetedDynamicFetchMembers.length} creators`
                       : targetedDynamicGroup === "all"
-                        ? "抓当前全部 UP"
-                        : `抓整个 ${targetedDynamicGroupLabel} 组`}
+                        ? "Crawl all current creators"
+                        : `Crawl the whole ${targetedDynamicGroupLabel} group`}
                 </button>
                 <button
                   type="button"
@@ -3632,7 +3632,7 @@ export function BilibiliTool() {
                     cursor: loading || targetedDynamicSelectedUps.length === 0 ? "not-allowed" : "pointer",
                   }}
                 >
-                  只抓已选 {targetedDynamicSelectedUps.length} 个 UP
+                  Crawl only the {targetedDynamicSelectedUps.length} selected creators
                 </button>
               </div>
             </div>
@@ -3644,7 +3644,7 @@ export function BilibiliTool() {
 
   const renderTargetedDynamicCrawlWorkbench = () => (
     <Card
-      title="主动爬取 / 分组搜索"
+      title="Manual Crawl / Group Search"
       icon={<Search size={18} />}
       actions={(
         <span
@@ -3658,7 +3658,7 @@ export function BilibiliTool() {
             whiteSpace: "nowrap",
           }}
         >
-          当前范围 {trackedUpMembers.length}
+          Current scope {trackedUpMembers.length}
         </span>
       )}
     >
@@ -3675,9 +3675,9 @@ export function BilibiliTool() {
       >
         <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "flex-start", flexWrap: "wrap" }}>
           <div>
-            <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "var(--text-main)" }}>主动爬取 / 分组搜索</div>
+            <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "var(--text-main)" }}>Manual crawl / group search</div>
             <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.7, maxWidth: "760px" }}>
-              这块单独处理临时动态抓取。最上面支持按指定链接直接抓取；下面继续保留当前监督范围抓取和跨智能组勾选具体 UP 的工作台。
+              This handles temporary post crawls separately. The top supports crawling specified links directly; below it remain the monitored-scope crawl and the cross-group creator picker workbench.
             </div>
           </div>
           <span
@@ -3695,7 +3695,7 @@ export function BilibiliTool() {
               whiteSpace: "nowrap",
             }}
           >
-            临时抓取工作台
+            Temporary crawl workbench
           </span>
         </div>
 
@@ -3712,9 +3712,9 @@ export function BilibiliTool() {
         >
           <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "flex-start", flexWrap: "wrap" }}>
             <div>
-              <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>指定链接主动抓取</div>
+              <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>Crawl specified links</div>
               <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.7, maxWidth: "760px" }}>
-                每行一个 Bilibili 视频 / 动态 / opus / 专栏链接。抓取后会复用现有 B 站动态卡片预览，直接保存时也仍然走当前同一套 Markdown 入库格式。
+                One Bilibili video / post / opus / article link per line. Crawls reuse the existing post card preview, and direct saves still use the same Markdown save format.
               </div>
             </div>
             <span
@@ -3729,7 +3729,7 @@ export function BilibiliTool() {
                 whiteSpace: "nowrap",
               }}
             >
-              默认保存到 bilibili/主动保存/
+              Saves to bilibili/主动保存/ by default
             </span>
           </div>
 
@@ -3737,7 +3737,7 @@ export function BilibiliTool() {
             value={directLinkInput}
             onChange={(event) => setDirectLinkInput(event.target.value)}
             placeholder={[
-              "每行一个链接，例如：",
+              "One link per line, e.g.:",
               "https://www.bilibili.com/video/BV1xx411c7mD",
               "https://t.bilibili.com/123456789012345678",
               "https://www.bilibili.com/opus/123456789012345678",
@@ -3758,7 +3758,7 @@ export function BilibiliTool() {
 
           <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
             <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-              当前识别 {directLinkUrls.length} 条链接。仅预览时会送到下面同一个结果区；直接保存时会先预览，再按当前 B 站入库格式写到本地。
+              Currently recognizing {directLinkUrls.length} links. Preview-only sends them to the same results area below; direct save previews first, then writes locally in the current Bilibili save format.
             </div>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
               <button
@@ -3776,7 +3776,7 @@ export function BilibiliTool() {
                   cursor: loading || directLinkRunning !== null || directLinkUrls.length === 0 ? "not-allowed" : "pointer",
                 }}
               >
-                {directLinkRunning === "preview" ? "解析中..." : "仅预览"}
+                {directLinkRunning === "preview" ? "Parsing..." : "Preview only"}
               </button>
               <button
                 type="button"
@@ -3795,7 +3795,7 @@ export function BilibiliTool() {
                   cursor: loading || directLinkRunning !== null || directLinkUrls.length === 0 ? "not-allowed" : "pointer",
                 }}
               >
-                {directLinkRunning === "save" ? "抓取并保存中..." : "抓取并直接保存"}
+                {directLinkRunning === "save" ? "Crawling and saving..." : "Crawl and save directly"}
               </button>
             </div>
           </div>
@@ -3808,7 +3808,7 @@ export function BilibiliTool() {
 
   const renderDailyGroupMonitorWorkbench = () => (
     <Card
-      title="智能分组追踪"
+      title="Smart Group Tracking"
       icon={<Users size={18} />}
       actions={(
         <span
@@ -3822,7 +3822,7 @@ export function BilibiliTool() {
             whiteSpace: "nowrap",
           }}
         >
-          固定监督 {manualPoolMembers.length}
+          Pinned {manualPoolMembers.length}
         </span>
       )}
     >
@@ -3842,9 +3842,9 @@ export function BilibiliTool() {
         >
           <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
             <div>
-              <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "var(--text-main)" }}>获取分组情况</div>
+              <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "var(--text-main)" }}>Get grouping status</div>
               <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
-                保留共享群标签库和智能分组的获取流程，这里只负责抓关注、整理标签库、查看当前分组情况。
+                Keeps the shared tag library and smart grouping acquisition flow; this section only fetches follows, organizes the tag library, and shows current grouping status.
               </div>
             </div>
             <span
@@ -3863,7 +3863,7 @@ export function BilibiliTool() {
               }}
             >
               {showSmartGroupSourceDetail ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-              {showSmartGroupSourceDetail ? "收起" : "展开"}
+              {showSmartGroupSourceDetail ? "Collapse" : "Expand"}
             </span>
           </div>
         </button>
@@ -3891,8 +3891,8 @@ export function BilibiliTool() {
                 lineHeight: 1.7,
               }}
             >
-              <strong style={{ color: "var(--text-main)" }}>原始标签 -&gt; 共享规则 -&gt; 共享组 -&gt; 作者入组</strong>
-              。即博主 / UP 会根据其样本笔记标签的分组情况加入对应共享组；这里保留的是共享标签库和分组结果，不再直接从这里配置监控。
+              <strong style={{ color: "var(--text-main)" }}>Raw tag -&gt; shared rule -&gt; shared group -&gt; author joins group</strong>
+              . That is, creators join shared groups based on their sample notes' tag grouping; this keeps the shared tag library and grouping results, and monitors are no longer configured from here.
             </div>
 
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
@@ -3916,19 +3916,19 @@ export function BilibiliTool() {
                 }}
               >
                 <Users size={14} />
-                {followedUpsLoading ? "爬取中..." : "爬取关注列表"}
+                {followedUpsLoading ? "Crawling..." : "Crawl follow list"}
               </button>
               <SmartGroupActionButton
                 onClick={() => void handleBuildSmartGroups()}
                 running={smartGroupRunning}
-                secondaryLabel="仅整理博主 / UP"
+                secondaryLabel="Organize creators only"
                 onSecondaryClick={() => void handleRefreshSharedCreatorAssignments()}
               />
             </div>
 
             {sharedTagIndexPath && (
               <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                共享标签库已写入情报库：{sharedTagIndexPath}
+                Shared tag library written to Intel Library: {sharedTagIndexPath}
               </div>
             )}
 
@@ -3940,10 +3940,10 @@ export function BilibiliTool() {
               }}
             >
               {[
-                { label: "关注列表", value: followedUps.length, detail: followedUpsLoaded ? "已抓到关注 UP" : "等待抓取" },
-                { label: "智能分组", value: fixedUpImportGroups.length, detail: "当前可用分组" },
-                { label: "作者画像", value: Object.keys(trackerConfig.creator_profiles || {}).length, detail: "已生成分组画像" },
-                { label: "固定监督", value: manualPoolMembers.length, detail: "下方可批量导入" },
+                { label: "Follow list", value: followedUps.length, detail: followedUpsLoaded ? "Follows fetched" : "Waiting to fetch" },
+                { label: "Smart groups", value: fixedUpImportGroups.length, detail: "Groups available now" },
+                { label: "Creator profiles", value: Object.keys(trackerConfig.creator_profiles || {}).length, detail: "Group profiles generated" },
+                { label: "Pinned", value: manualPoolMembers.length, detail: "Bulk import below" },
               ].map((metric) => (
                 <div
                   key={metric.label}
@@ -3986,7 +3986,7 @@ export function BilibiliTool() {
                       {group.label}
                     </div>
                     <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-                      {group.members.length} 个 UP
+                      {group.members.length} creators
                     </div>
                     {group.sampleAuthors.length > 0 && (
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
@@ -4030,7 +4030,7 @@ export function BilibiliTool() {
               </div>
             ) : (
               <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.7 }}>
-                还没有智能分组结果。先执行一次“共享智能分组”，这里才会看到当前分组情况。
+                No smart grouping results yet. Run "shared smart grouping" once first and the current grouping status appears here.
               </div>
             )}
           </div>
@@ -4051,9 +4051,9 @@ export function BilibiliTool() {
         >
           <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
             <div>
-              <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "var(--text-main)" }}>固定 UP 监督</div>
+              <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "var(--text-main)" }}>Pinned creators</div>
               <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
-                这里统一做固定 UP 的长期监督和批量导入。所有真正参与情报 Feed 和每日动态抓取的范围，都从这里进入。
+                This is where long-term pinned creator monitoring and bulk import happen. Everything that actually joins the intel Feed and daily post crawls enters from here.
               </div>
             </div>
             <span
@@ -4072,7 +4072,7 @@ export function BilibiliTool() {
               }}
             >
               {showFixedUpTrackingDetail ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-              {showFixedUpTrackingDetail ? "收起" : "展开"}
+              {showFixedUpTrackingDetail ? "Collapse" : "Expand"}
             </span>
           </div>
         </button>
@@ -4096,7 +4096,7 @@ export function BilibiliTool() {
   const renderFixedUpMonitorWorkbench = () => (
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.7 }}>
-          这里管理真正参与长期监督的固定 UP。智能分组只负责上面那层获取和导入入口，真正进入每日动态和情报 Feed 的范围，都以这里保存的名单为准。
+          This manages the pinned creators that actually join long-term monitoring. Smart groups only provide the acquisition and import layer above; what enters daily posts and the intel Feed is governed by the list saved here.
         </div>
 
         <div
@@ -4107,9 +4107,9 @@ export function BilibiliTool() {
           }}
         >
           {[
-            { label: "固定监督", value: manualPoolMembers.length, detail: "手动指定的 UP" },
-            { label: "命中智能组", value: selectedTrackedSmartGroups.length, detail: "这些固定 UP 落入的分组" },
-            { label: "总监督范围", value: trackedUpMembers.length, detail: "最终会参与每日动态" },
+            { label: "Pinned", value: manualPoolMembers.length, detail: "Manually specified creators" },
+            { label: "Matched smart groups", value: selectedTrackedSmartGroups.length, detail: "Groups these pinned creators fall into" },
+            { label: "Total monitored scope", value: trackedUpMembers.length, detail: "Will join daily post crawls" },
           ].map((metric) => (
             <div
               key={metric.label}
@@ -4142,9 +4142,9 @@ export function BilibiliTool() {
         >
           <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
             <div>
-              <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>高频 UP 快捷添加</div>
+              <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>Quick-add frequent creators</div>
               <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
-                按本地 B 站内容里 UP 出现次数排序，每页 12 个；<span style={{ fontWeight: 800, color: "#078FBF" }}>点击头像加入</span>，也可以直接用卡片按钮添加或删除固定监督。
+                Sorted by how often creators appear in local Bilibili content, 12 per page; <span style={{ fontWeight: 800, color: "#078FBF" }}>click an avatar to add</span>, or use the card buttons to add/remove pinned creators.
               </div>
             </div>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -4162,7 +4162,7 @@ export function BilibiliTool() {
                   cursor: "pointer",
                 }}
               >
-                刷新共享智能分组
+                Refresh shared smart groups
               </button>
               <button
                 type="button"
@@ -4178,7 +4178,7 @@ export function BilibiliTool() {
                   cursor: "pointer",
                 }}
               >
-                仅整理博主 / UP
+                Organize creators only
               </button>
             </div>
           </div>
@@ -4186,7 +4186,7 @@ export function BilibiliTool() {
           {frequentUpCandidates.length > 0 ? (
             <>
               <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                已从本地内容里整理出 {frequentUpCandidates.length} 个可复用 UP，固定监督里已命中 {frequentUpCandidates.filter((candidate) => candidate.tracked).length} 个。
+                Organized {frequentUpCandidates.length} reusable creators from local content; {frequentUpCandidates.filter((candidate) => candidate.tracked).length} already pinned.
               </div>
 
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -4204,7 +4204,7 @@ export function BilibiliTool() {
                     cursor: "pointer",
                   }}
                 >
-                  全部 · {frequentUpCandidates.length}
+                  All · {frequentUpCandidates.length}
                 </button>
                 {frequentUpGroupOptions.map((option) => (
                   <button
@@ -4233,9 +4233,9 @@ export function BilibiliTool() {
                     totalCount={filteredFrequentUpCandidates.length}
                     page={safeFrequentUpPage}
                     pageSize={FREQUENT_UP_PAGE_SIZE}
-                    itemLabel="个 UP"
+                    itemLabel="creators"
                     onPageChange={setFrequentUpPage}
-                    emptyText="当前筛选下没有匹配的 UP"
+                    emptyText="No matching creators under the current filter"
                   />
                   <div
                     style={{
@@ -4266,7 +4266,7 @@ export function BilibiliTool() {
                           <button
                             type="button"
                             onClick={() => void handleAddFrequentUpToManualMonitor(candidate.upId, candidate.displayName)}
-                            title={candidate.tracked ? "这个 UP 已在固定监督里" : "点击头像加入固定监督"}
+                            title={candidate.tracked ? "This creator is already pinned" : "Click the avatar to pin"}
                             style={{
                               position: "relative",
                               width: "46px",
@@ -4309,14 +4309,14 @@ export function BilibiliTool() {
                                 {candidate.displayName}
                               </span>
                               <span style={{ fontSize: "0.6875rem", color: candidate.tracked ? "#078FBF" : "var(--text-muted)", whiteSpace: "nowrap" }}>
-                                {candidate.tracked ? "已加入" : `TOP ${rank}`}
+                                {candidate.tracked ? "Added" : `TOP ${rank}`}
                               </span>
                             </div>
                             <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                              本地内容出现 {candidate.noteCount} 次{candidate.profile.source_summary ? ` · ${candidate.profile.source_summary}` : ""}
+                              Appears {candidate.noteCount} times in local content{candidate.profile.source_summary ? ` · ${candidate.profile.source_summary}` : ""}
                             </div>
                             <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
-                              最近：{candidate.latestTitle || "暂无"}
+                              Latest: {candidate.latestTitle || "none"}
                             </div>
                             {(smartLabels.length > 0 || candidate.originalGroupNames.length > 0) && (
                               <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
@@ -4368,7 +4368,7 @@ export function BilibiliTool() {
                                     cursor: "pointer",
                                   }}
                                 >
-                                  删除
+                                  Remove
                                 </button>
                               ) : (
                                 <button
@@ -4385,7 +4385,7 @@ export function BilibiliTool() {
                                     cursor: "pointer",
                                   }}
                                 >
-                                  一键添加
+                                  One-click add
                                 </button>
                               )}
                             </div>
@@ -4398,21 +4398,21 @@ export function BilibiliTool() {
                     totalCount={filteredFrequentUpCandidates.length}
                     page={safeFrequentUpPage}
                     pageSize={FREQUENT_UP_PAGE_SIZE}
-                    itemLabel="个 UP"
+                    itemLabel="creators"
                     onPageChange={setFrequentUpPage}
-                    emptyText="当前筛选下没有匹配的 UP"
+                    emptyText="No matching creators under the current filter"
                   />
                 </>
               ) : (
                 <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.7 }}>
-                  当前智能组筛选下还没有匹配到高频 UP，可以切回“全部”看看，或者重新执行一次智能分组。
+                  No frequent creators match this smart-group filter; switch back to "All" or re-run smart grouping.
                 </div>
               )}
             </>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.7 }}>
-                先读取关注列表并执行一次共享智能分组，这里才会按本地收藏里 UP 的出现频率整理候选，方便你快速补到固定监督。
+                Read the follow list and run shared smart grouping once first; then candidates are organized by how often creators appear in local bookmarks, so you can quickly top up pinned creators.
               </div>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                 <button
@@ -4429,7 +4429,7 @@ export function BilibiliTool() {
                     cursor: "pointer",
                   }}
                 >
-                  {followedUpsLoading ? "读取中..." : (followedUpsLoaded ? "刷新关注列表" : "先读取关注列表")}
+                  {followedUpsLoading ? "Reading..." : (followedUpsLoaded ? "Refresh follow list" : "Read follow list first")}
                 </button>
                 <button
                   type="button"
@@ -4445,7 +4445,7 @@ export function BilibiliTool() {
                     cursor: "pointer",
                   }}
                 >
-                  共享智能分组
+                  Shared smart grouping
                 </button>
               </div>
             </div>
@@ -4465,9 +4465,9 @@ export function BilibiliTool() {
         >
           <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
             <div>
-              <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>已保存的固定监督 UP</div>
+              <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>Saved pinned creators</div>
               <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
-                这部分只放你明确想长期盯住的具体 UP；一旦加入，就会持续参与每日抓取。
+                This holds only the specific creators you explicitly want to watch long-term; once added, they join daily crawls continuously.
               </div>
             </div>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -4486,7 +4486,7 @@ export function BilibiliTool() {
                     cursor: "pointer",
                   }}
                 >
-                  清空全部
+                  Clear all
                 </button>
               )}
               <button
@@ -4503,14 +4503,14 @@ export function BilibiliTool() {
                   cursor: "pointer",
                 }}
               >
-                {showFixedUpMonitorSavedList ? "隐藏列表" : "展开列表"}
+                {showFixedUpMonitorSavedList ? "Hide list" : "Show list"}
               </button>
             </div>
           </div>
 
           {manualPoolMembers.length === 0 ? (
             <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.7 }}>
-              还没有固定监督的 UP。直接从下面的智能标签 / 智能分组里展开成员，或者在更下方的明细筛选里逐个补充。
+              No pinned creators yet. Expand members from the smart tags / smart groups below, or add them one by one in the detailed filter further down.
             </div>
           ) : showFixedUpMonitorSavedList ? (
             <>
@@ -4518,11 +4518,11 @@ export function BilibiliTool() {
                 totalCount={manualPoolMembers.length}
                 page={safeFixedUpSavedPage}
                 pageSize={fixedUpSavedPageSize}
-                itemLabel="个 UP"
+                itemLabel="creators"
                 pageSizeOptions={PAGINATION_SIZE_OPTIONS}
                 onPageChange={setFixedUpSavedPage}
                 onPageSizeChange={(nextPageSize) => setFixedUpSavedPageSize(nextPageSize === 50 ? 50 : 20)}
-                emptyText="还没有固定监督的 UP"
+                emptyText="No pinned creators yet"
               />
               <div
                 style={{
@@ -4554,7 +4554,7 @@ export function BilibiliTool() {
                             {up?.uname || entry.id}
                           </div>
                           <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
-                            {up ? "固定监督中" : "当前关注列表未命中，但配置仍保留"}
+                            {up ? "Pinned" : "Not in the current follow list, but config is kept"}
                           </div>
                         </div>
                         <button
@@ -4572,7 +4572,7 @@ export function BilibiliTool() {
                             flexShrink: 0,
                           }}
                         >
-                          移除
+                          Remove
                         </button>
                       </div>
                       {(up?.sign || up?.official_desc) && (
@@ -4622,11 +4622,11 @@ export function BilibiliTool() {
                 totalCount={manualPoolMembers.length}
                 page={safeFixedUpSavedPage}
                 pageSize={fixedUpSavedPageSize}
-                itemLabel="个 UP"
+                itemLabel="creators"
                 pageSizeOptions={PAGINATION_SIZE_OPTIONS}
                 onPageChange={setFixedUpSavedPage}
                 onPageSizeChange={(nextPageSize) => setFixedUpSavedPageSize(nextPageSize === 50 ? 50 : 20)}
-                emptyText="还没有固定监督的 UP"
+                emptyText="No pinned creators yet"
               />
             </>
           ) : null}
@@ -4657,9 +4657,9 @@ export function BilibiliTool() {
           >
             <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
               <div>
-                <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>从智能标签 / 智能分组快速加入</div>
+                <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>Quick add from smart tags / smart groups</div>
                 <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
-                  参考小红书那边的关注分组导入逻辑：先展开组，再整组导入未加入的 UP，或者在组内逐个挑人加入固定监督。
+                  Mirrors the Xiaohongshu follow-group import logic: expand a group first, then import all unadded creators, or pick them one by one within the group.
                 </div>
               </div>
               <span
@@ -4678,7 +4678,7 @@ export function BilibiliTool() {
                 }}
               >
                 {showFixedUpMonitorImportPanel ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                {showFixedUpMonitorImportPanel ? "收起" : "展开"}
+                {showFixedUpMonitorImportPanel ? "Collapse" : "Expand"}
               </span>
             </div>
           </button>
@@ -4687,16 +4687,16 @@ export function BilibiliTool() {
             fixedUpImportGroups.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.7 }}>
-                  点击一个组展开成员；每个组都能单独整组导入，也能在组里逐个切换。固定监督支持跨智能组累计，不会因为你切组而丢失选择。分组列表按页显示，每页 10 个。
+                  Click a group to expand its members; each group supports whole-group import or per-member toggling. Pinned creators accumulate across smart groups — switching groups never loses selections. Groups are paginated, 10 per page.
                 </div>
                 {fixedUpImportGroups.length > FIXED_UP_IMPORT_GROUPS_PAGE_SIZE && (
                   <PaginationControls
                     totalCount={fixedUpImportGroups.length}
                     page={safeFixedUpImportGroupPage}
                     pageSize={FIXED_UP_IMPORT_GROUPS_PAGE_SIZE}
-                    itemLabel="个分组"
+                    itemLabel="groups"
                     onPageChange={setFixedUpImportGroupPage}
-                    emptyText="当前没有可导入的智能分组"
+                    emptyText="No smart groups available to import"
                   />
                 )}
                 {pagedFixedUpImportGroups.map((group) => {
@@ -4731,11 +4731,11 @@ export function BilibiliTool() {
                                 fontWeight: 700,
                               }}
                             >
-                              {group.members.length} 个 UP
+                              {group.members.length} creators
                             </span>
                           </div>
                           <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
-                            已在固定监督里 {group.members.filter((up) => manualPoolIdSet.has(up.mid)).length} 个 · 还可新增 {importableCount} 个
+                            {group.members.filter((up) => manualPoolIdSet.has(up.mid)).length} already pinned · {importableCount} more can be added
                           </div>
                           {group.sampleTags.length > 0 && (
                             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "8px" }}>
@@ -4774,7 +4774,7 @@ export function BilibiliTool() {
                               cursor: "pointer",
                             }}
                           >
-                            {groupOpen ? "收起成员" : "展开成员"}
+                            {groupOpen ? "Collapse members" : "Expand members"}
                           </button>
                           <button
                             type="button"
@@ -4791,7 +4791,7 @@ export function BilibiliTool() {
                               cursor: importableCount === 0 ? "not-allowed" : "pointer",
                             }}
                           >
-                            添加未加入 {importableCount}
+                            Add remaining {importableCount}
                           </button>
                         </div>
                       </div>
@@ -4810,7 +4810,7 @@ export function BilibiliTool() {
                             type="text"
                             value={fixedUpImportSearch}
                             onChange={(e) => setFixedUpImportSearch(e.target.value)}
-                            placeholder={`在 ${group.label} 里搜索 UP 名 / 简介`}
+                            placeholder={`Search creator names / bios in ${group.label}`}
                             style={{
                               width: "100%",
                               padding: "10px 12px",
@@ -4823,10 +4823,10 @@ export function BilibiliTool() {
                           />
 
                           <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                            <span>当前组 {expandedFixedUpGroupBundle.members.length} 个 UP</span>
-                            <span>搜索命中 {expandedFixedUpImportMembers.length} 个</span>
-                            <span>还可新增 {fixedUpImportableCount} 个</span>
-                            <span>分页管理，每页 {fixedUpImportPageSize} 个</span>
+                            <span>{expandedFixedUpGroupBundle.members.length} creators in this group</span>
+                            <span>{expandedFixedUpImportMembers.length} search hits</span>
+                            <span>{fixedUpImportableCount} more can be added</span>
+                            <span>Paginated, {fixedUpImportPageSize} per page</span>
                           </div>
 
                           {expandedFixedUpImportMembers.length > 0 ? (
@@ -4835,11 +4835,11 @@ export function BilibiliTool() {
                                 totalCount={expandedFixedUpImportMembers.length}
                                 page={safeFixedUpImportPage}
                                 pageSize={fixedUpImportPageSize}
-                                itemLabel="个 UP"
+                                itemLabel="creators"
                                 pageSizeOptions={PAGINATION_SIZE_OPTIONS}
                                 onPageChange={setFixedUpImportPage}
                                 onPageSizeChange={(nextPageSize) => setFixedUpImportPageSize(nextPageSize === 50 ? 50 : 20)}
-                                emptyText="当前没有匹配的 UP"
+                                emptyText="No matching creators"
                               />
                               <div
                                 style={{
@@ -4871,7 +4871,7 @@ export function BilibiliTool() {
                                             {up.uname}
                                           </div>
                                           <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
-                                            {selected ? "已加入固定监督" : "可加入固定监督"}
+                                            {selected ? "Pinned" : "Can be pinned"}
                                           </div>
                                         </div>
                                       </div>
@@ -4914,7 +4914,7 @@ export function BilibiliTool() {
                                           cursor: "pointer",
                                         }}
                                       >
-                                        {selected ? "移出固定监督" : "加入固定监督"}
+                                        {selected ? "Unpin" : "Pin"}
                                       </button>
                                     </div>
                                   );
@@ -4924,16 +4924,16 @@ export function BilibiliTool() {
                                 totalCount={expandedFixedUpImportMembers.length}
                                 page={safeFixedUpImportPage}
                                 pageSize={fixedUpImportPageSize}
-                                itemLabel="个 UP"
+                                itemLabel="creators"
                                 pageSizeOptions={PAGINATION_SIZE_OPTIONS}
                                 onPageChange={setFixedUpImportPage}
                                 onPageSizeChange={(nextPageSize) => setFixedUpImportPageSize(nextPageSize === 50 ? 50 : 20)}
-                                emptyText="当前没有匹配的 UP"
+                                emptyText="No matching creators"
                               />
                             </>
                           ) : (
                             <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                              这个智能组里没有匹配当前搜索词的 UP。
+                              No creators in this smart group match the current search.
                             </div>
                           )}
                         </div>
@@ -4945,7 +4945,7 @@ export function BilibiliTool() {
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.7 }}>
-                  先执行一次共享智能分组，这里才会按标签展开具体成员，方便你快速导入固定监督。
+                  Run shared smart grouping once first; then members expand by tag here, making it easy to bulk-import pinned creators.
                 </div>
                 {!smartGroupsReady && (
                   <button
@@ -4963,7 +4963,7 @@ export function BilibiliTool() {
                       cursor: "pointer",
                     }}
                   >
-                    先生成智能分组
+                    Generate smart groups first
                   </button>
                 )}
               </div>
@@ -4987,18 +4987,18 @@ export function BilibiliTool() {
     const directLinkSkippedCount = fetchStats?.skipped_count ?? 0;
 
     if (loading) {
-      return <LoadingState message={followedDynamicsTask?.stage || "正在获取动态..."} />;
+      return <LoadingState message={followedDynamicsTask?.stage || "Fetching posts..."} />;
     }
 
     if (!hasFetchedDynamics) {
       return (
         <EmptyState
           icon={Tv}
-          title="暂无动态"
+          title="No Posts Yet"
           description={
             sessdata
               ? emptyDescription
-              : "点击右上角连接 Cookie，或直接预览，系统会自动尝试获取 Cookie"
+              : "Click connect cookie in the top right, or preview directly and the system will try to get the cookie automatically"
           }
         />
       );
@@ -5008,8 +5008,8 @@ export function BilibiliTool() {
       return (
         <EmptyState
           icon={Tv}
-          title="暂无动态"
-          description={`${dynamicFetchMeta.label} 最近 ${fetchDaysBack} 天还没有抓到匹配动态。`}
+          title="No Posts Yet"
+          description={`${dynamicFetchMeta.label} has no matching posts in the last ${fetchDaysBack} days.`}
         />
       );
     }
@@ -5033,41 +5033,41 @@ export function BilibiliTool() {
             <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>
               {isDirectLinkResult ? (
                 <>
-                  共解析 <strong style={{ color: "var(--text-main)" }}>{directLinkInputCount || matchedBeforeKeep}</strong> 条链接，
-                  成功预览 <strong style={{ color: "var(--text-main)" }}>{keptCount}</strong> 条，
-                  当前筛选 <strong style={{ color: "var(--text-main)" }}>{displayedDynamics.length}</strong> 条，
-                  本页显示 <strong style={{ color: "var(--text-main)" }}>{pagedDisplayedDynamics.length}</strong> 条，
-                  结果来源 <strong style={{ color: "var(--text-main)" }}>{dynamicFetchMeta.label}</strong>
+                  Parsed <strong style={{ color: "var(--text-main)" }}>{directLinkInputCount || matchedBeforeKeep}</strong> links,
+                  previewed <strong style={{ color: "var(--text-main)" }}>{keptCount}</strong> successfully,
+                  current filter <strong style={{ color: "var(--text-main)" }}>{displayedDynamics.length}</strong>,
+                  showing <strong style={{ color: "var(--text-main)" }}>{pagedDisplayedDynamics.length}</strong> on this page,
+                  source <strong style={{ color: "var(--text-main)" }}>{dynamicFetchMeta.label}</strong>
                 </>
               ) : (
                 <>
-                  共命中 <strong style={{ color: "var(--text-main)" }}>{matchedBeforeKeep}</strong> 条动态，
-                  当前保留 <strong style={{ color: "var(--text-main)" }}>{keptCount}</strong> 条，
-                  当前筛选 <strong style={{ color: "var(--text-main)" }}>{displayedDynamics.length}</strong> 条，
-                  本页显示 <strong style={{ color: "var(--text-main)" }}>{pagedDisplayedDynamics.length}</strong> 条，
-                  抓取范围 <strong style={{ color: "var(--text-main)" }}>{dynamicFetchMeta.label}</strong>
+                  Matched <strong style={{ color: "var(--text-main)" }}>{matchedBeforeKeep}</strong> posts,
+                  keeping <strong style={{ color: "var(--text-main)" }}>{keptCount}</strong>,
+                  current filter <strong style={{ color: "var(--text-main)" }}>{displayedDynamics.length}</strong>,
+                  showing <strong style={{ color: "var(--text-main)" }}>{pagedDisplayedDynamics.length}</strong> on this page,
+                  crawl scope <strong style={{ color: "var(--text-main)" }}>{dynamicFetchMeta.label}</strong>
                 </>
               )}
             </span>
             <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
               {isDirectLinkResult ? (
                 <>
-                  直接按链接解析，不再扫关注页。
-                  {directLinkFailedCount > 0 ? ` 失败 ${directLinkFailedCount} 条。` : " "}
-                  {directLinkSkippedCount > 0 ? `跳过空行或重复 ${directLinkSkippedCount} 条。` : ""}
+                  Parsed directly from links — no follow-page scanning.
+                  {directLinkFailedCount > 0 ? ` ${directLinkFailedCount} failed.` : " "}
+                  {directLinkSkippedCount > 0 ? `Skipped ${directLinkSkippedCount} blank or duplicate lines.` : ""}
                 </>
               ) : (
                 <>
-                  实际扫了 <strong style={{ color: "var(--text-main)" }}>{pagesScanned}</strong> 页
-                  {scannedAuthorCount > 0 ? ` / ${scannedAuthorCount} 个UP` : ""}
-                  ，命中了 <strong style={{ color: "var(--text-main)" }}>{matchedBeforeKeep}</strong> 条，
-                  现在只展示前 <strong style={{ color: "var(--text-main)" }}>{keepLimit}</strong> 条。
+                  Actually scanned <strong style={{ color: "var(--text-main)" }}>{pagesScanned}</strong> pages
+                  {scannedAuthorCount > 0 ? ` / ${scannedAuthorCount} creators` : ""}
+                  , matched <strong style={{ color: "var(--text-main)" }}>{matchedBeforeKeep}</strong>,
+                  showing only the first <strong style={{ color: "var(--text-main)" }}>{keepLimit}</strong>.
                 </>
               )}
             </span>
           </div>
           <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-            {isDirectLinkResult ? "按指定链接解析" : `最近 ${fetchDaysBack} 天`}
+            {isDirectLinkResult ? "Parsed from specified links" : `Last ${fetchDaysBack} days`}
           </span>
         </div>
 
@@ -5076,17 +5076,17 @@ export function BilibiliTool() {
             icon={Filter}
             title={
               dynamicFetchMeta.scope === "links"
-                ? "这些链接暂时没有解析出可预览内容"
+                ? "These links produced no previewable content yet"
                 : dynamicFetchMeta.scope === "global"
-                  ? "这个分组里没有匹配推送"
-                  : "当前范围里没有匹配动态"
+                  ? "No matching pushes in this group"
+                  : "No matching posts in the current scope"
             }
             description={
               dynamicFetchMeta.scope === "links"
-                ? "检查链接格式、Cookie 登录态，或换成视频 / 动态 / opus / 专栏原链接再试。"
+                ? "Check the link format and cookie login state, or retry with original video / post / opus / article links."
                 : dynamicFetchMeta.scope === "global"
-                  ? "换一个分组、清空 UP 选择，或者调整推送关键词。"
-                  : "放宽最近几天、切换分组，或者清空 UP 搜索后再试。"
+                  ? "Try another group, clear the creator selection, or adjust push keywords."
+                  : "Widen the day range, switch groups, or clear the creator search and retry."
             }
           />
         ) : (
@@ -5095,9 +5095,9 @@ export function BilibiliTool() {
               totalCount={displayedDynamics.length}
               page={safeDynamicResultsPage}
               pageSize={DYNAMIC_RESULTS_PAGE_SIZE}
-              itemLabel="条动态"
+              itemLabel="posts"
               onPageChange={setDynamicResultsPage}
-              emptyText="当前没有匹配的动态"
+              emptyText="No matching posts"
             />
             <Card
               style={{
@@ -5116,10 +5116,10 @@ export function BilibiliTool() {
               >
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                   <div style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--text-main)" }}>
-                    支持逐条入库，也能一键入库
+                    Save one by one, or all in one click
                   </div>
                   <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                    当前筛选 {displayedDynamics.length} 条，本页 {pagedDisplayedDynamics.length} 条，已选 {displayedSelectedCount} 条写入情报库
+                    Current filter {displayedDynamics.length}, this page {pagedDisplayedDynamics.length}, {displayedSelectedCount} selected for the Intel Library
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
@@ -5137,7 +5137,7 @@ export function BilibiliTool() {
                       cursor: "pointer",
                     }}
                   >
-                    全选当前筛选
+                    Select all in current filter
                   </button>
                   <button
                     type="button"
@@ -5153,7 +5153,7 @@ export function BilibiliTool() {
                       cursor: "pointer",
                     }}
                   >
-                    清空选择
+                    Clear selection
                   </button>
                   <button
                     type="button"
@@ -5176,7 +5176,7 @@ export function BilibiliTool() {
                     }}
                   >
                     <CheckCircle size={16} />
-                    {vaultCrawling ? "入库中..." : `写入已选 ${displayedSelectedCount} 条`}
+                    {vaultCrawling ? "Saving..." : `Save ${displayedSelectedCount} selected`}
                   </button>
                   <button
                     type="button"
@@ -5199,7 +5199,7 @@ export function BilibiliTool() {
                     }}
                   >
                     <FolderHeart size={16} />
-                    {vaultCrawling ? "入库中..." : `一键入库当前结果 ${displayedDynamics.length} 条`}
+                    {vaultCrawling ? "Saving..." : `Save all ${displayedDynamics.length} current results`}
                   </button>
                 </div>
               </div>
@@ -5237,16 +5237,16 @@ export function BilibiliTool() {
                     onOpenSource={() => handleOpenDynamicSource(dynamic)}
                     sourceDisabled={!sourceUrl}
                     primaryAction={{
-                      label: "立即入库",
+                      label: "Save now",
                       onClick: () => handleSaveSingleDynamic(dynamic),
                       disabled: vaultCrawling,
                       pending: vaultCrawling,
-                      pendingLabel: "入库中...",
+                      pendingLabel: "Saving...",
                       primary: true,
                       icon: <FolderHeart size={14} />,
                     }}
                     secondaryAction={{
-                      label: "原文",
+                      label: "Original",
                       onClick: () => handleOpenDynamicSource(dynamic),
                       disabled: !sourceUrl,
                       icon: <ExternalLink size={14} />,
@@ -5261,9 +5261,9 @@ export function BilibiliTool() {
               totalCount={displayedDynamics.length}
               page={safeDynamicResultsPage}
               pageSize={DYNAMIC_RESULTS_PAGE_SIZE}
-              itemLabel="条动态"
+              itemLabel="posts"
               onPageChange={setDynamicResultsPage}
-              emptyText="当前没有匹配的动态"
+              emptyText="No matching posts"
             />
           </>
         )}
@@ -5285,8 +5285,8 @@ export function BilibiliTool() {
         onToggleFullCookie={() => setShowFullCookie((visible) => !visible)}
       />
       <PageHeader
-        title="哔哩哔哩工具"
-        subtitle="一键连接 Cookie，按全关注流、智能分组或指定 UP 预览动态，再选择写入情报库"
+        title="Bilibili Tools"
+        subtitle="One-click cookie connect; preview posts by full follow feed, smart group, or specific creator, then choose what to save"
         icon={Tv}
         actions={
           <button
@@ -5307,7 +5307,7 @@ export function BilibiliTool() {
             }}
           >
             <Cookie size={16} />
-            {cookieConfigured ? "Cookie 配置" : "配置 Cookie"}
+            {cookieConfigured ? "Cookie settings" : "Configure cookie"}
           </button>
         }
       />
@@ -5319,10 +5319,10 @@ export function BilibiliTool() {
           {panelTab === "dynamics" && <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {renderTargetedDynamicCrawlWorkbench()}
 
-            <Card title="全关注流动态追踪" icon={<Hash size={18} />}>
+            <Card title="Full Follow-Feed Post Tracking" icon={<Hash size={18} />}>
               <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
                 <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.7 }}>
-                  这里统一处理全关注流的临时搜索和预览。一个词会同时按正文关键词和动态标签两路命中，所以不再拆成两套输入。
+                  This handles temporary searches and previews of the full follow feed. One word matches both body keywords and post tags, so there is no longer a split into two inputs.
                 </div>
                 <div
                   style={{
@@ -5333,7 +5333,7 @@ export function BilibiliTool() {
                   }}
                 >
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                    <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--text-main)" }}>词 / 标签</div>
+                    <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--text-main)" }}>Words / tags</div>
                     <div style={{ display: "flex", gap: "8px" }}>
                       <input
                         type="text"
@@ -5345,7 +5345,7 @@ export function BilibiliTool() {
                             handleAddKeyword();
                           }
                         }}
-                        placeholder="输入关键词、标签或话题词，一个输入框直接兼容"
+                        placeholder="Enter keywords, tags, or topic words — one input handles all"
                         style={{
                           flex: 1,
                           padding: "10px 12px",
@@ -5397,7 +5397,7 @@ export function BilibiliTool() {
                   </div>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                    <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--text-main)" }}>动态类型</div>
+                    <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--text-main)" }}>Post types</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                       {Object.entries(DYNAMIC_TYPE_MAP).map(([type, config]) => {
                         const Icon = config.icon;
@@ -5478,7 +5478,7 @@ export function BilibiliTool() {
                       lineHeight: 1.6,
                     }}
                   >
-                    不填词也能直接看关注动态总览；如果你今天有明确主题，再把关键词或标签补进去会更干净。
+                    Leave it empty to browse the follow-feed overview directly; if you have a clear topic today, adding keywords or tags keeps it cleaner.
                   </div>
                 )}
 
@@ -5502,13 +5502,13 @@ export function BilibiliTool() {
                     }}
                   >
                     <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                      <div style={{ fontSize: "0.8125rem", fontWeight: 700 }}>智能分组高频标签补充</div>
+                      <div style={{ fontSize: "0.8125rem", fontWeight: 700 }}>Frequent tags from smart groups</div>
                       <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                        按智能分组收起展示；点开某个组后，再展开里面的标签。
+                        Collapsed by smart group; open a group to expand its tags.
                       </div>
                     </div>
                     <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", color: "var(--text-muted)", flexShrink: 0 }}>
-                      <span style={{ fontSize: "0.75rem" }}>{showSuggestedSmartGroupTags ? "收起" : "展开"}</span>
+                      <span style={{ fontSize: "0.75rem" }}>{showSuggestedSmartGroupTags ? "Collapse" : "Expand"}</span>
                       {showSuggestedSmartGroupTags ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                     </div>
                   </button>
@@ -5516,7 +5516,7 @@ export function BilibiliTool() {
                     suggestedSmartGroupTags.length > 0 ? (
                       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                         <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                          这些高频标签会先按智能分组归档，再补到上面的统一词池里，不再按原始标签平铺。
+                          These frequent tags are filed by smart group first, then added to the unified word pool above — no longer flattened by raw tag.
                         </div>
                         <div
                           style={{
@@ -5572,7 +5572,7 @@ export function BilibiliTool() {
                                   </div>
                                   <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", color: "var(--text-muted)" }}>
                                     <span style={{ fontSize: "0.6875rem" }}>
-                                      {group.tags.length} 个标签
+                                      {group.tags.length} tags
                                     </span>
                                     {groupExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                                   </div>
@@ -5602,7 +5602,7 @@ export function BilibiliTool() {
                                   </div>
                                 ) : (
                                   <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                                    点击展开这个智能分组，再看里面的高频标签。
+                                    Click to expand this smart group and see its frequent tags.
                                   </div>
                                 )}
                               </div>
@@ -5612,7 +5612,7 @@ export function BilibiliTool() {
                       </div>
                     ) : (
                       <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                        还没有可复用的智能分组标签。先执行一次“共享智能分组”，这里就会按智能组展示高频标签；没有的话也可以直接在上面的统一输入框里填词。
+                        No reusable smart-group tags yet. Run "shared smart grouping" once and frequent tags appear here by group; otherwise just type words in the unified input above.
                       </div>
                     )
                   ) : null}
@@ -5628,7 +5628,7 @@ export function BilibiliTool() {
                   }}
                 >
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                    <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--text-main)" }}>时间范围</div>
+                    <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--text-main)" }}>Time range</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                       {TIME_RANGE_OPTIONS.map((opt) => (
                         <button
@@ -5654,7 +5654,7 @@ export function BilibiliTool() {
                       ))}
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>自定义天数</span>
+                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Custom days</span>
                       <input
                         type="number"
                         min={1}
@@ -5671,12 +5671,12 @@ export function BilibiliTool() {
                           fontSize: "0.8125rem",
                         }}
                       />
-                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>天</span>
+                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>days</span>
                     </div>
                   </div>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                    <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--text-main)" }}>数量限制</div>
+                    <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--text-main)" }}>Count limit</div>
                     <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                       {LIMIT_OPTIONS.map((opt) => (
                         <button
@@ -5698,12 +5698,12 @@ export function BilibiliTool() {
                             cursor: "pointer",
                           }}
                         >
-                          {opt} 条
+                          {opt}
                         </button>
                       ))}
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>过滤后保留</span>
+                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Keep after filtering</span>
                       <input
                         type="number"
                         min={1}
@@ -5722,10 +5722,10 @@ export function BilibiliTool() {
                           fontSize: "0.8125rem",
                         }}
                       />
-                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>条</span>
+                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>items</span>
                     </div>
                     <div style={{ fontSize: "0.74rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                      这里只限制最终展示与入库前保留的数量；分组抓取会按 UP 平均分配内部扫描预算。
+                      This only limits what is finally shown and kept before saving; group crawls split the internal scan budget evenly across creators.
                     </div>
                   </div>
                 </div>
@@ -5764,27 +5764,27 @@ export function BilibiliTool() {
                       animation: "spin 1s linear infinite",
                     }}
                   />
-                  获取中...
+                  Fetching...
                 </>
               ) : (
                 <>
                   <Search size={18} />
-                  预览当前词 / 标签
+                  Preview current words / tags
                 </>
               )}
             </button>
 
             {vaultResult && (
-              <Card title="入库结果" icon={<CheckCircle size={18} />}>
+              <Card title="Save Results" icon={<CheckCircle size={18} />}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "0.8125rem" }}>
                   <div style={{ color: "var(--text-secondary)", wordBreak: "break-all" }}>
-                    输出目录：{vaultResult.output_dir}
+                    Output directory: {vaultResult.output_dir}
                   </div>
                   <div style={{ color: "var(--text-secondary)" }}>
-                    动态 {vaultResult.dynamic_count} 条
+                    {vaultResult.dynamic_count} posts
                   </div>
                   <div style={{ color: "var(--color-success)", fontWeight: 600 }}>
-                    已写入 {vaultResult.written_count} 个 Markdown 文件
+                    Wrote {vaultResult.written_count} Markdown files
                   </div>
                 </div>
               </Card>
@@ -5821,19 +5821,19 @@ export function BilibiliTool() {
                       animation: "spin 1s linear infinite",
                     }}
                   />
-                  诊断中...
+                  Diagnosing...
                 </>
               ) : (
                 <>
                   <AlertCircle size={16} />
-                  运行诊断测试
+                  Run diagnostics
                 </>
               )}
             </button>
 
             {/* Debug Results */}
             {debugResult && (
-              <Card title="诊断结果" icon={<AlertCircle size={18} />}>
+              <Card title="Diagnostic Results" icon={<AlertCircle size={18} />}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                   <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
                     SESSDATA: {debugResult.sessdata_preview}
@@ -5849,22 +5849,22 @@ export function BilibiliTool() {
                       }}
                     >
                       <div style={{ fontWeight: 600, color: "var(--text-main)", marginBottom: "4px" }}>
-                        {name === "video_only" && "仅视频 (type_list=8)"}
-                        {name === "all_types" && "全部类型 (type_list=268435455)"}
-                        {name === "no_params" && "无参数"}
+                        {name === "video_only" && "Video only (type_list=8)"}
+                        {name === "all_types" && "All types (type_list=268435455)"}
+                        {name === "no_params" && "No params"}
                       </div>
                       {test.error ? (
-                        <div style={{ color: "var(--color-error)" }}>错误: {test.error}</div>
+                        <div style={{ color: "var(--color-error)" }}>Error: {test.error}</div>
                       ) : (
                         <div style={{ color: "var(--text-secondary)", display: "flex", flexDirection: "column", gap: "2px" }}>
-                          <span>状态码: {test.status_code}</span>
-                          <span>返回码: {test.code}</span>
-                          <span>消息: {test.message}</span>
+                          <span>Status code: {test.status_code}</span>
+                          <span>Return code: {test.code}</span>
+                          <span>Message: {test.message}</span>
                           <span style={{ fontWeight: 600, color: test.cards_count && test.cards_count > 0 ? "var(--color-success)" : "var(--text-muted)" }}>
-                            卡片数: {test.cards_count}
+                            Card count: {test.cards_count}
                           </span>
                           {test.first_card_types && test.first_card_types.length > 0 && (
-                            <span>前5个卡片类型: {test.first_card_types.join(", ")}</span>
+                            <span>First 5 card types: {test.first_card_types.join(", ")}</span>
                           )}
                         </div>
                       )}
@@ -5879,7 +5879,7 @@ export function BilibiliTool() {
                     }}
                   >
                     <div style={{ fontWeight: 600, color: "#FFB800", marginBottom: "8px", fontSize: "0.8125rem" }}>
-                      可能的原因：
+                      Possible causes:
                     </div>
                     <ul style={{ margin: 0, paddingLeft: "16px", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
                       {debugResult.suggestions.slice(1).map((s, i) => (
@@ -5909,7 +5909,7 @@ export function BilibiliTool() {
                 }}
               >
                 <Card
-                  title="关注流常驻关键词监控"
+                  title="Persistent Follow-Feed Keyword Monitors"
                   icon={<Hash size={18} />}
                   actions={(
                     <span
@@ -5923,13 +5923,13 @@ export function BilibiliTool() {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      已启用 {activeDailyDynamicMonitors.length}
+                      Enabled {activeDailyDynamicMonitors.length}
                     </span>
                   )}
                 >
                   <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                     <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.7 }}>
-                      这里现在只保留常驻监控。你新建一个空即可，里面兼容关键词和标签；新建后可以单独开启、关闭、删除，临时主动搜索则统一回到上面的「动态追踪」里做。
+                      Only persistent monitors live here now. Create an empty one — it accepts both keywords and tags; after creating you can enable, disable, or delete each individually. Temporary manual searches happen in "Post tracking" above.
                     </div>
 
                     <div
@@ -5945,13 +5945,13 @@ export function BilibiliTool() {
                     >
                       <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "flex-start", flexWrap: "wrap" }}>
                         <div>
-                          <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "var(--text-main)" }}>常驻关键词监控</div>
+                          <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "var(--text-main)" }}>Persistent keyword monitors</div>
                           <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.7, maxWidth: "760px" }}>
-                            每个监控会单独开启 / 关闭，单独抓取，入库时也会落到自己的文件夹里。标签条件和关键词是同级的附加命中规则，不需要单独维护两套。
+                            Each monitor toggles and crawls independently, and saves into its own folder. Tag conditions and keywords are peer-level match rules — no need to maintain two sets.
                           </div>
                         </div>
                         <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                          已配置 {dailyDynamicMonitors.length} 个，启用 {activeDailyDynamicMonitors.length} 个
+                          {dailyDynamicMonitors.length} configured, {activeDailyDynamicMonitors.length} enabled
                         </div>
                       </div>
 
@@ -5964,12 +5964,12 @@ export function BilibiliTool() {
                         }}
                       >
                         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                          <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 700 }}>词 / 标签</div>
+                          <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 700 }}>Words / tags</div>
                           <input
                             type="text"
                             value={dailyMonitorTermInput}
                             onChange={(e) => setDailyMonitorTermInput(e.target.value)}
-                            placeholder="输入一个监控词，兼容关键词和标签；支持逗号分隔"
+                            placeholder="Enter a monitor word (keyword or tag); comma-separated supported"
                             style={{
                               width: "100%",
                               padding: "10px 12px",
@@ -5982,7 +5982,7 @@ export function BilibiliTool() {
                           />
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                          <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 700 }}>最近几天</div>
+                          <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 700 }}>Day range</div>
                           <input
                             type="number"
                             min={1}
@@ -6001,7 +6001,7 @@ export function BilibiliTool() {
                           />
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                          <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 700 }}>条数上限</div>
+                          <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 700 }}>Item limit</div>
                           <input
                             type="number"
                             min={1}
@@ -6034,7 +6034,7 @@ export function BilibiliTool() {
                             fontWeight: 800,
                           }}
                         >
-                          新建
+                          Create
                         </button>
                       </div>
 
@@ -6069,7 +6069,7 @@ export function BilibiliTool() {
                                           fontWeight: 800,
                                         }}
                                       >
-                                        {monitor.enabled ? "已开启" : "已关闭"}
+                                        {monitor.enabled ? "On" : "Off"}
                                       </span>
                                       <span
                                         style={{
@@ -6081,7 +6081,7 @@ export function BilibiliTool() {
                                           fontWeight: 800,
                                         }}
                                       >
-                                        最近 {monitor.days_back} 天
+                                        Last {monitor.days_back} days
                                       </span>
                                       <span
                                         style={{
@@ -6093,14 +6093,14 @@ export function BilibiliTool() {
                                           fontWeight: 800,
                                         }}
                                       >
-                                        上限 {monitor.limit} 条
+                                        Limit {monitor.limit}
                                       </span>
                                     </div>
                                     <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
-                                      入库目录：{buildDailyMonitorSubfolder(monitor.label)}
+                                      Save folder: {buildDailyMonitorSubfolder(monitor.label)}
                                     </div>
                                     <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginTop: "8px" }}>
-                                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>最近几天</span>
+                                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Day range</span>
                                       <input
                                         key={`${monitor.id}-${monitor.days_back}`}
                                         type="number"
@@ -6123,8 +6123,8 @@ export function BilibiliTool() {
                                           fontSize: "0.75rem",
                                         }}
                                       />
-                                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>天内动态</span>
-                                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>条数上限</span>
+                                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>days of posts</span>
+                                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Item limit</span>
                                       <input
                                         key={`${monitor.id}-${monitor.limit}`}
                                         type="number"
@@ -6148,7 +6148,7 @@ export function BilibiliTool() {
                                           fontSize: "0.75rem",
                                         }}
                                       />
-                                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>条</span>
+                                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>items</span>
                                     </div>
                                   </div>
                                   <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -6166,7 +6166,7 @@ export function BilibiliTool() {
                                         cursor: "pointer",
                                       }}
                                     >
-                                      {monitor.enabled ? "关闭" : "开启"}
+                                      {monitor.enabled ? "Disable" : "Enable"}
                                     </button>
                                     <button
                                       type="button"
@@ -6183,7 +6183,7 @@ export function BilibiliTool() {
                                         cursor: loading ? "not-allowed" : "pointer",
                                       }}
                                     >
-                                      立即爬取
+                                      Crawl now
                                     </button>
                                     <button
                                       type="button"
@@ -6199,7 +6199,7 @@ export function BilibiliTool() {
                                         cursor: "pointer",
                                       }}
                                     >
-                                      删除
+                                      Remove
                                     </button>
                                   </div>
                                 </div>
@@ -6240,7 +6240,7 @@ export function BilibiliTool() {
                                     </span>
                                   ))}
                                   {monitorTerms.length === 0 && (
-                                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>这个监控还没有命中条件</span>
+                                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>This monitor has no match conditions yet</span>
                                   )}
                                 </div>
                               </div>
@@ -6249,7 +6249,7 @@ export function BilibiliTool() {
                         </div>
                       ) : (
                         <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.7 }}>
-                          还没有固定日抓监控。你可以先在上面试一轮关键词 / 标签，再把常用组合固化成下面这些每天自动跑的监控项。
+                          No daily monitors yet. Try a round of keywords / tags above first, then solidify your usual combinations into these daily auto-running monitors.
                         </div>
                       )}
                     </div>
@@ -6260,7 +6260,7 @@ export function BilibiliTool() {
                 {renderDailyGroupMonitorWorkbench()}
 
                 <Card
-                  title="关注 UP 最新动态 -> 情报 Feed"
+                  title="Followed Creators' Latest Posts -> Intel Feed"
                   icon={<Users size={18} />}
                   actions={(
                     <span
@@ -6274,13 +6274,13 @@ export function BilibiliTool() {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      当前范围 {trackedUpMembers.length}
+                      Current scope {trackedUpMembers.length}
                     </span>
                   )}
                 >
                     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                       <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.7 }}>
-                        上面的「智能分组追踪」只负责看分组来源和维护固定监督名单；这里不再改监督配置，只负责查看当前范围、触发今日抓取，并把结果送进情报 Feed。
+                        "Smart Group Tracking" above only views group sources and maintains the pinned list; this section doesn't change monitor config — it just shows the current scope, triggers today's crawl, and sends results into the intel Feed.
                       </div>
 
                       <div
@@ -6297,13 +6297,13 @@ export function BilibiliTool() {
                         }}
                       >
                         <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>关注监控时间范围</div>
+                          <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>Follow monitor time range</div>
                           <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
-                            固定 UP 监督默认 3 天，可自由改；不同 UP 会并行抓取，实际会一直扫到这个日期边界再停。
+                            Pinned creators default to 3 days, freely adjustable; creators are crawled in parallel and scanning continues to this date boundary before stopping.
                           </div>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                          <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>最近几天</span>
+                          <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Day range</span>
                           <input
                             key={`fixed-up-days-back-${trackerConfig.fixed_up_days_back ?? FIXED_UP_MONITOR_DEFAULT_DAYS_BACK}`}
                             type="number"
@@ -6327,7 +6327,7 @@ export function BilibiliTool() {
                               fontSize: "0.8125rem",
                             }}
                           />
-                          <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>天内动态</span>
+                          <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>days of posts</span>
                         </div>
                       </div>
 
@@ -6355,7 +6355,7 @@ export function BilibiliTool() {
                             <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>{followStatusStage}</div>
                           </div>
                           <div style={{ textAlign: "right" }}>
-                            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>当前页</div>
+                            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Current page</div>
                             <div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--text-main)" }}>{followStatusPage || "-"}</div>
                           </div>
                         </div>
@@ -6363,8 +6363,8 @@ export function BilibiliTool() {
                           <div style={{ width: `${followStatusProgress}%`, height: "100%", background: "linear-gradient(90deg, #10B981, #00AEEC)" }} />
                         </div>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                          <span>已获取 {followStatusCount} 个关注</span>
-                          {followedUpsTask?.updated_at && <span>最近更新 {new Date(followedUpsTask.updated_at).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>}
+                          <span>Fetched {followStatusCount} follows</span>
+                          {followedUpsTask?.updated_at && <span>Last updated {new Date(followedUpsTask.updated_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>}
                         </div>
                       </div>
 
@@ -6410,10 +6410,10 @@ export function BilibiliTool() {
                       }}
                     >
                       {[
-                        { label: "Feed 分组", value: monitorCategoryCount, detail: "会进入情报流" },
-                        { label: "覆盖 UP", value: trackedUpIds.size, detail: "已被监视" },
-                        { label: "监控分组", value: selectedTrackedSmartGroups.length, detail: "自动分组输出" },
-                        { label: "固定UP", value: manualPoolMembers.length, detail: "手动指定监督" },
+                        { label: "Feed groups", value: monitorCategoryCount, detail: "Will enter the intel feed" },
+                        { label: "Creators covered", value: trackedUpIds.size, detail: "Being monitored" },
+                        { label: "Monitored groups", value: selectedTrackedSmartGroups.length, detail: "Auto-grouped output" },
+                        { label: "Pinned", value: manualPoolMembers.length, detail: "Manually pinned" },
                       ].map((metric) => (
                         <div
                           key={metric.label}
@@ -6436,9 +6436,9 @@ export function BilibiliTool() {
               </div>
 
               <ExpandableSection
-                title="情报 Feed 分组明细"
-                summary="这里看的是最终会怎么出现在情报 Feed 里。组别保持在上层，具体作者和样例标签放到展开后再看。"
-                badge={monitorCategoryCount > 0 ? `${monitorCategoryCount} 组` : "未配置"}
+                title="Intel Feed Group Details"
+                summary="This shows how things will finally appear in the intel Feed. Groups stay at the top level; specific authors and sample tags show after expanding."
+                badge={monitorCategoryCount > 0 ? `${monitorCategoryCount} groups` : "Not configured"}
                 accent="#10B981"
                 icon={<Filter size={16} />}
                 open={showFeedBreakdown}
@@ -6470,7 +6470,7 @@ export function BilibiliTool() {
                             {group.label}
                           </div>
                           <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px" }}>
-                            {group.members.length} 个 UP · 固定监督命中这个智能组后会在 Feed 单独成组
+                            {group.members.length} creators · pinned creators matching this smart group form their own Feed group
                           </div>
                         </div>
                         {group.sampleAuthors.length > 0 && (
@@ -6525,9 +6525,9 @@ export function BilibiliTool() {
                         }}
                       >
                         <div>
-                          <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "#078FBF" }}>固定监督 UP</div>
+                          <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "#078FBF" }}>Pinned creators</div>
                           <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px" }}>
-                            {manualPoolMembers.length} 个 UP · 手动指定长期监督
+                            {manualPoolMembers.length} creators · manually pinned for long-term monitoring
                           </div>
                         </div>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
@@ -6551,13 +6551,13 @@ export function BilibiliTool() {
                               }}
                             >
                               <span>{entry.up?.uname || entry.id}</span>
-                              <span style={{ color: "var(--text-muted)" }}>移除</span>
+                              <span style={{ color: "var(--text-muted)" }}>Remove</span>
                             </button>
                           ))}
                         </div>
                         {manualPoolMembers.length > 8 && (
                           <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                            其余 {manualPoolMembers.length - 8} 个 UP 也会一起作为固定监督输出。
+                            The remaining {manualPoolMembers.length - 8} creators are also output as pinned.
                           </div>
                         )}
                       </div>
@@ -6565,15 +6565,15 @@ export function BilibiliTool() {
                   </div>
                 ) : (
                   <div style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>
-                    还没有固定监督范围。先在上面的固定 UP 监督里加几个 UP，这里才会按命中的智能组拆出 Feed 分组。
+                    No pinned scope yet. Add a few creators in the pinned creators section above and Feed groups split out by matched smart group here.
                   </div>
                 )}
               </ExpandableSection>
 
               <ExpandableSection
-                title="具体 UP 与分组筛选"
-                summary="默认分组和智能分组先把关注列表收窄，再决定哪些具体 UP 进入固定监督。下面保留明细，但默认折叠。"
-                badge={followedUps.length > 0 ? `${filteredFollowedUps.length} 个结果` : "未加载"}
+                title="Creator and Group Filtering"
+                summary="Default groups and smart groups narrow the follow list first, then decide which creators get pinned. Details remain below, collapsed by default."
+                badge={followedUps.length > 0 ? `${filteredFollowedUps.length} results` : "Not loaded"}
                 accent="#00AEEC"
                 icon={<Users size={16} />}
                 open={showFollowedCatalog}
@@ -6585,7 +6585,7 @@ export function BilibiliTool() {
                       type="text"
                       value={followedUpSearch}
                       onChange={(e) => setFollowedUpSearch(e.target.value)}
-                      placeholder="搜关注的 UP 名、简介"
+                      placeholder="Search followed creators' names, bios"
                       style={{
                         width: "100%",
                         padding: "10px 12px",
@@ -6612,7 +6612,7 @@ export function BilibiliTool() {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      {followedUpsLoading ? "刷新中..." : "刷新关注"}
+                      {followedUpsLoading ? "Refreshing..." : "Refresh follows"}
                     </button>
                   </div>
 
@@ -6648,13 +6648,13 @@ export function BilibiliTool() {
                         }}
                       >
                         <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>默认分组筛选</div>
+                          <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>Default group filter</div>
                           <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                            当前：{selectedOriginalGroupLabel}
+                            Current: {selectedOriginalGroupLabel}
                           </div>
                         </div>
                         <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", color: "var(--text-muted)", flexShrink: 0 }}>
-                          <span style={{ fontSize: "0.75rem" }}>{showOriginalGroupFilter ? "收起" : "展开"}</span>
+                          <span style={{ fontSize: "0.75rem" }}>{showOriginalGroupFilter ? "Collapse" : "Expand"}</span>
                           {showOriginalGroupFilter ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                         </div>
                       </button>
@@ -6676,7 +6676,7 @@ export function BilibiliTool() {
                               cursor: "pointer",
                             }}
                           >
-                            全部默认分组 · {followedUps.length}
+                            All default groups · {followedUps.length}
                           </button>
                           {originalGroups.map((group) => {
                             const active = selectedOriginalGroup === group.tag_id;
@@ -6732,13 +6732,13 @@ export function BilibiliTool() {
                         }}
                       >
                         <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>智能分组筛选</div>
+                          <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>Smart group filter</div>
                           <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                            当前：{selectedSmartGroupLabel}
+                            Current: {selectedSmartGroupLabel}
                           </div>
                         </div>
                         <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", color: "var(--text-muted)", flexShrink: 0 }}>
-                          <span style={{ fontSize: "0.75rem" }}>{showSmartGroupFilter ? "收起" : "展开"}</span>
+                          <span style={{ fontSize: "0.75rem" }}>{showSmartGroupFilter ? "Collapse" : "Expand"}</span>
                           {showSmartGroupFilter ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                         </div>
                       </button>
@@ -6746,7 +6746,7 @@ export function BilibiliTool() {
                         <div style={{ padding: "0 14px 14px", display: "flex", flexWrap: "wrap", gap: "8px", borderTop: "1px solid var(--border-light)" }}>
                           {!smartGroupsReady ? (
                             <div style={{ paddingTop: "12px", fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                              先点上方“共享智能分组”，统一维护共享标签库和作者分组，再回来选智能组。
+                              Click "Shared smart grouping" above to maintain the shared tag library and author groups, then come back to pick a smart group.
                             </div>
                           ) : (
                             <>
@@ -6766,7 +6766,7 @@ export function BilibiliTool() {
                                   cursor: "pointer",
                                 }}
                               >
-                                全部智能组 · {followedUps.length}
+                                All smart groups · {followedUps.length}
                               </button>
                               {smartGroupOptions.map((group) => {
                                 const active = selectedFollowedGroup === group.value;
@@ -6814,11 +6814,11 @@ export function BilibiliTool() {
                     }}
                   >
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                      <span>关注 {followedUps.length} 个 UP</span>
-                      <span>默认筛选 {selectedOriginalGroupLabel}</span>
-                      <span>智能筛选 {selectedSmartGroupLabel}</span>
-                      <span>当前结果 {filteredFollowedUps.length} 个</span>
-                      <span>已启用 {activeFollowedFilterCount} 项筛选</span>
+                      <span>Following {followedUps.length} creators</span>
+                      <span>Default filter: {selectedOriginalGroupLabel}</span>
+                      <span>Smart filter: {selectedSmartGroupLabel}</span>
+                      <span>{filteredFollowedUps.length} current results</span>
+                      <span>{activeFollowedFilterCount} filters active</span>
                     </div>
                     {activeFollowedFilterCount > 0 && (
                       <button
@@ -6835,7 +6835,7 @@ export function BilibiliTool() {
                           cursor: "pointer",
                         }}
                       >
-                        清空筛选
+                        Clear filters
                       </button>
                     )}
                   </div>
@@ -6853,9 +6853,9 @@ export function BilibiliTool() {
                   >
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", alignItems: "center", justifyContent: "space-between" }}>
                       <div>
-                        <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>筛选结果</div>
+                        <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>Filter results</div>
                           <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
-                          结果列表现在可以单独展开或隐藏；需要重新读关注时，直接在这里刷新。卡片底部仍然支持把具体 UP 加进固定监督。
+                          The result list can be expanded or hidden independently; refresh here to re-read follows. Card footers still support pinning specific creators.
                           </div>
                       </div>
                       <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -6874,7 +6874,7 @@ export function BilibiliTool() {
                             cursor: followedUpsLoading ? "not-allowed" : "pointer",
                           }}
                         >
-                          {followedUpsLoading ? "刷新中..." : "刷新结果"}
+                          {followedUpsLoading ? "Refreshing..." : "Refresh results"}
                         </button>
                         <button
                           type="button"
@@ -6890,15 +6890,15 @@ export function BilibiliTool() {
                             cursor: "pointer",
                           }}
                         >
-                          {showFollowedResultCards ? "隐藏结果" : "展开结果"}
+                          {showFollowedResultCards ? "Hide results" : "Show results"}
                         </button>
                       </div>
                     </div>
 
 	                    <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", fontSize: "0.75rem", color: "var(--text-muted)" }}>
-	                      <span>命中 {filteredFollowedUps.length} 个 UP</span>
-	                      <span>分页管理，每页 {followedResultPageSize} 个</span>
-	                      <span>固定监督 {manualPoolMembers.length} 个</span>
+	                      <span>{filteredFollowedUps.length} creators matched</span>
+	                      <span>Paginated, {followedResultPageSize} per page</span>
+	                      <span>{manualPoolMembers.length} pinned</span>
 	                    </div>
 
 	                    {showFollowedResultCards && filteredFollowedUps.length > 0 && (
@@ -6906,17 +6906,17 @@ export function BilibiliTool() {
 	                        totalCount={filteredFollowedUps.length}
 	                        page={safeFollowedResultPage}
 	                        pageSize={followedResultPageSize}
-	                        itemLabel="个 UP"
+	                        itemLabel="creators"
 	                        pageSizeOptions={PAGINATION_SIZE_OPTIONS}
 	                        onPageChange={setFollowedResultPage}
 	                        onPageSizeChange={(nextPageSize) => setFollowedResultPageSize(nextPageSize === 50 ? 50 : 20)}
-	                        emptyText="当前没有匹配的 UP"
+	                        emptyText="No matching creators"
 	                      />
 	                    )}
 
                     {showFollowedResultCards && (
                       followedUpsLoading && followedUps.length === 0 ? (
-                        <div style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>正在读取关注列表...</div>
+                        <div style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>Reading follow list...</div>
                       ) : filteredFollowedUps.length > 0 ? (
                         <>
                           <div
@@ -6928,8 +6928,8 @@ export function BilibiliTool() {
                           >
                             {pagedFollowedUps.map((up) => {
                               const primarySmartGroup = getUpSmartGroups(up)[0] || "";
-                              const meta = resolveSmartGroupMeta(primarySmartGroup || "other", primarySmartGroup ? getSmartGroupLabel(primarySmartGroup) : "其他");
-                              const smartGroupLabel = primarySmartGroup ? meta.label : "未分配智能组";
+                              const meta = resolveSmartGroupMeta(primarySmartGroup || "other", primarySmartGroup ? getSmartGroupLabel(primarySmartGroup) : "Other");
+                              const smartGroupLabel = primarySmartGroup ? meta.label : "No smart group assigned";
                               const originalGroupNames = getUpOriginalGroupNames(up);
                               const manualExtra = manualPoolIdSet.has(up.mid);
                               return (
@@ -6969,7 +6969,7 @@ export function BilibiliTool() {
                                         {up.uname}
                                       </div>
                                       <div style={{ fontSize: "0.75rem", color: meta.accent, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                                        {(originalGroupNames[0] || "未分组")} · {smartGroupLabel}
+                                        {(originalGroupNames[0] || "Ungrouped")} · {smartGroupLabel}
                                       </div>
                                     </div>
                                   </div>
@@ -7012,7 +7012,7 @@ export function BilibiliTool() {
                                       cursor: "pointer",
                                     }}
                                   >
-                                    {manualExtra ? "移出固定监督" : "加入固定监督"}
+                                    {manualExtra ? "Unpin" : "Pin"}
                                   </button>
                                 </div>
                               );
@@ -7022,16 +7022,16 @@ export function BilibiliTool() {
                             totalCount={filteredFollowedUps.length}
                             page={safeFollowedResultPage}
                             pageSize={followedResultPageSize}
-                            itemLabel="个 UP"
+                            itemLabel="creators"
                             pageSizeOptions={PAGINATION_SIZE_OPTIONS}
                             onPageChange={setFollowedResultPage}
                             onPageSizeChange={(nextPageSize) => setFollowedResultPageSize(nextPageSize === 50 ? 50 : 20)}
-                            emptyText="当前没有匹配的 UP"
+                            emptyText="No matching creators"
                           />
                         </>
                       ) : (
                         <div style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>
-                          {followedUps.length > 0 ? "这个筛选里没有匹配的 UP。" : "连接 Cookie 后会自动读取你的关注列表。"}
+                          {followedUps.length > 0 ? "No creators match this filter." : "Your follow list loads automatically after connecting the cookie."}
                         </div>
                       )
                     )}
@@ -7040,9 +7040,9 @@ export function BilibiliTool() {
               </ExpandableSection>
 
               <ExpandableSection
-                title="智能分组手动管理"
-                summary="这里改成全部UP主分组编辑器。点一个 UP 后，会在卡片下方一次性编辑多个智能组，也能补充多个默认分组。"
-                badge={smartGroupsReady && managedSmartGroupOption ? `${manualGroupingUps.length} 个可编辑UP` : "等待智能分组"}
+                title="Manual Smart Group Management"
+                summary="An all-creator group editor. Click a creator to edit multiple smart groups at once below the card, and add multiple default groups too."
+                badge={smartGroupsReady && managedSmartGroupOption ? `${manualGroupingUps.length} editable creators` : "Waiting for smart grouping"}
                 accent="#FB7299"
                 icon={<FolderHeart size={16} />}
                 open={showSmartGroupManagementDetail}
@@ -7050,7 +7050,7 @@ export function BilibiliTool() {
               >
                 {!smartGroupsReady || !managedSmartGroupOption ? (
                   <div style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>
-                    先完成一次“共享智能分组”，这里才会出现可管理的智能组成员。
+                    Complete a "shared smart grouping" run first; manageable group members appear here afterwards.
                   </div>
                 ) : (
                   <>
@@ -7065,8 +7065,8 @@ export function BilibiliTool() {
                         lineHeight: 1.7,
                       }}
                     >
-                      这里不再只是“往一个组里补成员”。你可以从全部UP主、当前筛选结果，或某个智能组内挑一个 UP，
-                      然后直接在卡片下方勾选它要加入的多个智能组；默认分组也支持手动补充。原生默认分组会保留，只能额外加组。
+                      This is no longer just "adding members to one group". Pick a creator from all creators, the current filter results, or a smart group,
+                      then check the multiple smart groups it should join right under the card; default groups can be added manually too. Native default groups are preserved — you can only add groups.
                     </div>
 
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
@@ -7097,17 +7097,17 @@ export function BilibiliTool() {
                     </div>
 
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                      <span>当前聚焦 {managedSmartGroupOption.label}</span>
-                      <span>组内 {managedSmartGroupMembers.length} 个 UP</span>
-                      <span>全部UP主 {followedUps.length} 个</span>
-                      <span>当前筛选 {filteredFollowedUps.length} 个</span>
-                      <span>支持一次编辑多个智能组和默认分组</span>
+                      <span>Focused: {managedSmartGroupOption.label}</span>
+                      <span>{managedSmartGroupMembers.length} creators in group</span>
+                      <span>{followedUps.length} creators total</span>
+                      <span>{filteredFollowedUps.length} in current filter</span>
+                      <span>Edit multiple smart and default groups at once</span>
                     </div>
 
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                       {[
-                        { value: "all" as const, label: `全部UP主 · ${followedUps.length}` },
-                        { value: "filtered" as const, label: `当前筛选 · ${filteredFollowedUps.length}` },
+                        { value: "all" as const, label: `All creators · ${followedUps.length}` },
+                        { value: "filtered" as const, label: `Current filter · ${filteredFollowedUps.length}` },
                         { value: "managed" as const, label: `${managedSmartGroupOption.label} · ${managedSmartGroupMembers.length}` },
                       ].map((scope) => {
                         const active = manualGroupingScope === scope.value;
@@ -7149,13 +7149,13 @@ export function BilibiliTool() {
                         <div>
                           <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>
                             {manualGroupingScope === "all"
-                              ? "全部UP主"
+                              ? "All creators"
                               : manualGroupingScope === "filtered"
-                                ? "当前筛选结果"
-                                : `${managedSmartGroupOption.label} 组内UP`}
+                                ? "Current filter results"
+                                : `Creators in ${managedSmartGroupOption.label}`}
                           </div>
                           <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px" }}>
-                            点一个 UP 后，分组选项会直接在这张卡片下面展开，不再固定在右侧常驻显示。
+                            Click a creator and the group options expand right under that card, instead of being fixed on the right.
                           </div>
                         </div>
                         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -7174,7 +7174,7 @@ export function BilibiliTool() {
                               cursor: followedUpsLoading ? "not-allowed" : "pointer",
                             }}
                           >
-                            {followedUpsLoading ? "刷新中..." : "刷新UP列表"}
+                            {followedUpsLoading ? "Refreshing..." : "Refresh creator list"}
                           </button>
                           <button
                             type="button"
@@ -7190,7 +7190,7 @@ export function BilibiliTool() {
                               cursor: "pointer",
                             }}
                           >
-                            {showManualGroupingUpList ? "隐藏UP列表" : "展开UP列表"}
+                            {showManualGroupingUpList ? "Hide creator list" : "Show creator list"}
                           </button>
                         </div>
                       </div>
@@ -7199,7 +7199,7 @@ export function BilibiliTool() {
                         type="text"
                         value={manualGroupingSearch}
                         onChange={(e) => setManualGroupingSearch(e.target.value)}
-                        placeholder="搜索要编辑分组的 UP 名 / 简介"
+                        placeholder="Search creator names / bios to edit groups"
                         style={{
                           width: "100%",
                           padding: "10px 12px",
@@ -7212,10 +7212,10 @@ export function BilibiliTool() {
                       />
 
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                        <span>当前范围 {manualGroupingUps.length} 个 UP</span>
-                        <span>聚焦智能组 {managedSmartGroupOption.label}</span>
-                        <span>搜索词 {manualGroupingSearch.trim() || "无"}</span>
-                        <span>桌面端每行约 3 到 4 个 UP</span>
+                        <span>{manualGroupingUps.length} creators in scope</span>
+                        <span>Focused smart group: {managedSmartGroupOption.label}</span>
+                        <span>Search: {manualGroupingSearch.trim() || "none"}</span>
+                        <span>About 3-4 creators per row on desktop</span>
                       </div>
 
                       {showManualGroupingUpList && manualGroupingUps.length > 0 && (
@@ -7223,11 +7223,11 @@ export function BilibiliTool() {
                           totalCount={manualGroupingUps.length}
                           page={safeManualGroupingPage}
                           pageSize={manualGroupingPageSize}
-                          itemLabel="个 UP"
+                          itemLabel="creators"
                           pageSizeOptions={PAGINATION_SIZE_OPTIONS}
                           onPageChange={setManualGroupingPage}
                           onPageSizeChange={(nextPageSize) => setManualGroupingPageSize(nextPageSize === 50 ? 50 : 20)}
-                          emptyText="这个范围里没有可编辑的 UP"
+                          emptyText="No editable creators in this scope"
                         />
                       )}
 
@@ -7303,7 +7303,7 @@ export function BilibiliTool() {
                                             flexShrink: 0,
                                           }}
                                         >
-                                          {selected ? "展开中" : "编辑分组"}
+                                          {selected ? "Expanded" : "Edit groups"}
                                         </span>
                                       </div>
 
@@ -7354,10 +7354,10 @@ export function BilibiliTool() {
                                       <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", alignItems: "flex-start" }}>
                                         <div>
                                           <div style={{ fontSize: "0.875rem", fontWeight: 800, color: managedSmartGroupMeta.accent }}>
-                                            编辑 {up.uname}
+                                            Edit {up.uname}
                                           </div>
                                           <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
-                                            勾选这个 UP 要加入的多个智能组；默认分组是在原生标签基础上做补充，不会覆盖 B 站原始分组。
+                                            Check the smart groups this creator should join; default groups supplement the native tags and never overwrite original Bilibili groups.
                                           </div>
                                         </div>
                                         <button
@@ -7375,7 +7375,7 @@ export function BilibiliTool() {
                                             flexShrink: 0,
                                           }}
                                         >
-                                          收起
+                                          Collapse
                                         </button>
                                       </div>
 
@@ -7394,7 +7394,7 @@ export function BilibiliTool() {
                                                 fontWeight: 700,
                                               }}
                                             >
-                                              智能组 · {getSmartGroupLabel(groupValue)}
+                                              Smart group · {getSmartGroupLabel(groupValue)}
                                             </span>
                                           );
                                         })}
@@ -7415,14 +7415,14 @@ export function BilibiliTool() {
                                                 fontWeight: 700,
                                               }}
                                             >
-                                              默认组 · {label}
+                                              Default group · {label}
                                             </span>
                                           );
                                         })}
                                       </div>
 
                                       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                                        <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: "var(--text-main)" }}>智能分组</div>
+                                        <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: "var(--text-main)" }}>Smart groups</div>
                                         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                                           {smartGroupOptions.map((group) => {
                                             const groupSelected = editingSmartGroupValues.includes(group.value);
@@ -7452,9 +7452,9 @@ export function BilibiliTool() {
                                       </div>
 
                                       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                                        <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: "var(--text-main)" }}>默认分组补充</div>
+                                        <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: "var(--text-main)" }}>Additional default groups</div>
                                         <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                                          带“原生”的默认分组来自 B 站关注分组，只读保留。你可以额外勾选更多默认分组，让这个 UP 同时出现在多个默认筛选里。
+                                          Default groups marked "native" come from Bilibili follow groups and are read-only. Check more default groups so this creator appears in multiple default filters.
                                         </div>
                                         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                                           {originalGroups.map((group) => {
@@ -7479,7 +7479,7 @@ export function BilibiliTool() {
                                                   opacity: rawMember ? 0.92 : 1,
                                                 }}
                                               >
-                                                {group.name}{rawMember ? " · 原生" : groupSelected ? " · 已补充" : ""}
+                                                {group.name}{rawMember ? " · native" : groupSelected ? " · added" : ""}
                                               </button>
                                             );
                                           })}
@@ -7501,7 +7501,7 @@ export function BilibiliTool() {
                                             cursor: "pointer",
                                           }}
                                         >
-                                          恢复当前保存状态
+                                          Restore saved state
                                         </button>
                                         <button
                                           type="button"
@@ -7520,7 +7520,7 @@ export function BilibiliTool() {
                                             cursor: savingGroupingEditor || editingSmartGroupValues.length === 0 ? "not-allowed" : "pointer",
                                           }}
                                         >
-                                          {savingGroupingEditor ? "保存中..." : "保存分组设置"}
+                                          {savingGroupingEditor ? "Saving..." : "Save group settings"}
                                         </button>
                                       </div>
                                       </div>
@@ -7533,21 +7533,21 @@ export function BilibiliTool() {
                               totalCount={manualGroupingUps.length}
                               page={safeManualGroupingPage}
                               pageSize={manualGroupingPageSize}
-                              itemLabel="个 UP"
+                              itemLabel="creators"
                               pageSizeOptions={PAGINATION_SIZE_OPTIONS}
                               onPageChange={setManualGroupingPage}
                               onPageSizeChange={(nextPageSize) => setManualGroupingPageSize(nextPageSize === 50 ? 50 : 20)}
-                              emptyText="这个范围里没有可编辑的 UP"
+                              emptyText="No editable creators in this scope"
                             />
                           </>
                         ) : (
                           <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                            这个范围里没有可编辑的 UP。可以切到“全部UP主”，或者修改搜索词。
+                            No editable creators in this scope. Switch to "All creators" or change the search term.
                           </div>
                         )
                       ) : (
                         <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                          UP 列表已隐藏。需要时再展开。
+                          Creator list hidden. Expand when needed.
                         </div>
                       )}
                     </div>
@@ -7556,13 +7556,13 @@ export function BilibiliTool() {
               </ExpandableSection>
 
               <SharedSignalMappingPanel
-                title="共享分组规则"
+                title="Shared Grouping Rules"
                 entries={trackerConfig.shared_signal_entries}
                 groupOptions={smartGroupOptions}
                 saving={savingSignalMappings}
                 updatedAt={trackerConfig.shared_creator_grouping.updated_at}
                 onSave={handleSaveSharedSignalMappings}
-                description="原始标签 -> 共享规则 -> 共享组 -> 作者入组。比如把“Obsidian”“知识库”“双链笔记”并到同一个共享组，也可以让一个标签同时挂多个共享组。保存后，重新执行一次“仅整理博主 / UP”或“共享智能分组”，作者会按这套规则重排。"
+                description="Raw tag -> shared rule -> shared group -> author joins group. E.g. merge Obsidian, knowledge-base, and linked-notes tags into one shared group, or attach one tag to multiple shared groups. After saving, re-run Organize creators only or Shared smart grouping and authors are re-sorted by these rules."
               />
             </div>
           )}
@@ -7570,15 +7570,15 @@ export function BilibiliTool() {
           {panelTab === "dynamics" && (
             <div style={{ overflow: "auto", display: "flex", flexDirection: "column", gap: "16px" }}>
               <ExpandableSection
-                title="动态搜索结果"
-                summary="这里集中展示刚才的全关注流预览、主动爬取和分组抓取结果。结果区可以单独收起，不影响上面的搜索与筛选。"
-                badge={hasFetchedDynamics ? `${displayedDynamics.length} 条` : "未获取"}
+                title="Post Search Results"
+                summary="Shows the recent full-feed previews, manual crawls, and group crawl results. The results area collapses independently without affecting the search and filters above."
+                badge={hasFetchedDynamics ? `${displayedDynamics.length} posts` : "Not fetched"}
                 accent="#00AEEC"
                 icon={<Tv size={16} />}
                 open={showDynamicResultList}
                 onToggle={() => setShowDynamicResultList((value) => !value)}
               >
-                {renderResultList("点击上方「预览当前词 / 标签」开始")}
+                {renderResultList("Click \"Preview current words / tags\" above to start")}
               </ExpandableSection>
             </div>
           )}

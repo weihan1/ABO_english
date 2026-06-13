@@ -48,7 +48,7 @@ export default function ReadingStats({ streak, topTags, thisWeek }: ReadingStats
               fontFamily: "'M PLUS Rounded 1c', sans-serif",
             }}
           >
-            {streak} 天
+            {streak} days
           </div>
           <div
             style={{
@@ -56,7 +56,7 @@ export default function ReadingStats({ streak, topTags, thisWeek }: ReadingStats
               color: "var(--text-muted)",
             }}
           >
-            连续阅读 streak
+            Reading streak
           </div>
         </div>
       </div>
@@ -75,7 +75,7 @@ export default function ReadingStats({ streak, topTags, thisWeek }: ReadingStats
           }}
         >
           <Tag style={{ width: "16px", height: "16px", color: "var(--color-primary)" }} />
-          热门标签
+          Top tags
         </div>
 
         {topTags.length === 0 ? (
@@ -87,7 +87,7 @@ export default function ReadingStats({ streak, topTags, thisWeek }: ReadingStats
               fontSize: "0.8125rem",
             }}
           >
-            暂无标签数据
+            No tag data yet
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -179,7 +179,7 @@ export default function ReadingStats({ streak, topTags, thisWeek }: ReadingStats
               color: "var(--text-main)",
             }}
           >
-            本周阅读 {thisWeek} 张卡片
+            Read {thisWeek} cards this week
           </div>
           <div
             style={{
@@ -188,7 +188,7 @@ export default function ReadingStats({ streak, topTags, thisWeek }: ReadingStats
               marginTop: "2px",
             }}
           >
-            {thisWeek > 0 ? "继续保持！" : "开始阅读吧"}
+            {thisWeek > 0 ? "Keep it up!" : "Start reading"}
           </div>
         </div>
       </div>

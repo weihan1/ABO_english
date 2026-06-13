@@ -35,10 +35,10 @@ interface ModuleCardProps {
 }
 
 const STATUS_STYLES: Record<ModuleStatus, { color: string; bg: string; border: string; label: string }> = {
-  active: { color: "#22c55e", bg: "rgba(34,197,94,0.1)", border: "rgba(34,197,94,0.24)", label: "运行中" },
-  paused: { color: "#f59e0b", bg: "rgba(245,158,11,0.1)", border: "rgba(245,158,11,0.24)", label: "已暂停" },
-  error: { color: "#ef4444", bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.24)", label: "需要处理" },
-  unconfigured: { color: "var(--text-muted)", bg: "var(--bg-hover)", border: "var(--border-light)", label: "待设置" },
+  active: { color: "#22c55e", bg: "rgba(34,197,94,0.1)", border: "rgba(34,197,94,0.24)", label: "Running" },
+  paused: { color: "#f59e0b", bg: "rgba(245,158,11,0.1)", border: "rgba(245,158,11,0.24)", label: "Paused" },
+  error: { color: "#ef4444", bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.24)", label: "Needs attention" },
+  unconfigured: { color: "var(--text-muted)", bg: "var(--bg-hover)", border: "var(--border-light)", label: "Needs setup" },
 };
 
 const MODULE_ICONS: Record<string, FC<{ style?: CSSProperties }>> = {
@@ -90,10 +90,10 @@ export function ModuleCard({
   const focusTokens = getModuleFocusTokens(module).slice(0, 3);
   const isUnconfigured = module.status === "unconfigured";
   const primaryActionLabel = isUnconfigured
-    ? "进入工具"
+    ? "Open tool"
     : module.status === "active"
-      ? "暂停"
-      : "启动";
+      ? "Pause"
+      : "Start";
 
   return (
     <div
@@ -193,7 +193,7 @@ export function ModuleCard({
               setShowMenu((value) => !value);
             }}
             style={iconButtonStyle}
-            aria-label="更多操作"
+            aria-label="More actions"
           >
             <MoreVertical style={{ width: "16px", height: "16px", color: "var(--text-muted)" }} />
           </button>
@@ -214,17 +214,17 @@ export function ModuleCard({
             >
               {[
                 {
-                  label: "查看概览",
+                  label: "View overview",
                   icon: <FileText style={{ width: "14px", height: "14px" }} />,
                   action: onOpenOverview,
                 },
                 {
-                  label: "立即运行",
+                  label: "Run now",
                   icon: <RefreshCw style={{ width: "14px", height: "14px" }} />,
                   action: onRun,
                 },
                 {
-                  label: "进入工具",
+                  label: "Open tool",
                   icon: <ExternalLink style={{ width: "14px", height: "14px" }} />,
                   action: onOpenTool,
                 },
@@ -261,7 +261,7 @@ export function ModuleCard({
         }}
       >
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginBottom: "3px" }}>监控范围</div>
+          <div style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginBottom: "3px" }}>Monitor scope</div>
           <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-main)" }}>{getModuleFocusSummary(module)}</div>
         </div>
         {focusTokens.length > 0 && (
@@ -287,10 +287,10 @@ export function ModuleCard({
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "8px", marginBottom: "14px" }}>
         {[
-          { label: "待看", value: usage.unreadCount, tone: "#f59e0b" },
-          { label: "已看", value: usage.readCount, tone: "var(--text-main)" },
-          { label: "近7天浏览", value: usage.viewCount7d, tone: "#2563eb" },
-          { label: "本周新增", value: module.stats.thisWeek, tone: "#7c3aed" },
+          { label: "Pending", value: usage.unreadCount, tone: "#f59e0b" },
+          { label: "Read", value: usage.readCount, tone: "var(--text-main)" },
+          { label: "Views (7d)", value: usage.viewCount7d, tone: "#2563eb" },
+          { label: "New this week", value: module.stats.thisWeek, tone: "#7c3aed" },
         ].map((item) => (
           <div
             key={item.label}
@@ -323,7 +323,7 @@ export function ModuleCard({
             background: "rgba(255,255,255,0.02)",
           }}
         >
-          <div style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginBottom: "4px" }}>运行节奏</div>
+          <div style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginBottom: "4px" }}>Run cadence</div>
           <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-main)" }}>{formatScheduleLabel(module.schedule)}</div>
         </div>
         <div
@@ -334,7 +334,7 @@ export function ModuleCard({
             background: "rgba(255,255,255,0.02)",
           }}
         >
-          <div style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginBottom: "4px" }}>最近内容</div>
+          <div style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginBottom: "4px" }}>Recent content</div>
           <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-main)" }}>{formatRelativeDate(usage.lastCardAt)}</div>
         </div>
       </div>
@@ -385,7 +385,7 @@ export function ModuleCard({
           style={actionButtonStyle}
         >
           <FileText style={{ width: "15px", height: "15px" }} />
-          查看记录
+          View records
         </button>
         <button
           onClick={(event) => {
@@ -393,8 +393,8 @@ export function ModuleCard({
             onOpenTool();
           }}
           style={{ ...actionButtonStyle, paddingInline: "10px" }}
-          title="进入工具"
-          aria-label="进入工具"
+          title="Open tool"
+          aria-label="Open tool"
         >
           <ExternalLink style={{ width: "15px", height: "15px" }} />
         </button>

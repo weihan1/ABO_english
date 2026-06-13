@@ -178,7 +178,7 @@ export function XiaohongshuNoteCard({
           }}
         >
           <ExternalLink style={{ width: "12px", height: "12px" }} />
-          详情
+          Details
         </button>
       </div>
 
@@ -219,7 +219,7 @@ export function XiaohongshuNoteCard({
                 type="button"
                 key={`${note.id}-${index}`}
                 onClick={(event) => handleOpenImage(event, imageUrl)}
-                aria-label={`打开图片 ${index + 1}`}
+                aria-label={`Open image ${index + 1}`}
                 style={{
                   display: "block",
                   padding: 0,
@@ -254,7 +254,7 @@ export function XiaohongshuNoteCard({
               fontWeight: 700,
             }}
           >
-            暂无封面图
+            No cover image
           </div>
         ) : null}
       </div>
@@ -281,7 +281,7 @@ export function XiaohongshuNoteCard({
                 }}
               >
                 <MessageCircle style={{ width: "14px", height: "14px" }} />
-                评论预览
+                Comment preview
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 {note.comments_preview.slice(0, 3).map((comment) => (
@@ -298,7 +298,7 @@ export function XiaohongshuNoteCard({
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", gap: "8px", marginBottom: "4px" }}>
                       <span style={{ fontWeight: 600, color: "var(--color-primary)" }}>{comment.author}</span>
-                      <span style={{ color: "var(--text-muted)" }}>赞 {comment.likes}</span>
+                      <span style={{ color: "var(--text-muted)" }}>Likes {comment.likes}</span>
                     </div>
                     {comment.content}
                   </div>
@@ -329,12 +329,12 @@ export function XiaohongshuNoteCard({
           }}
         >
           {isExpanded ? <ChevronUp style={{ width: "14px", height: "14px" }} /> : <ChevronDown style={{ width: "14px", height: "14px" }} />}
-          {isExpanded ? "收起" : "展开"}
+          {isExpanded ? "Collapse" : "Expand"}
         </button>
       ) : null}
 
       <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-        <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>作者：{note.author}</span>
+        <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>Author: {note.author}</span>
         {addToMonitorAction ? (
           <button
             type="button"
@@ -355,8 +355,8 @@ export function XiaohongshuNoteCard({
             }}
           >
             {addToMonitorAction.pending
-              ? (addToMonitorAction.pendingLabel || "处理中...")
-              : (addToMonitorAction.label || "加入特定关注")}
+              ? (addToMonitorAction.pendingLabel || "Processing...")
+              : (addToMonitorAction.label || "Add targeted follow")}
           </button>
         ) : null}
       </div>
@@ -366,8 +366,8 @@ export function XiaohongshuNoteCard({
           <Heart style={{ width: "14px", height: "14px" }} />
           {note.likes.toLocaleString()}
         </span>
-        <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>收藏：{note.collects.toLocaleString()}</span>
-        <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>评论：{note.comments_count.toLocaleString()}</span>
+        <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>Saves: {note.collects.toLocaleString()}</span>
+        <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>Comments: {note.comments_count.toLocaleString()}</span>
         {note.published_at ? <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>{new Date(note.published_at).toLocaleDateString("zh-CN")}</span> : null}
         {previewImages.length > 0 ? (
           <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.8125rem", color: "var(--text-muted)" }}>
@@ -378,7 +378,7 @@ export function XiaohongshuNoteCard({
         {note.video_url ? (
           <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.8125rem", color: "var(--text-muted)" }}>
             <PlayCircle style={{ width: "14px", height: "14px" }} />
-            视频
+            Video
           </span>
         ) : null}
       </div>
@@ -409,7 +409,7 @@ export function XiaohongshuNoteCard({
             }}
           >
             {primaryAction.icon}
-            {primaryAction.pending ? (primaryAction.pendingLabel || "处理中...") : primaryAction.label}
+            {primaryAction.pending ? (primaryAction.pendingLabel || "Processing...") : primaryAction.label}
           </button>
         </div>
       ) : null}

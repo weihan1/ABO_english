@@ -84,15 +84,15 @@ type Lens = "rhythm" | "themes" | "papers";
 type RhythmMode = "combined" | "interaction" | "feed";
 
 const LENS_OPTIONS: Array<{ id: Lens; label: string; icon: typeof Clock3 }> = [
-  { id: "rhythm", label: "节奏", icon: Clock3 },
-  { id: "themes", label: "主题", icon: Sparkles },
-  { id: "papers", label: "论文", icon: BookOpenText },
+  { id: "rhythm", label: "Rhythm", icon: Clock3 },
+  { id: "themes", label: "Themes", icon: Sparkles },
+  { id: "papers", label: "Papers", icon: BookOpenText },
 ];
 
 const RHYTHM_MODE_LABELS: Record<RhythmMode, string> = {
-  combined: "综合",
-  interaction: "你的动作",
-  feed: "情报流入",
+  combined: "Combined",
+  interaction: "Your actions",
+  feed: "Intel inflow",
 };
 
 const PALETTE = ["#2F7F73", "#E16A54", "#C89A2A", "#4D8CBF", "#A45D78", "#567D46"];
@@ -104,7 +104,7 @@ function formatShare(value: number) {
 function deltaLabel(delta: number) {
   if (delta > 0) return `+${delta}`;
   if (delta < 0) return `${delta}`;
-  return "持平";
+  return "Flat";
 }
 
 function isPeakHour(hour: number, peakWindow: PeakWindow) {
@@ -194,7 +194,7 @@ function renderBucketList(
               }}
             >
               <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-                {bucket.count} 条
+                {bucket.count}
               </span>
               <span
                 style={{
@@ -302,10 +302,10 @@ export default function IntelligenceRhythm({ data }: { data: IntelligenceRhythmD
         : "#2F7F73";
 
   const topStats = [
-    { label: "最近情报", value: `${data.recentFeedCount}` },
-    { label: "记录互动", value: `${data.recentInteractionCount}` },
-    { label: "活跃天数", value: `${data.activeDays}` },
-    { label: "高峰时段", value: data.peakWindow.label },
+    { label: "Recent intel", value: `${data.recentFeedCount}` },
+    { label: "Interactions", value: `${data.recentInteractionCount}` },
+    { label: "Active days", value: `${data.activeDays}` },
+    { label: "Peak window", value: data.peakWindow.label },
   ];
 
   return (
@@ -347,7 +347,7 @@ export default function IntelligenceRhythm({ data }: { data: IntelligenceRhythmD
               }}
             >
               <RadioTower style={{ width: "14px", height: "14px" }} />
-              最近 {data.windowDays} 天情报镜像
+              Intel mirror of the last {data.windowDays} days
             </div>
             <div
               style={{
@@ -383,7 +383,7 @@ export default function IntelligenceRhythm({ data }: { data: IntelligenceRhythmD
               {data.cadenceLabel}
             </div>
             <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-              数据截至 {data.latestSignalDate}
+              Data through {data.latestSignalDate}
             </div>
           </div>
         </div>
@@ -491,11 +491,11 @@ export default function IntelligenceRhythm({ data }: { data: IntelligenceRhythmD
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <Activity style={{ width: "16px", height: "16px", color: rhythmColor }} />
                     <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-main)" }}>
-                      24 小时时段分布
+                      24-hour distribution
                     </span>
                   </div>
                   <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                    高峰 {data.peakWindow.label}
+                    Peak {data.peakWindow.label}
                   </span>
                 </div>
 
@@ -565,7 +565,7 @@ export default function IntelligenceRhythm({ data }: { data: IntelligenceRhythmD
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
                   <Clock3 style={{ width: "16px", height: "16px", color: rhythmColor }} />
                   <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-main)" }}>
-                    一周分布
+                    Weekly distribution
                   </span>
                 </div>
 
@@ -615,28 +615,28 @@ export default function IntelligenceRhythm({ data }: { data: IntelligenceRhythmD
             <>
               <div>
                 <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-main)", marginBottom: "10px" }}>
-                  模块热度
+                  Module activity
                 </div>
-                {renderBucketList(data.feedMix, "最近窗口里还没有形成稳定的来源结构。", true)}
+                {renderBucketList(data.feedMix, "No stable source structure has formed in the recent window yet.", true)}
               </div>
 
               <div>
                 <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-main)", marginBottom: "10px" }}>
-                  智能分组 / 关键词回声
+                  Smart groups / keyword echoes
                 </div>
                 {renderBucketList(
                   data.themeMix,
-                  "还没有抓到足够的分组或关键词信号。等你继续看 Feed，它会慢慢长出生活切面。"
+                  "Not enough group or keyword signals captured yet. As you keep using the Feed, life facets will gradually emerge."
                 )}
               </div>
 
               <div style={{ ...insightSurfaceStyle(), padding: "16px" }}>
                 <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-main)", marginBottom: "12px" }}>
-                  反馈偏向
+                  Feedback bias
                 </div>
                 {data.preferences.length === 0 ? (
                   <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.7 }}>
-                    还没有稳定的偏好反馈。多给卡片一些 like / save / dislike，画像才会更贴近你最近的兴趣波动。
+                    No stable preference feedback yet. Give cards more like / save / dislike and the profile will better track your recent interest shifts.
                   </div>
                 ) : (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
@@ -655,7 +655,7 @@ export default function IntelligenceRhythm({ data }: { data: IntelligenceRhythmD
                           {preference.keyword}
                         </div>
                         <div style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginTop: "3px" }}>
-                          score {preference.score.toFixed(2)} · {preference.count} 次
+                          score {preference.score.toFixed(2)} · {preference.count}x
                         </div>
                       </div>
                     ))}
@@ -669,17 +669,17 @@ export default function IntelligenceRhythm({ data }: { data: IntelligenceRhythmD
             <>
               <div>
                 <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-main)", marginBottom: "10px" }}>
-                  最近论文类别
+                  Recent paper categories
                 </div>
                 {renderBucketList(
                   data.paperMix,
-                  "最近窗口里还没有形成明显的论文类别重心。"
+                  "No clear paper-category focus has formed in the recent window yet."
                 )}
               </div>
 
               <div style={{ ...insightSurfaceStyle(), padding: "16px" }}>
                 <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-main)", marginBottom: "12px" }}>
-                  论文反馈提示
+                  Paper feedback hint
                 </div>
                 <div style={{ display: "grid", gap: "10px" }}>
                   {data.paperMix.slice(0, 3).map((bucket, index) => (
@@ -696,7 +696,7 @@ export default function IntelligenceRhythm({ data }: { data: IntelligenceRhythmD
                         {bucket.label}
                       </div>
                       <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.7 }}>
-                        最近占比 {formatShare(bucket.share)}，和上一个窗口相比 {deltaLabel(bucket.delta)}。
+                        Recent share {formatShare(bucket.share)}, vs. the previous window {deltaLabel(bucket.delta)}.
                       </div>
                     </div>
                   ))}
@@ -711,13 +711,13 @@ export default function IntelligenceRhythm({ data }: { data: IntelligenceRhythmD
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
               <Lightbulb style={{ width: "16px", height: "16px", color: "#C89A2A" }} />
               <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-main)" }}>
-                基本建议
+                Basic suggestions
               </span>
             </div>
 
             {data.suggestions.length === 0 ? (
               <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.7 }}>
-                现在的数据量还不够多，先继续使用几天，它会更像真正的生活镜像。
+                There isn't enough data yet — keep using it for a few days and it will become a truer mirror of your life.
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -747,13 +747,13 @@ export default function IntelligenceRhythm({ data }: { data: IntelligenceRhythmD
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
               <Sparkles style={{ width: "16px", height: "16px", color: "#2F7F73" }} />
               <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-main)" }}>
-                最近样本
+                Recent samples
               </span>
             </div>
 
             {data.highlights.length === 0 ? (
               <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.7 }}>
-                这段时间还没有足够的新样本。
+                Not enough new samples in this period yet.
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>

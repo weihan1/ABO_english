@@ -36,17 +36,17 @@ export function normalizeDateValue(value: number | string | null | undefined): D
 
 export function formatRelativeDate(value: number | string | null | undefined): string {
   const date = normalizeDateValue(value);
-  if (!date) return "暂无";
+  if (!date) return "None";
 
   const diff = Date.now() - date.getTime();
   const minute = 60 * 1000;
   const hour = 60 * minute;
   const day = 24 * hour;
 
-  if (diff < minute) return "刚刚";
-  if (diff < hour) return `${Math.max(1, Math.floor(diff / minute))} 分钟前`;
-  if (diff < day) return `${Math.max(1, Math.floor(diff / hour))} 小时前`;
-  if (diff < 7 * day) return `${Math.max(1, Math.floor(diff / day))} 天前`;
+  if (diff < minute) return "just now";
+  if (diff < hour) return `${Math.max(1, Math.floor(diff / minute))}m ago`;
+  if (diff < day) return `${Math.max(1, Math.floor(diff / hour))}h ago`;
+  if (diff < 7 * day) return `${Math.max(1, Math.floor(diff / day))}d ago`;
 
   return date.toLocaleDateString("zh-CN", {
     month: "2-digit",
@@ -56,7 +56,7 @@ export function formatRelativeDate(value: number | string | null | undefined): s
 
 export function formatDateTime(value: number | string | null | undefined): string {
   const date = normalizeDateValue(value);
-  if (!date) return "暂无";
+  if (!date) return "None";
   return date.toLocaleString("zh-CN", {
     month: "2-digit",
     day: "2-digit",
@@ -66,14 +66,14 @@ export function formatDateTime(value: number | string | null | undefined): strin
 }
 
 export function formatScheduleLabel(schedule: string | null | undefined): string {
-  if (!schedule) return "未设置";
-  if (schedule.startsWith("*/5")) return "每 5 分钟";
+  if (!schedule) return "Not set";
+  if (schedule.startsWith("*/5")) return "Every 5 minutes";
   const cronMatch = /^(\d{1,2}) (\d{1,2}) \* \* \*$/.exec(schedule.trim());
   if (cronMatch) {
     const minute = Number(cronMatch[1]);
     const hour = Number(cronMatch[2]);
     if (minute >= 0 && minute <= 59 && hour >= 0 && hour <= 23) {
-      return `每天 ${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+      return `Daily at ${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
     }
   }
   return schedule;
@@ -93,13 +93,13 @@ export function getModuleFocusSummary(module: ModuleConfig): string {
   const subscriptionCount = module.subscriptions?.length || 0;
 
   if (keywordCount > 0 && subscriptionCount > 0) {
-    return `${keywordCount} 个关键词 · ${subscriptionCount} 个订阅`;
+    return `${keywordCount} keywords · ${subscriptionCount} subscriptions`;
   }
   if (keywordCount > 0) {
-    return `${keywordCount} 个关键词`;
+    return `${keywordCount} keywords`;
   }
   if (subscriptionCount > 0) {
-    return `${subscriptionCount} 个订阅`;
+    return `${subscriptionCount} subscriptions`;
   }
-  return "还没有监控目标";
+  return "No monitor targets yet";
 }

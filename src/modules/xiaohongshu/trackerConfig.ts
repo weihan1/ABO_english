@@ -118,7 +118,7 @@ export function formatKeywordInput(keywords: string[]): string {
 
 export function createKeywordMonitor(seed: Partial<XHSTrackerKeywordMonitor> = {}): XHSTrackerKeywordMonitor {
   const keywords = toStringList(seed.keywords);
-  const label = String(keywords[0] || seed.label || "新建情报推送").trim() || "新建情报推送";
+  const label = String(keywords[0] || seed.label || "New intel push").trim() || "New intel push";
   return {
     id: String(seed.id || createLocalId("xhs-km")),
     label,
@@ -137,7 +137,7 @@ export function createKeywordMonitor(seed: Partial<XHSTrackerKeywordMonitor> = {
 export function createFollowingScan(seed: Partial<XHSTrackerFollowingScan> = {}): XHSTrackerFollowingScan {
   return {
     id: String(seed.id || "xhs-following-default"),
-    label: String(seed.label || "关注流扫描").trim() || "关注流扫描",
+    label: String(seed.label || "Follow-feed scan").trim() || "Follow-feed scan",
     keywords: toStringList(seed.keywords),
     enabled: seed.enabled ?? false,
     fetch_limit: clampPositiveInt(seed.fetch_limit, 20, 200),
@@ -152,7 +152,7 @@ export function createFollowingScan(seed: Partial<XHSTrackerFollowingScan> = {})
 
 export function createFollowingScanMonitor(seed: Partial<XHSTrackerFollowingScanMonitor> = {}): XHSTrackerFollowingScanMonitor {
   const keywords = toStringList(seed.keywords);
-  const label = String(keywords[0] || seed.label || "关注流推送").trim() || "关注流推送";
+  const label = String(keywords[0] || seed.label || "Follow-feed push").trim() || "Follow-feed push";
   return {
     id: String(seed.id || createLocalId("xhs-fm")),
     label,
@@ -170,11 +170,11 @@ export function createFollowingScanMonitor(seed: Partial<XHSTrackerFollowingScan
 
 export function createCreatorMonitor(seed: Partial<XHSTrackerCreatorMonitor> = {}): XHSTrackerCreatorMonitor {
   const userId = String(seed.user_id || "").trim();
-  const author = String(seed.author || seed.label || userId || "未命名博主").trim() || "未命名博主";
+  const author = String(seed.author || seed.label || userId || "Unnamed blogger").trim() || "Unnamed blogger";
   return {
     id: String(seed.id || createLocalId("xhs-cm")),
     user_id: userId,
-    label: String(seed.label || author || userId || "未命名博主").trim() || "未命名博主",
+    label: String(seed.label || author || userId || "Unnamed blogger").trim() || "Unnamed blogger",
     author,
     enabled: seed.enabled ?? true,
     per_user_limit: clampPositiveInt(seed.per_user_limit, 3, 20),
@@ -199,7 +199,7 @@ export function normalizeXhsTrackerConfig(raw: any): {
     : toStringList(raw?.keywords).length > 0
       ? [
           createKeywordMonitor({
-            label: "默认情报推送",
+            label: "Default intel push",
             keywords: raw?.keywords,
             enabled: raw?.enable_keyword_search ?? true,
             min_likes: raw?.keyword_min_likes ?? 500,
@@ -212,7 +212,7 @@ export function normalizeXhsTrackerConfig(raw: any): {
     raw?.following_scan && typeof raw.following_scan === "object"
       ? raw.following_scan
       : {
-          label: "关注流扫描",
+          label: "Follow-feed scan",
           keywords: raw?.keywords,
           enabled: raw?.follow_feed ?? false,
           fetch_limit: raw?.fetch_follow_limit ?? 20,

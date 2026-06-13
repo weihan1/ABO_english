@@ -14,14 +14,14 @@ import { useState, useEffect } from "react";
 type NavItem = { id: ActiveTab; label: string; Icon: React.FC<{ className?: string; "aria-hidden"?: boolean }> };
 
 const MAIN: NavItem[] = [
-  { id: "profile",    label: "角色主页",   Icon: User },
-  { id: "assistant",  label: "助手",       Icon: Bot },
-  { id: "overview",   label: "今日情报",   Icon: Inbox },
-  { id: "dashboard",  label: "数据洞察",   Icon: BarChart3 },
-  { id: "vault",      label: "情报库",     Icon: FolderOpen },
-  { id: "literature", label: "文献库",     Icon: BookOpen },
+  { id: "profile",    label: "Character Home", Icon: User },
+  { id: "assistant",  label: "Assistant",      Icon: Bot },
+  { id: "overview",   label: "Daily Briefing", Icon: Inbox },
+  { id: "dashboard",  label: "Data Insights",  Icon: BarChart3 },
+  { id: "vault",      label: "Intel Library",  Icon: FolderOpen },
+  { id: "literature", label: "Literature Library", Icon: BookOpen },
   { id: "wiki",       label: "Wiki",       Icon: BookHeart },
-  { id: "journal",    label: "手记",       Icon: FileText },
+  { id: "journal",    label: "Journal",        Icon: FileText },
 ];
 
 export default function NavSidebar() {
@@ -302,7 +302,7 @@ export default function NavSidebar() {
             e.currentTarget.style.background = "var(--bg-card)";
             e.currentTarget.style.transform = "scale(1)";
           }}
-          title={isDark ? "切换浅色模式" : "切换深色模式"}
+          title={isDark ? "Switch to light mode" : "Switch to dark mode"}
         >
           {isDark ? (
             <Sun className="w-4 h-4" style={{ color: "var(--color-warning)" }} />
@@ -397,7 +397,7 @@ export default function NavSidebar() {
           </div>
 
           <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {profileMotto || "开始记录，见证成长"}
+            {profileMotto || "Start recording, witness your growth"}
           </p>
         </div>
       </button>
@@ -414,7 +414,7 @@ export default function NavSidebar() {
 
       {/* Section Label */}
       <div style={{ fontSize: "0.6875rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", padding: "0 16px 8px", flexShrink: 0 }}>
-        自动化模块
+        Automation Modules
       </div>
 
       {/* Expandable Module Management */}
@@ -469,7 +469,7 @@ export default function NavSidebar() {
             <LayoutGrid className="w-[18px] h-[18px] shrink-0" style={{ color: "#5BA88C" }} aria-hidden />
           </div>
           <span style={{ fontWeight: 600, fontSize: "clamp(0.875rem, 1.2vw, 0.9375rem)", flex: 1, textAlign: "left" }}>
-            模块管理
+            Module Management
           </span>
           <div
             style={{ cursor: "pointer" }}
@@ -510,7 +510,7 @@ export default function NavSidebar() {
 
       {/* Section Label */}
       <div style={{ fontSize: "0.6875rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", padding: "0 16px 8px", flexShrink: 0 }}>
-        主动工具
+        Active Tools
       </div>
 
       {/* Active Tools */}
@@ -564,7 +564,7 @@ export default function NavSidebar() {
             <BookHeart className="w-[18px] h-[18px] shrink-0" style={{ color: "#E85D5D" }} aria-hidden />
           </div>
           <span style={{ fontWeight: 600, fontSize: "clamp(0.875rem, 1.2vw, 0.9375rem)", flex: 1, textAlign: "left" }}>
-            小红书工具
+            Xiaohongshu Tools
           </span>
         </button>
 
@@ -617,7 +617,7 @@ export default function NavSidebar() {
             <Tv className="w-[18px] h-[18px] shrink-0" style={{ color: "#00AEEC" }} aria-hidden />
           </div>
           <span style={{ fontWeight: 600, fontSize: "clamp(0.875rem, 1.2vw, 0.9375rem)", flex: 1, textAlign: "left" }}>
-            哔哩哔哩工具
+            Bilibili Tools
           </span>
         </button>
 
@@ -669,13 +669,13 @@ export default function NavSidebar() {
             <Rss className="w-[18px] h-[18px] shrink-0" style={{ color: "var(--color-primary-dark)" }} aria-hidden />
           </div>
           <span style={{ fontWeight: 600, fontSize: "clamp(0.875rem, 1.2vw, 0.9375rem)", flex: 1, textAlign: "left" }}>
-            论文追踪
+            Paper Tracking
           </span>
         </button>
 
-        {/* [DISABLED 2026-05] arXiv API 侧边栏入口已下线，统一并入「论文追踪」。
-            如需恢复，去掉下面的注释，并同步恢复 store.ts 的 "arxiv-api" 联合分支与
-            MainContent.tsx 里的 <ArxivAPITool /> 渲染。 */}
+        {/* [DISABLED 2026-05] The arXiv API sidebar entry is retired and merged into "Paper Tracking".
+            To restore, remove the comment below and restore the "arxiv-api" union branch in store.ts and
+            the <ArxivAPITool /> render in MainContent.tsx. */}
         {/*
         <button
           onClick={() => {
@@ -778,7 +778,7 @@ export default function NavSidebar() {
             <Heart className="w-[18px] h-[18px] shrink-0" style={{ color: "#D48984" }} aria-hidden />
           </div>
           <span style={{ fontWeight: 600, fontSize: "clamp(0.875rem, 1.2vw, 0.9375rem)", flex: 1, textAlign: "left" }}>
-            健康管理
+            Health
           </span>
         </button>
       </div>
@@ -811,11 +811,11 @@ export default function NavSidebar() {
             }}
           />
           <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: vaultOk ? "#5BA88C" : "#D48984" }}>
-            {vaultOk ? "库已连接" : "请配置情报库"}
+            {vaultOk ? "Library connected" : "Configure Intel Library"}
           </span>
         </div>
 
-        <NavPill id="settings" label="设置" Icon={Settings} />
+        <NavPill id="settings" label="Settings" Icon={Settings} />
       </div>
     </>
   );

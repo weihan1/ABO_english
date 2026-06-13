@@ -58,9 +58,9 @@ export function BilibiliCookieModal({
       >
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px" }}>
           <div>
-            <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-main)" }}>Bilibili Cookie 配置</div>
+            <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-main)" }}>Bilibili Cookie Configuration</div>
             <div style={{ marginTop: "4px", fontSize: "0.875rem", color: "var(--text-muted)" }}>
-              首次使用或 Cookie 丢失时才会弹出。配置完成后页面内不再显示。
+              Only pops up on first use or when the cookie is lost. Once configured, it no longer appears on the page.
             </div>
           </div>
           {canClose && (
@@ -87,9 +87,9 @@ export function BilibiliCookieModal({
           }}
         >
           <div>
-            <div style={{ fontSize: "0.9375rem", fontWeight: 600, color: "var(--text-main)" }}>一键获取浏览器 Cookie</div>
+            <div style={{ fontSize: "0.9375rem", fontWeight: 600, color: "var(--text-main)" }}>One-click browser cookie</div>
             <div style={{ marginTop: "4px", fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-              一键连接本机 Chrome 或 Edge，读取完整 B 站 Cookie。
+              Connects to local Chrome or Edge in one click and reads the full Bilibili cookie.
             </div>
           </div>
           <button
@@ -111,13 +111,13 @@ export function BilibiliCookieModal({
             }}
           >
             <Globe size={16} />
-            {gettingFromBrowser ? "获取中..." : "一键获取"}
+            {gettingFromBrowser ? "Getting..." : "One-click get"}
           </button>
         </div>
 
         {cookiePreview && (
           <div style={{ color: "var(--color-success)", fontSize: "0.8125rem" }}>
-            已保存 Cookie，可直接预览动态、抓收藏夹和入库。
+            Cookie saved — you can preview posts, fetch favorites, and save to the library directly.
           </div>
         )}
 
@@ -142,7 +142,7 @@ export function BilibiliCookieModal({
               }}
             >
               {showFullCookie ? <EyeOff size={14} /> : <Eye size={14} />}
-              {showFullCookie ? "收起完整 Cookie" : "展开完整 Cookie"}
+              {showFullCookie ? "Hide full cookie" : "Show full cookie"}
             </button>
 
             {showFullCookie && (
@@ -170,7 +170,7 @@ export function BilibiliCookieModal({
         )}
 
         <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-          会优先连接已开启调试端口的浏览器；如未开启，会尝试启动 Chrome 或 Edge。
+          Prefers a browser with the debug port already open; otherwise it tries to launch Chrome or Edge.
         </div>
       </div>
     </div>

@@ -12,7 +12,7 @@ import { ModuleManagementPanel } from "./modules/ModuleManagementPanel";
 import { XiaohongshuTool } from "./xiaohongshu/XiaohongshuTool";
 import { BilibiliTool } from "./bilibili/BilibiliTool";
 import { BilibiliFavoritesPage } from "./bilibili/BilibiliFavoritesPage";
-// [DISABLED 2026-05] ArxivAPITool 侧边栏入口已下线；保留组件源码与 import 注释。
+// [DISABLED 2026-05] The ArxivAPITool sidebar entry is retired; component source and import are kept as comments.
 // import { ArxivAPITool } from "./arxiv/ArxivAPITool";
 import Dashboard from "./dashboard/Dashboard";
 import Wiki from "./wiki/Wiki";

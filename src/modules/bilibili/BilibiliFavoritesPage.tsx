@@ -64,7 +64,7 @@ function sleep(ms: number): Promise<void> {
 }
 
 function getErrorMessage(err: unknown): string {
-  return err instanceof Error ? err.message : String(err || "未知错误");
+  return err instanceof Error ? err.message : String(err || "Unknown error");
 }
 
 function createTerminalTaskError(message: string): Error & { taskTerminal: true } {
@@ -81,7 +81,7 @@ function formatTaskPollingMessage(err: unknown, taskStorageKey?: string): string
     return message;
   }
   if (taskStorageKey && readStringStorage(taskStorageKey, "")) {
-    return `${message}；后台任务可能仍在执行，可稍后自动恢复`;
+    return `${message}; the background task may still be running and can resume automatically later`;
   }
   return message;
 }
@@ -158,13 +158,13 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
     const crawlTaskId = readStringStorage(FAVORITES_CRAWL_TASK_KEY, "");
     if (crawlTaskId) {
       void resumeCrawlTask(crawlTaskId, false).catch((err) => {
-        toast.error("恢复爬取任务失败", formatTaskPollingMessage(err, FAVORITES_CRAWL_TASK_KEY));
+        toast.error("Failed to resume crawl task", formatTaskPollingMessage(err, FAVORITES_CRAWL_TASK_KEY));
       });
       return;
     }
     if (listTaskId) {
       void resumeListTask(listTaskId, false).catch((err) => {
-        toast.error("恢复收藏栏任务失败", formatTaskPollingMessage(err, FAVORITES_LIST_TASK_KEY));
+        toast.error("Failed to resume favorites task", formatTaskPollingMessage(err, FAVORITES_LIST_TASK_KEY));
       });
       return;
     }
@@ -208,7 +208,7 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
           if (task.status === "completed") {
             const res = task.result;
             if (!res) {
-              throw createTerminalTaskError("收藏栏预览结果为空");
+              throw createTerminalTaskError("Favorites preview returned empty");
             }
             setFolders(res.folders);
             setCookieConfigured(true);
@@ -218,19 +218,19 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
             });
             finalizeListTask(taskId);
             if (showToast) {
-              toast.success("收藏栏已加载", `${res.folder_count} 个条目`);
+              toast.success("Favorites loaded", `${res.folder_count} entries`);
             }
             break;
           }
 
           if (task.status === "failed") {
             finalizeListTask(taskId);
-            throw createTerminalTaskError(task.error || "收藏栏读取失败");
+            throw createTerminalTaskError(task.error || "Failed to read favorites");
           }
 
           if (task.status === "cancelled") {
             finalizeListTask(taskId);
-            throw createTerminalTaskError(task.error || "后台任务已停止");
+            throw createTerminalTaskError(task.error || "Background task stopped");
           }
 
           await sleep(TASK_POLL_INTERVAL_MS);
@@ -271,16 +271,16 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
           if (task.status === "completed") {
             const crawlResult = task.result;
             if (!crawlResult) {
-              throw createTerminalTaskError("收藏内容入库结果为空");
+              throw createTerminalTaskError("Favorites save returned empty");
             }
             setResult(crawlResult);
             setCookieConfigured(true);
             finalizeCrawlTask(taskId);
             if (showToast) {
               toast.success(
-                crawlResult.crawl_mode === "full" ? "收藏夹已全量入库" : "收藏夹已增量入库",
+                crawlResult.crawl_mode === "full" ? "Favorites fully saved" : "Favorites incrementally saved",
                 withLocationSuffix(
-                  `新增 ${crawlResult.favorite_count} 条，稍后再看 ${crawlResult.watch_later_count} 条，跳过 ${crawlResult.skipped_count} 条`,
+                  `Added ${crawlResult.favorite_count}, watch-later ${crawlResult.watch_later_count}, skipped ${crawlResult.skipped_count}`,
                   crawlResult.output_dir,
                   "vault",
                   config,
@@ -292,12 +292,12 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
 
           if (task.status === "failed") {
             finalizeCrawlTask(taskId);
-            throw createTerminalTaskError(task.error || "收藏内容入库失败");
+            throw createTerminalTaskError(task.error || "Failed to save favorites");
           }
 
           if (task.status === "cancelled") {
             finalizeCrawlTask(taskId);
-            throw createTerminalTaskError(task.error || "后台任务已停止");
+            throw createTerminalTaskError(task.error || "Background task stopped");
           }
 
           await sleep(TASK_POLL_INTERVAL_MS);
@@ -345,15 +345,15 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
     try {
       const res = await bilibiliGetCookieFromBrowser();
       if (!res.success || !res.cookie) {
-        throw new Error(res.error || "未能从浏览器获取 Bilibili Cookie");
+        throw new Error(res.error || "Could not get the Bilibili cookie from the browser");
       }
       setCookieConfigured(true);
       setCookiePreview(res.cookie_preview || null);
       setCookie(res.cookie);
       setShowCookieModal(false);
-      toast.success("浏览器 Cookie 已连接", res.message || `获取到 ${res.cookie_count || 0} 个 Cookie`);
+      toast.success("Browser cookie connected", res.message || `Got ${res.cookie_count || 0} cookies`);
     } catch (err) {
-      toast.error("获取失败", err instanceof Error ? err.message : "未知错误");
+      toast.error("Fetch failed", err instanceof Error ? err.message : "Unknown error");
     } finally {
       setGettingFromBrowser(false);
     }
@@ -364,9 +364,9 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
     setListTask(null);
     setLegacyStatus({
       kind: "list",
-      title: "收藏栏预览",
-      stage: "正在读取收藏栏",
-      detail: "正在连接 Bilibili 并读取收藏夹、稍后再看预览。",
+      title: "Favorites preview",
+      stage: "Reading favorites",
+      detail: "Connecting to Bilibili and reading favorites and watch-later previews.",
       ratio: 0.2,
     });
     try {
@@ -389,9 +389,9 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
         const res = await bilibiliListFavoriteFolders(request);
         setLegacyStatus({
           kind: "list",
-          title: "收藏栏预览",
-          stage: "旧接口返回中",
-          detail: "当前后端未提供分页进度，正在等待收藏栏预览结果。",
+          title: "Favorites preview",
+          stage: "Legacy endpoint responding",
+          detail: "The backend provides no paging progress; waiting for the favorites preview result.",
           ratio: 0.65,
         });
         setFolders(res.folders);
@@ -401,7 +401,7 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
           return new Set([...prev].filter((id) => valid.has(id)));
         });
         if (showToast) {
-          toast.success("收藏栏已加载", `${res.folder_count} 个条目`);
+          toast.success("Favorites loaded", `${res.folder_count} entries`);
         }
       }
     } catch (err) {
@@ -411,17 +411,19 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
         || message.includes("Cookie")
         || message.includes("登录")
         || message.includes("未获取到")
+        || message.toLowerCase().includes("login")
+        || message.toLowerCase().includes("not logged in")
       ) {
         setShowCookieModal(true);
       }
-      toast.error("加载失败", message);
+      toast.error("Load failed", message);
     } finally {
       setLegacyStatus((current) => {
         if (!current || current.kind !== "list") return current;
         return {
           ...current,
-          stage: folders.length > 0 ? "收藏栏预览完成" : current.stage,
-          detail: folders.length > 0 ? `已读取 ${folders.length} 个条目。` : current.detail,
+          stage: folders.length > 0 ? "Favorites preview finished" : current.stage,
+          detail: folders.length > 0 ? `Read ${folders.length} entries.` : current.detail,
           ratio: folders.length > 0 ? 1 : current.ratio,
         };
       });
@@ -447,7 +449,7 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
 
   async function handleCrawlSelected(crawlMode: FavoriteCrawlMode) {
     if (selectedIds.size === 0) {
-      toast.error("请选择收藏夹");
+      toast.error("Please select a favorites folder");
       return;
     }
 
@@ -455,11 +457,11 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
     setCrawlTask(null);
     setLegacyStatus({
       kind: "crawl",
-      title: "收藏内容入库",
-      stage: "正在准备入库任务",
+      title: "Saving favorites",
+      stage: "Preparing save task",
       detail: crawlMode === "full"
-        ? `已选择 ${selectedIds.size} 个条目，正在准备全量入库。`
-        : `已选择 ${selectedIds.size} 个条目，正在检查增量基线与登录态。`,
+        ? `${selectedIds.size} entries selected; preparing a full save.`
+        : `${selectedIds.size} entries selected; checking the incremental baseline and login state.`,
       ratio: 0.1,
     });
     try {
@@ -481,18 +483,18 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
           finalizeCrawlTask(readStringStorage(FAVORITES_CRAWL_TASK_KEY, ""));
           setLegacyStatus({
             kind: "crawl",
-            title: "收藏内容入库",
-            stage: "旧接口处理中",
-            detail: "当前后端未提供实时页数进度，正在等待入库完成。",
+            title: "Saving favorites",
+            stage: "Legacy endpoint processing",
+            detail: "The backend provides no live page progress; waiting for the save to finish.",
             ratio: 0.7,
           });
           const crawlResult = await bilibiliCrawlFavoriteFolders(request);
           setResult(crawlResult);
           setCookieConfigured(true);
           toast.success(
-            crawlResult.crawl_mode === "full" ? "收藏夹已全量入库" : "收藏夹已增量入库",
+            crawlResult.crawl_mode === "full" ? "Favorites fully saved" : "Favorites incrementally saved",
             withLocationSuffix(
-              `新增 ${crawlResult.favorite_count} 条，稍后再看 ${crawlResult.watch_later_count} 条，跳过 ${crawlResult.skipped_count} 条`,
+              `Added ${crawlResult.favorite_count}, watch-later ${crawlResult.watch_later_count}, skipped ${crawlResult.skipped_count}`,
               crawlResult.output_dir,
               "vault",
               config,
@@ -500,9 +502,9 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
           );
           setLegacyStatus({
             kind: "crawl",
-            title: "收藏内容入库",
-            stage: "入库完成",
-            detail: `新增 ${crawlResult.favorite_count} 条，稍后再看 ${crawlResult.watch_later_count} 条，跳过 ${crawlResult.skipped_count} 条。`,
+            title: "Saving favorites",
+            stage: "Save finished",
+            detail: `Added ${crawlResult.favorite_count}, watch-later ${crawlResult.watch_later_count}, skipped ${crawlResult.skipped_count}.`,
             ratio: 1,
           });
           return;
@@ -516,10 +518,12 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
         || message.includes("Cookie")
         || message.includes("登录")
         || message.includes("未获取到")
+        || message.toLowerCase().includes("login")
+        || message.toLowerCase().includes("not logged in")
       ) {
         setShowCookieModal(true);
       }
-      toast.error("爬取失败", message);
+      toast.error("Crawl failed", message);
     } finally {
       setCrawling(false);
     }
@@ -561,7 +565,7 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
               <span style={{ width: "36px", height: "36px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-hover)", color: "#00AEEC", flexShrink: 0 }}>
                 <Tv size={18} />
               </span>
-              动态追踪
+              Post tracking
             </button>
             <button
               type="button"
@@ -583,7 +587,7 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
               <span style={{ width: "36px", height: "36px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(251, 114, 153, 0.14)", color: "#D64078", flexShrink: 0 }}>
                 <FolderHeart size={18} />
               </span>
-              收藏整理
+              Favorites organizing
             </button>
             <button
               type="button"
@@ -606,12 +610,12 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
               <span style={{ width: "36px", height: "36px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-hover)", color: "#10B981", flexShrink: 0 }}>
                 <Users size={18} />
               </span>
-              关注监控
+              Follow monitors
             </button>
         </div>
       )}
 
-      <Card title="选择范围" icon={<Tv size={18} />}>
+      <Card title="Select Scope" icon={<Tv size={18} />}>
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <div
                 style={{
@@ -620,10 +624,10 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
                   gap: "10px",
                 }}
               >
-                <Metric label="收藏夹" value={folders.length.toString()} />
-                <Metric label="已选择" value={selectedCount.toString()} />
-                <Metric label="视频总数" value={selectedVideos.toString()} />
-                <Metric label="增量依据" value="最新收藏日期" />
+                <Metric label="Folders" value={folders.length.toString()} />
+                <Metric label="Selected" value={selectedCount.toString()} />
+                <Metric label="Total videos" value={selectedVideos.toString()} />
+                <Metric label="Incremental basis" value="Latest save date" />
               </div>
 
               <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", alignItems: "center" }}>
@@ -638,15 +642,15 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
                   }}
                 >
                   <RefreshCw size={15} />
-                  {folders.length > 0 ? "刷新收藏栏" : "读取收藏栏"}
+                  {folders.length > 0 ? "Refresh favorites" : "Read favorites"}
                 </button>
                 <button type="button" onClick={selectAll} disabled={folders.length === 0 || crawling} style={secondaryButton}>
                   <Check size={15} />
-                  全选
+                  Select all
                 </button>
                 <button type="button" onClick={() => setSelectedIds(new Set())} disabled={selectedIds.size === 0 || crawling} style={secondaryButton}>
                   <RotateCcw size={15} />
-                  清空
+                  Clear
                 </button>
                 <button
                   type="button"
@@ -659,7 +663,7 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
                   }}
                 >
                   <Save size={15} />
-                  全量爬取
+                  Full crawl
                 </button>
                 <button
                   type="button"
@@ -672,7 +676,7 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
                   }}
                 >
                   <Save size={15} />
-                  {crawling ? "入库中..." : "增量爬取"}
+                  {crawling ? "Saving..." : "Incremental crawl"}
                 </button>
               </div>
 
@@ -689,25 +693,25 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
                   }}
                 >
                   {result.crawl_mode === "full"
-                    ? `全量爬取完成：新增收藏 ${result.favorite_count} 条，稍后再看 ${result.watch_later_count} 条，跳过 ${result.skipped_count} 条。已按收藏日期重命名 ${result.renamed_favorite_count ?? 0} 个收藏文件。状态记录保存在 ${result.state_path}`
-                    : `增量爬取完成：新增收藏 ${result.favorite_count} 条，稍后再看 ${result.watch_later_count} 条，跳过已记录 ${result.skipped_count} 条。已按收藏日期重命名 ${result.renamed_favorite_count ?? 0} 个收藏文件。增量记录保存在 ${result.state_path}`}
+                    ? `Full crawl finished: ${result.favorite_count} new favorites, ${result.watch_later_count} watch-later, ${result.skipped_count} skipped. Renamed ${result.renamed_favorite_count ?? 0} favorite files by save date. State saved at ${result.state_path}`
+                    : `Incremental crawl finished: ${result.favorite_count} new favorites, ${result.watch_later_count} watch-later, ${result.skipped_count} already-recorded skipped. Renamed ${result.renamed_favorite_count ?? 0} favorite files by save date. Incremental state saved at ${result.state_path}`}
                 </div>
               )}
 
               {listTask && listTask.status === "running" && (
                 <ProgressNotice
-                  title="收藏栏预览"
+                  title="Favorites preview"
                   stage={listTask.stage}
-                  detail={`已处理 ${listTask.processed_folders}/${Math.max(listTask.total_folders || 0, 1)} 项${listTask.current_folder ? ` · ${listTask.current_folder}` : ""}`}
+                  detail={`Processed ${listTask.processed_folders}/${Math.max(listTask.total_folders || 0, 1)} items${listTask.current_folder ? ` · ${listTask.current_folder}` : ""}`}
                   ratio={listTask.total_folders ? listTask.processed_folders / listTask.total_folders : 0}
                 />
               )}
 
               {crawlTask && crawlTask.status === "running" && (
                 <ProgressNotice
-                  title="收藏内容入库"
+                  title="Saving favorites"
                   stage={crawlTask.stage}
-                  detail={`已检查 ${crawlTask.fetched_count} 条，新增待入库 ${crawlTask.saved_count} 条，跳过已入库 ${crawlTask.skipped_count} 条${crawlTask.current_folder ? ` · ${crawlTask.current_folder}` : ""}`}
+                  detail={`Checked ${crawlTask.fetched_count}, ${crawlTask.saved_count} new to save, ${crawlTask.skipped_count} already saved skipped${crawlTask.current_folder ? ` · ${crawlTask.current_folder}` : ""}`}
                   ratio={crawlProgressRatio}
                 />
               )}
@@ -725,12 +729,12 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
           </Card>
 
       {loading ? (
-        <LoadingState message="正在读取收藏夹和封面..." />
+        <LoadingState message="Reading favorites and covers..." />
       ) : folders.length === 0 ? (
         <EmptyState
           icon={FolderHeart}
-          title="未读取到收藏夹"
-          description="进入页面不会自动创建，点击上方“读取收藏栏”后开始加载"
+          title="No Favorites Loaded"
+          description="Nothing loads automatically — click \"Read favorites\" above to start"
         />
       ) : (
         <div
@@ -781,8 +785,8 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
     <PageContainer>
       {modal}
       <PageHeader
-        title="哔哩哔哩工具"
-        subtitle="一键连接 Cookie，按动态、稍后再看分类入库"
+        title="Bilibili Tools"
+        subtitle="One-click cookie connect; save by posts and watch-later categories"
         icon={Tv}
         actions={
           <button
@@ -803,7 +807,7 @@ export function BilibiliFavoritesPage({ embedded = false }: BilibiliFavoritesPag
             }}
           >
             <Cookie size={16} />
-            {cookieConfigured ? "Cookie 配置" : "配置 Cookie"}
+            {cookieConfigured ? "Cookie settings" : "Configure cookie"}
           </button>
         }
       />
@@ -910,11 +914,11 @@ function FavoriteFolderTile({
           {folder.title}
         </div>
         <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.45, minHeight: "34px" }}>
-          {folder.first_video_title || "暂无视频预览"}
+          {folder.first_video_title || "No video preview"}
         </div>
         <div style={{ marginTop: "auto", display: "flex", flexWrap: "wrap", gap: "6px" }}>
-          <Pill>{folder.media_count} 条视频</Pill>
-          <Pill>已入库 {folder.crawled_count}</Pill>
+          <Pill>{folder.media_count} videos</Pill>
+          <Pill>Saved {folder.crawled_count}</Pill>
           {folder.last_crawled_at && <Pill>{folder.last_crawled_at}</Pill>}
         </div>
       </div>

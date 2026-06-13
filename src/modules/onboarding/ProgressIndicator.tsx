@@ -10,10 +10,10 @@ interface Step {
 }
 
 const steps: Step[] = [
-  { id: 0, title: "认识 ABO" },
-  { id: 1, title: "连接知识库" },
-  { id: 2, title: "一键配置" },
-  { id: 3, title: "上手路线" },
+  { id: 0, title: "Meet ABO" },
+  { id: 1, title: "Connect knowledge base" },
+  { id: 2, title: "Quick config" },
+  { id: 3, title: "Getting started" },
 ];
 
 export default function ProgressIndicator({ currentStep, totalSteps, onStepClick }: ProgressIndicatorProps) {
@@ -68,7 +68,7 @@ export default function ProgressIndicator({ currentStep, totalSteps, onStepClick
               key={step.id}
               role={canClickSteps ? "button" : undefined}
               tabIndex={canClickSteps ? 0 : undefined}
-              title={canClickSteps ? `跳转到：${step.title}` : undefined}
+              title={canClickSteps ? `Jump to: ${step.title}` : undefined}
               onClick={() => {
                 if (onStepClick) onStepClick(index);
               }}

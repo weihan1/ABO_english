@@ -54,7 +54,7 @@ export default function ActivityChart({ data }: ActivityChartProps) {
           color: "var(--text-muted)",
         }}
       >
-        <p>暂无数据</p>
+        <p>No data yet</p>
       </div>
     );
   }
@@ -178,7 +178,7 @@ export default function ActivityChart({ data }: ActivityChartProps) {
                 boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                 cursor: "pointer",
               }}
-              title={`${point.date}: ${point.count} 张卡片`}
+              title={`${point.date}: ${point.count} cards`}
             />
           ))}
         </div>
@@ -219,7 +219,7 @@ export default function ActivityChart({ data }: ActivityChartProps) {
             background: "var(--color-primary)",
           }}
         />
-        <span>每日新增卡片数</span>
+        <span>New cards per day</span>
       </div>
     </div>
   );

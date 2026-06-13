@@ -27,18 +27,18 @@ interface TutorialStepProps {
 type GuideTab = "core" | "map" | "config" | "routine" | "reference";
 
 const tabs: Array<{ id: GuideTab; label: string; icon: React.ReactNode }> = [
-  { id: "core", label: "核心流程", icon: <FolderDown style={{ width: "16px", height: "16px" }} /> },
-  { id: "map", label: "侧边栏地图", icon: <Compass style={{ width: "16px", height: "16px" }} /> },
-  { id: "config", label: "配置流程", icon: <Settings style={{ width: "16px", height: "16px" }} /> },
-  { id: "routine", label: "日常路线", icon: <Route style={{ width: "16px", height: "16px" }} /> },
-  { id: "reference", label: "参考指南", icon: <FileText style={{ width: "16px", height: "16px" }} /> },
+  { id: "core", label: "Core flow", icon: <FolderDown style={{ width: "16px", height: "16px" }} /> },
+  { id: "map", label: "Sidebar map", icon: <Compass style={{ width: "16px", height: "16px" }} /> },
+  { id: "config", label: "Config flow", icon: <Settings style={{ width: "16px", height: "16px" }} /> },
+  { id: "routine", label: "Daily routine", icon: <Route style={{ width: "16px", height: "16px" }} /> },
+  { id: "reference", label: "Reference guide", icon: <FileText style={{ width: "16px", height: "16px" }} /> },
 ];
 
 const nextActions = [
-  "先去今日情报看是否已有卡片；没有也正常，说明还没跑过工具或定时任务。",
-  "到小红书工具或哔哩哔哩工具手动跑一次预览，确认 Cookie、筛选和保存路径都可用。",
-  "到论文追踪里配置一个 arXiv 关键词监控，或者用 Semantic Scholar 查一篇论文的 Follow Up。",
-  "保存几条内容后进入 Wiki，生成 Internet Wiki 或 Literature Wiki，再让助手基于这些页面继续推进。",
+  "Check Daily Briefing for existing cards first; none is normal — it means no tool or scheduled task has run yet.",
+  "Run a manual preview in Xiaohongshu Tools or Bilibili Tools to confirm the cookie, filters, and save path all work.",
+  "Configure an arXiv keyword monitor in Paper Tracking, or use Semantic Scholar to find a paper's Follow Up.",
+  "After saving a few items, open Wiki to generate the Internet Wiki or Literature Wiki, then let the assistant build on those pages.",
 ];
 
 export default function TutorialStep({ onComplete }: TutorialStepProps) {
@@ -95,7 +95,7 @@ export default function TutorialStep({ onComplete }: TutorialStepProps) {
               marginBottom: "12px",
             }}
           >
-            入口：{workflow.entry}
+            Entry: {workflow.entry}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
             {workflow.steps.map((step) => (
@@ -116,7 +116,7 @@ export default function TutorialStep({ onComplete }: TutorialStepProps) {
               fontWeight: 750,
             }}
           >
-            结果：{workflow.result}
+            Result: {workflow.result}
           </div>
         </article>
       ))}
@@ -206,8 +206,8 @@ export default function TutorialStep({ onComplete }: TutorialStepProps) {
       <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "18px" }}>
         <Layers style={{ width: "20px", height: "20px", color: "var(--color-primary)" }} />
         <div>
-          <div style={{ fontSize: "1.05rem", fontWeight: 900, color: "var(--text-main)" }}>每天 15 分钟的推荐路线</div>
-          <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "3px" }}>先把注意力夺回来，再把知识留下、把过去写出来。</div>
+          <div style={{ fontSize: "1.05rem", fontWeight: 900, color: "var(--text-main)" }}>Recommended 15-minutes-a-day routine</div>
+          <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "3px" }}>Reclaim your attention first, then keep the knowledge and write down the past.</div>
         </div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -260,9 +260,9 @@ export default function TutorialStep({ onComplete }: TutorialStepProps) {
         }}
       >
         <BookOpen style={{ width: "28px", height: "28px", color: "var(--color-primary)", marginBottom: "12px" }} />
-        <div style={{ fontSize: "1.1rem", fontWeight: 900, color: "var(--text-main)", marginBottom: "8px" }}>完整参考指南已经写入 Markdown</div>
+        <div style={{ fontSize: "1.1rem", fontWeight: 900, color: "var(--text-main)", marginBottom: "8px" }}>The full reference guide has been written to Markdown</div>
         <div style={{ fontSize: "0.875rem", color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: "14px" }}>
-          文档包含侧边栏地图、每个入口的主要分组、初始化配置、日常工作流、论文/小红书/B 站路径和排障建议。
+          The document includes the sidebar map, main groups for each entry, initial setup, daily workflows, paper/Xiaohongshu/Bilibili paths, and troubleshooting tips.
         </div>
         <code
           style={{
@@ -290,7 +290,7 @@ export default function TutorialStep({ onComplete }: TutorialStepProps) {
       >
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
           <Sparkles style={{ width: "20px", height: "20px", color: "var(--color-primary)" }} />
-          <div style={{ fontSize: "1rem", fontWeight: 900, color: "var(--text-main)" }}>完成向导后建议做这 4 件事</div>
+          <div style={{ fontSize: "1rem", fontWeight: 900, color: "var(--text-main)" }}>Do these 4 things after finishing the wizard</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {nextActions.map((action) => (
@@ -348,10 +348,10 @@ export default function TutorialStep({ onComplete }: TutorialStepProps) {
             marginBottom: "8px",
           }}
         >
-          最后一页：怎么真正用起来
+          Last page: how to actually use it
         </h2>
         <p style={{ fontSize: "0.96rem", color: "var(--text-secondary)", lineHeight: 1.7, maxWidth: "680px", margin: "0 auto" }}>
-          ABO 的关键不是一次抓取，而是每天把输入变成可回看的知识结构。先看地图，再按路线使用。
+          ABO's point isn't a one-time crawl but turning inputs into a reviewable knowledge structure every day. Read the map first, then follow the routine.
         </p>
       </header>
 
@@ -412,7 +412,7 @@ export default function TutorialStep({ onComplete }: TutorialStepProps) {
           }}
         >
           <Check style={{ width: "19px", height: "19px" }} />
-          完成并进入 ABO
+          Finish and enter ABO
           <ArrowRight style={{ width: "19px", height: "19px" }} />
         </button>
       </footer>

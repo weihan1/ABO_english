@@ -35,11 +35,11 @@ type TimelineActivity = {
 };
 
 const FILTER_OPTIONS: { key: FilterType; label: string; icon: ReactNode }[] = [
-  { key: "all", label: "全部", icon: <Filter style={{ width: "14px", height: "14px" }} /> },
-  { key: "active", label: "运行中", icon: <CheckCircle style={{ width: "14px", height: "14px" }} /> },
-  { key: "paused", label: "已暂停", icon: <PauseCircle style={{ width: "14px", height: "14px" }} /> },
-  { key: "error", label: "异常", icon: <AlertCircle style={{ width: "14px", height: "14px" }} /> },
-  { key: "unconfigured", label: "待设置", icon: <Settings style={{ width: "14px", height: "14px" }} /> },
+  { key: "all", label: "All", icon: <Filter style={{ width: "14px", height: "14px" }} /> },
+  { key: "active", label: "Running", icon: <CheckCircle style={{ width: "14px", height: "14px" }} /> },
+  { key: "paused", label: "Paused", icon: <PauseCircle style={{ width: "14px", height: "14px" }} /> },
+  { key: "error", label: "Error", icon: <AlertCircle style={{ width: "14px", height: "14px" }} /> },
+  { key: "unconfigured", label: "Needs setup", icon: <Settings style={{ width: "14px", height: "14px" }} /> },
 ];
 
 type RecentTimelineResponse = {
@@ -119,8 +119,8 @@ export function ModuleManagementPanel() {
     } catch (error) {
       addToast({
         kind: "error",
-        title: "加载失败",
-        message: error instanceof Error ? error.message : "无法加载模块数据",
+        title: "Load failed",
+        message: error instanceof Error ? error.message : "Could not load module data",
       });
     } finally {
       setLoading(false);
@@ -241,14 +241,14 @@ export function ModuleManagementPanel() {
 
       addToast({
         kind: "success",
-        title: "状态已更新",
-        message: `模块已${newStatus === "active" ? "启动" : "暂停"}`,
+        title: "Status updated",
+        message: `Module ${newStatus === "active" ? "started" : "paused"}`,
       });
     } catch (error) {
       addToast({
         kind: "error",
-        title: "操作失败",
-        message: error instanceof Error ? error.message : "无法切换模块状态",
+        title: "Operation failed",
+        message: error instanceof Error ? error.message : "Could not toggle module status",
       });
     }
   }
@@ -257,15 +257,15 @@ export function ModuleManagementPanel() {
     try {
       setRunningModules((previous) => new Set(previous).add(moduleId));
       await api.post(`/api/modules/${moduleId}/run`, {});
-      addToast({ kind: "success", title: "开始运行", message: "模块已经加入执行队列" });
+      addToast({ kind: "success", title: "Run started", message: "The module was added to the execution queue" });
       setTimeout(() => {
         void loadDashboard();
       }, 2000);
     } catch (error) {
       addToast({
         kind: "error",
-        title: "运行失败",
-        message: error instanceof Error ? error.message : "无法运行模块",
+        title: "Run failed",
+        message: error instanceof Error ? error.message : "Could not run the module",
       });
     } finally {
       setRunningModules((previous) => {
@@ -351,7 +351,7 @@ export function ModuleManagementPanel() {
     return (
       <CenteredState
         icon={<RefreshCw style={{ width: "32px", height: "32px", color: "var(--color-primary)", animation: "spin 1s linear infinite" }} />}
-        title="加载模块数据..."
+        title="Loading module data..."
       />
     );
   }
@@ -360,10 +360,10 @@ export function ModuleManagementPanel() {
     return (
       <CenteredState
         icon={<AlertCircle style={{ width: "46px", height: "46px", color: "#ef4444" }} />}
-        title="模块数据加载失败"
+        title="Failed to load module data"
         action={
           <button onClick={() => void loadDashboard()} style={primaryButtonStyle}>
-            重试
+            Retry
           </button>
         }
       />
@@ -384,25 +384,25 @@ export function ModuleManagementPanel() {
                 margin: 0,
               }}
             >
-              模块运行
+              Module Runs
             </h1>
             <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)", marginTop: "6px", lineHeight: 1.6 }}>
-              这里只看启动、暂停和历史效果。关键词、关注源和 Cookie 全部去对应工具页调整。
+              This view is only for start, pause, and historical results. Adjust keywords, sources, and cookies on the corresponding tool pages.
             </p>
           </div>
 
           <button onClick={() => void loadDashboard()} style={ghostButtonStyle}>
             <RefreshCw style={{ width: "14px", height: "14px" }} />
-            刷新
+            Refresh
           </button>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "10px", marginBottom: "18px" }}>
           {[
-            { label: "运行中模块", value: visibleSummary.active, accent: "#16a34a", bg: "rgba(34,197,94,0.12)" },
-            { label: "待看内容", value: visibleUsageSummary.unreadCount, accent: "#b45309", bg: "rgba(245,158,11,0.12)" },
-            { label: "近7天浏览", value: visibleUsageSummary.viewCount7d, accent: "#2563eb", bg: "rgba(37,99,235,0.10)" },
-            { label: "本周新增", value: visibleSummary.totalCardsThisWeek, accent: "#7c3aed", bg: "rgba(124,58,237,0.10)" },
+            { label: "Running modules", value: visibleSummary.active, accent: "#16a34a", bg: "rgba(34,197,94,0.12)" },
+            { label: "Pending content", value: visibleUsageSummary.unreadCount, accent: "#b45309", bg: "rgba(245,158,11,0.12)" },
+            { label: "Views (7d)", value: visibleUsageSummary.viewCount7d, accent: "#2563eb", bg: "rgba(37,99,235,0.10)" },
+            { label: "New this week", value: visibleSummary.totalCardsThisWeek, accent: "#7c3aed", bg: "rgba(124,58,237,0.10)" },
           ].map((item) => (
             <div key={item.label} style={{ padding: "14px 16px", borderRadius: "16px", background: item.bg }}>
               <div style={{ fontSize: "1.35rem", fontWeight: 800, color: item.accent, marginBottom: "4px" }}>{item.value}</div>
@@ -450,7 +450,7 @@ export function ModuleManagementPanel() {
               type="text"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="搜索模块、关键词或订阅源"
+              placeholder="Search modules, keywords, or sources"
               style={{
                 width: "100%",
                 height: "40px",
@@ -525,8 +525,8 @@ export function ModuleManagementPanel() {
           {filteredModules.length === 0 ? (
             <CenteredState
               icon={<Settings style={{ width: "42px", height: "42px", color: "var(--text-muted)", opacity: 0.35 }} />}
-              title={searchQuery ? "没有匹配的模块" : "当前筛选下没有模块"}
-              description={searchQuery ? "换个关键词再试一次。" : "调整筛选，或者去工具页补齐监控设置。"}
+              title={searchQuery ? "No matching modules" : "No modules under this filter"}
+              description={searchQuery ? "Try a different keyword." : "Adjust the filter, or set up monitors on the tool pages."}
             />
           ) : (
             <div
@@ -556,8 +556,8 @@ export function ModuleManagementPanel() {
           )}
 
           <LazyKeywordPreferencesSection
-            title="偏好学习"
-            description="这里展示正向偏好关键词。点击后才会开始加载数据，不影响模块管理首屏。"
+            title="Preference learning"
+            description="Shows positive preference keywords. Data loads only on click, keeping the Module Management first paint fast."
           />
         </div>
       </div>

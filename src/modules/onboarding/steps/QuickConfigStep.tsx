@@ -69,17 +69,17 @@ interface CookieSetupState {
 
 const DEFAULT_KEYWORDS: Record<string, string[]> = {
   "arxiv-tracker": ["machine learning", "artificial intelligence", "neural networks"],
-  "bilibili-tracker": ["机器学习", "AI技术", "编程教程"],
-  "xiaohongshu-tracker": ["数码评测", "学习笔记", "效率工具"],
-  "xiaoyuzhou-tracker": ["科技播客", "商业思维", "个人成长"],
-  "zhihu-tracker": ["人工智能", "深度学习", "科研方法"],
+  "bilibili-tracker": ["machine learning", "AI tech", "programming tutorials"],
+  "xiaohongshu-tracker": ["gadget reviews", "study notes", "productivity tools"],
+  "xiaoyuzhou-tracker": ["tech podcasts", "business thinking", "personal growth"],
+  "zhihu-tracker": ["artificial intelligence", "deep learning", "research methods"],
   "semantic-scholar-tracker": ["computer vision", "NLP", "reinforcement learning"],
   "folder-monitor": ["research", "notes", "ideas"],
 };
 
 const AI_PROVIDER_OPTIONS = [
-  { id: "codex" as const, label: "Codex", supported: true, hint: "默认可用" },
-  { id: "claude" as const, label: "Claude Code", supported: false, hint: "兼容默认关闭，可在设置里手动开启" },
+  { id: "codex" as const, label: "Codex", supported: true, hint: "Available by default" },
+  { id: "claude" as const, label: "Claude Code", supported: false, hint: "Compatibility off by default; enable manually in Settings" },
 ];
 
 export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps) {
@@ -100,7 +100,7 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
       testing: false,
       expanded: true,
       preview: null,
-      message: "一键读取浏览器 Cookie 后，会自动检测 SESSDATA 是否可用。",
+      message: "After one-click reading the browser cookie, SESSDATA availability is checked automatically.",
     },
     xiaohongshu: {
       configured: false,
@@ -109,20 +109,20 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
       testing: false,
       expanded: true,
       preview: null,
-      message: "一键读取浏览器 Cookie 后，会自动检测 web_session 是否可用。",
+      message: "After one-click reading the browser cookie, web_session availability is checked automatically.",
     },
   });
 
   const [modules, setModules] = useState<ModuleConfig[]>([
     {
       id: "arxiv-tracker",
-      name: "ArXiv 追踪器",
+      name: "arXiv Tracker",
       icon: <BookOpen style={{ width: "20px", height: "20px" }} />,
       enabled: true,
       keywords: DEFAULT_KEYWORDS["arxiv-tracker"],
       requiresCookie: false,
-      description: "定时抓取 arXiv 关键词论文",
-      configHint: "主动工具：论文追踪 / arXiv API",
+      description: "Scheduled crawl of arXiv keyword papers",
+      configHint: "Active Tools: Paper Tracking / arXiv API",
     },
     {
       id: "semantic-scholar-tracker",
@@ -131,57 +131,57 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
       enabled: true,
       keywords: DEFAULT_KEYWORDS["semantic-scholar-tracker"],
       requiresCookie: false,
-      description: "追踪一篇论文的后续研究",
-      configHint: "API Key 可选；留空也能使用",
+      description: "Track follow-up research on a paper",
+      configHint: "API key optional; works even if blank",
     },
     {
       id: "bilibili-tracker",
-      name: "B站追踪器",
+      name: "Bilibili Tracker",
       icon: <Video style={{ width: "20px", height: "20px" }} />,
       enabled: true,
       keywords: DEFAULT_KEYWORDS["bilibili-tracker"],
       requiresCookie: true,
-      description: "关注流、UP 主和收藏视频追踪",
-      configHint: "主动工具：哔哩哔哩工具",
+      description: "Track the follow feed, creators, and saved videos",
+      configHint: "Active Tools: Bilibili Tools",
     },
     {
       id: "xiaohongshu-tracker",
-      name: "小红书追踪器",
+      name: "Xiaohongshu Tracker",
       icon: <ShoppingBag style={{ width: "20px", height: "20px" }} />,
       enabled: true,
       keywords: DEFAULT_KEYWORDS["xiaohongshu-tracker"],
       requiresCookie: true,
-      description: "收藏专辑、关键词和关注流追踪",
-      configHint: "主动工具：小红书工具",
+      description: "Track bookmark albums, keywords, and the follow feed",
+      configHint: "Active Tools: Xiaohongshu Tools",
     },
     {
       id: "xiaoyuzhou-tracker",
-      name: "小宇宙追踪器",
+      name: "Xiaoyuzhou Tracker",
       icon: <Headphones style={{ width: "20px", height: "20px" }} />,
       enabled: false,
       keywords: DEFAULT_KEYWORDS["xiaoyuzhou-tracker"],
       requiresCookie: false,
-      description: "播客内容追踪",
+      description: "Track podcast content",
       advanced: true,
     },
     {
       id: "zhihu-tracker",
-      name: "知乎追踪器",
+      name: "Zhihu Tracker",
       icon: <HelpCircle style={{ width: "20px", height: "20px" }} />,
       enabled: false,
       keywords: DEFAULT_KEYWORDS["zhihu-tracker"],
       requiresCookie: true,
-      description: "问答和深度文章",
+      description: "Q&A and in-depth articles",
       advanced: true,
     },
     {
       id: "folder-monitor",
-      name: "文件夹监控",
+      name: "Folder Monitor",
       icon: <Rss style={{ width: "20px", height: "20px" }} />,
       enabled: false,
       keywords: DEFAULT_KEYWORDS["folder-monitor"],
       requiresCookie: false,
-      description: "监控本地文件变化",
+      description: "Watch local file changes",
       advanced: true,
     },
   ]);
@@ -292,7 +292,7 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
           configured: bilibiliConfig.cookie_configured,
           preview: bilibiliConfig.cookie_preview,
           message: bilibiliConfig.cookie_configured
-            ? "已检测到已保存的浏览器 Cookie，可以直接重新测试。"
+            ? "A saved browser cookie was detected — you can re-test directly."
             : prev.bilibili.message,
         },
         xiaohongshu: {
@@ -300,7 +300,7 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
           configured: xiaohongshuConfig.cookie_configured,
           preview: xiaohongshuConfig.cookie_preview,
           message: xiaohongshuConfig.cookie_configured
-            ? "已检测到已保存的浏览器 Cookie，可以直接重新测试。"
+            ? "A saved browser cookie was detected — you can re-test directly."
             : prev.xiaohongshu.message,
         },
       }));
@@ -315,28 +315,28 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
       loading: true,
       testing: false,
       error: undefined,
-      message: "正在从浏览器读取 B 站 Cookie...",
+      message: "Reading the Bilibili cookie from the browser...",
     }));
 
     try {
       const result = await bilibiliGetCookieFromBrowser();
       if (!result.success) {
-        throw new Error(result.error || "未找到哔哩哔哩 Cookie");
+        throw new Error(result.error || "Bilibili cookie not found");
       }
 
       const sessdata = extractCookieValue(result.cookie, "SESSDATA");
       if (!sessdata) {
-        throw new Error("已获取 Cookie，但没有解析到 SESSDATA");
+        throw new Error("Got the cookie but could not parse SESSDATA");
       }
 
       setCookiePlatformState("bilibili", (current) => ({
         ...current,
         configured: true,
         preview: result.cookie_preview || result.cookie || current.preview,
-        source: "浏览器",
+        source: "Browser",
         loading: false,
         testing: true,
-        message: "Cookie 已读取，正在验证登录态...",
+        message: "Cookie read; verifying login state...",
       }));
 
       const verify = await bilibiliVerifySessdata({ sessdata });
@@ -348,24 +348,24 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
         loading: false,
         testing: false,
         error: verify.valid ? undefined : verify.message,
-        message: verify.valid ? "测试通过，可以直接用于引导后的模块配置。" : verify.message,
+        message: verify.valid ? "Test passed; ready for post-onboarding module config." : verify.message,
       }));
 
       if (verify.valid) {
         addToast({
           kind: "success",
-          title: "B 站 Cookie 可用",
+          title: "Bilibili cookie usable",
           message: verify.message,
         });
       } else {
         addToast({
           kind: "info",
-          title: "B 站 Cookie 校验失败",
+          title: "Bilibili cookie verification failed",
           message: verify.message,
         });
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "获取浏览器 Cookie 失败";
+      const message = error instanceof Error ? error.message : "Failed to get browser cookie";
       setCookiePlatformState("bilibili", (current) => ({
         ...current,
         loading: false,
@@ -376,7 +376,7 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
       }));
       addToast({
         kind: "error",
-        title: "B 站一键获取失败",
+        title: "Bilibili one-click fetch failed",
         message,
       });
     }
@@ -388,20 +388,20 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
       loading: true,
       testing: false,
       error: undefined,
-      message: "正在从浏览器读取小红书 Cookie...",
+      message: "Reading the Xiaohongshu cookie from the browser...",
     }));
 
     try {
       const result = await xiaohongshuGetCookieFromBrowser();
       if (!result.success) {
-        throw new Error(result.error || "未找到小红书 Cookie");
+        throw new Error(result.error || "Xiaohongshu cookie not found");
       }
 
       const webSession = result.web_session || extractCookieValue(result.cookie, "web_session");
       const idToken = result.id_token || extractCookieValue(result.cookie, "id_token") || undefined;
 
       if (!webSession) {
-        throw new Error("已获取 Cookie，但没有解析到 web_session");
+        throw new Error("Got the cookie but could not parse web_session");
       }
 
       setCookiePlatformState("xiaohongshu", (current) => ({
@@ -411,7 +411,7 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
         source: result.source,
         loading: false,
         testing: true,
-        message: "Cookie 已读取，正在验证登录态...",
+        message: "Cookie read; verifying login state...",
       }));
 
       const verify = await xiaohongshuVerifyCookie({
@@ -426,24 +426,24 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
         loading: false,
         testing: false,
         error: verify.valid ? undefined : verify.message,
-        message: verify.valid ? "测试通过，可以直接用于搜索和入库。" : verify.message,
+        message: verify.valid ? "Test passed; ready for search and saving." : verify.message,
       }));
 
       if (verify.valid) {
         addToast({
           kind: "success",
-          title: "小红书 Cookie 可用",
+          title: "Xiaohongshu cookie usable",
           message: verify.message,
         });
       } else {
         addToast({
           kind: "info",
-          title: "小红书 Cookie 校验失败",
+          title: "Xiaohongshu cookie verification failed",
           message: verify.message,
         });
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "获取浏览器 Cookie 失败";
+      const message = error instanceof Error ? error.message : "Failed to get browser cookie";
       setCookiePlatformState("xiaohongshu", (current) => ({
         ...current,
         loading: false,
@@ -454,7 +454,7 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
       }));
       addToast({
         kind: "error",
-        title: "小红书一键获取失败",
+        title: "Xiaohongshu one-click fetch failed",
         message,
       });
     }
@@ -489,14 +489,14 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
       if (failed > 0) {
         addToast({
           kind: "info",
-          title: "部分配置保存失败",
-          message: `${modules.length - failed}/${modules.length} 个模块保存成功，可稍后在模块管理或设置中重新配置`,
+          title: "Some settings failed to save",
+          message: `${modules.length - failed}/${modules.length} modules saved; reconfigure later in Module Management or Settings`,
         });
       } else {
         addToast({
           kind: "success",
-          title: "一键配置已保存",
-          message: `默认推送 ${intelligenceDeliveryEnabled ? "已开启" : "已关闭"}，已启用 ${enabledModules.length} 个模块`,
+          title: "Quick config saved",
+          message: `Default push ${intelligenceDeliveryEnabled ? "enabled" : "disabled"}; ${enabledModules.length} modules enabled`,
         });
       }
 
@@ -530,13 +530,13 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
     const isBusy = state.loading || state.testing;
     const statusText = isBusy
       ? state.testing
-        ? "测试中"
-        : "获取中"
+        ? "Testing"
+        : "Fetching"
       : state.verified
-        ? "测试通过"
+        ? "Test passed"
         : state.configured
-          ? "已获取，待测试"
-          : "未配置";
+          ? "Fetched, pending test"
+          : "Not configured";
 
     const statusColor = isBusy
       ? "#D48984"
@@ -600,7 +600,7 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
             )}
             <span>{state.message}</span>
           </div>
-          {state.source && <div style={{ marginTop: "6px", color: "var(--text-muted)" }}>来源：{state.source}</div>}
+          {state.source && <div style={{ marginTop: "6px", color: "var(--text-muted)" }}>Source: {state.source}</div>}
         </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
@@ -625,12 +625,12 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
             {isBusy ? (
               <>
                 <Loader2 style={{ width: "16px", height: "16px", animation: "spin 1s linear infinite" }} />
-                {state.testing ? "测试中..." : "获取中..."}
+                {state.testing ? "Testing..." : "Fetching..."}
               </>
             ) : (
               <>
                 <Globe style={{ width: "16px", height: "16px" }} />
-                一键获取并测试
+                One-click fetch & test
               </>
             )}
           </button>
@@ -657,7 +657,7 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
             }}
           >
             {state.expanded ? <ChevronUp style={{ width: "14px", height: "14px" }} /> : <ChevronDown style={{ width: "14px", height: "14px" }} />}
-            {state.expanded ? "收起详情" : "查看详情"}
+            {state.expanded ? "Collapse details" : "View details"}
           </button>
         </div>
 
@@ -674,7 +674,7 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
             }}
           >
             <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.7 }}>
-              会直接复用当前工具页的 Cookie 获取方式，并写入 ABO 全局配置。
+              Reuses the current tool page's cookie acquisition and writes it to ABO's global config.
             </div>
             {state.preview ? (
               <textarea
@@ -696,7 +696,7 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
               />
             ) : (
               <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                还没有读取到 Cookie。先确认浏览器已经登录对应站点。
+                No cookie read yet. Confirm the browser is logged in to the site first.
               </div>
             )}
             {state.error && (
@@ -746,7 +746,7 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
             marginBottom: "8px",
           }}
         >
-          一键配置
+          Quick Config
         </h2>
 
         <p
@@ -756,9 +756,9 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
             lineHeight: 1.6,
           }}
         >
-          保留默认设置直接继续，基础配置约 10 秒钟；自动化模块关键词可以先留空，稍后再配置
+          Keep the defaults and continue — basic setup takes ~10 seconds; automation module keywords can be left blank for now.
           <br />
-          已启用 {enabledCount} 个模块，其中 {cookieRequiredCount} 个需要浏览器 Cookie，建议优先先把 Cookie 配好
+          {enabledCount} modules enabled, {cookieRequiredCount} of which need a browser cookie — configure those cookies first.
         </p>
       </div>
 
@@ -783,13 +783,13 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
             <Clock style={{ width: "18px", height: "18px", color: "var(--color-primary)" }} />
             <div>
-              <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "var(--text-main)" }}>每日情报</div>
-              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "2px" }}>到点把配置好的监控跑一遍</div>
+              <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "var(--text-main)" }}>Daily Briefing</div>
+              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "2px" }}>Runs the configured monitors on schedule</div>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "12px" }}>
             <span style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-              {intelligenceDeliveryEnabled ? "已开启默认推送" : "已关闭默认推送，只保留手动抓取"}
+              {intelligenceDeliveryEnabled ? "Default push enabled" : "Default push disabled; manual crawl only"}
             </span>
             <button
               onClick={() => setIntelligenceDeliveryEnabled((current) => !current)}
@@ -820,7 +820,7 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
             </button>
           </div>
           <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "8px", fontWeight: 700 }}>
-            默认推送时间
+            Default push time
           </label>
           <input
             type="time"
@@ -851,8 +851,8 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
             <Bot style={{ width: "18px", height: "18px", color: "var(--color-primary)" }} />
             <div>
-              <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "var(--text-main)" }}>AI 助手</div>
-              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "2px" }}>影响助手入口和论文帮读评分</div>
+              <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "var(--text-main)" }}>AI Assistant</div>
+              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "2px" }}>Affects the assistant entry and paper-reading scoring</div>
             </div>
           </div>
           <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
@@ -901,7 +901,7 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
               marginBottom: "12px",
             }}
           >
-            当前默认使用 Codex。Claude Code 兼容默认关闭；如确有需要，可在设置里手动开启。
+            Codex is used by default. Claude Code compatibility is off by default; enable it manually in Settings if needed.
           </div>
           <button
             onClick={() => setPaperAiScoringEnabled((current) => !current)}
@@ -922,7 +922,7 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
             }}
           >
             <ShieldCheck style={{ width: "16px", height: "16px" }} />
-            {paperAiScoringEnabled ? "论文 AI 帮读评分已开启" : "暂不调用 AI 评分论文"}
+            {paperAiScoringEnabled ? "Paper AI reading-score enabled" : "AI paper scoring off for now"}
           </button>
         </div>
 
@@ -938,18 +938,18 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
             <KeyRound style={{ width: "18px", height: "18px", color: "var(--color-primary)" }} />
             <div>
-              <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "var(--text-main)" }}>学术 API</div>
-              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "2px" }}>arXiv 无需 Key，Semantic Scholar 可选</div>
+              <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "var(--text-main)" }}>Academic API</div>
+              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "2px" }}>arXiv needs no key; Semantic Scholar optional</div>
             </div>
           </div>
           <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "8px", fontWeight: 700 }}>
-            Semantic Scholar API Key（可选）
+            Semantic Scholar API Key (optional)
           </label>
           <input
             type="password"
             value={semanticScholarApiKey}
             onChange={(event) => setSemanticScholarApiKey(event.target.value)}
-            placeholder="留空也可以先开始"
+            placeholder="Leave blank to get started"
             style={{
               width: "100%",
               padding: "10px 12px",
@@ -962,7 +962,7 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
             }}
           />
           <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-            如果你后续大量跑 Follow Up，再到 Semantic Scholar 申请自己的 Key。这里先不强迫填写。
+            If you run a lot of Follow Up later, request your own key from Semantic Scholar. No need to fill it in now.
           </div>
         </div>
       </div>
@@ -992,32 +992,32 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
         >
           <Cookie style={{ width: "20px", height: "20px", color: "#E89B96" }} />
           <span style={{ flex: 1, fontSize: "0.9375rem", color: "var(--text-main)", fontWeight: 600 }}>
-            关于 Cookie 配置
+            About cookie configuration
           </span>
           <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-            {showCookieHint ? "收起" : "展开"}
+            {showCookieHint ? "Collapse" : "Expand"}
           </span>
         </button>
 
         {showCookieHint && (
           <div style={{ marginTop: "16px", paddingTop: "16px", borderTop: "1px solid rgba(255, 183, 178, 0.2)" }}>
             <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: "12px" }}>
-              引导里已经接入当前工具页的一键获取逻辑。B 站和小红书会在获取后立刻测试；知乎仍然可以稍后到模块管理页手动配置。
+              Onboarding already wires up the current tool page's one-click fetch. Bilibili and Xiaohongshu are tested immediately after fetching; Zhihu can still be configured manually later in Module Management.
             </p>
             {showCookieSetup && (
               <div style={{ display: "grid", gap: "12px", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
                 {modules.some((module) => module.enabled && module.id === "bilibili-tracker") &&
                   renderCookieSetupCard(
                     "bilibili",
-                    "哔哩哔哩 Cookie",
-                    "读取浏览器登录态，自动验证 SESSDATA，并保存到引导后的模块环境。",
+                    "Bilibili Cookie",
+                    "Reads the browser login state, auto-verifies SESSDATA, and saves it to the post-onboarding module environment.",
                     handleBilibiliCookieFetch
                   )}
                 {modules.some((module) => module.enabled && module.id === "xiaohongshu-tracker") &&
                   renderCookieSetupCard(
                     "xiaohongshu",
-                    "小红书 Cookie",
-                    "读取浏览器登录态，自动验证 web_session，并保存到后续搜索和入库流程。",
+                    "Xiaohongshu Cookie",
+                    "Reads the browser login state, auto-verifies web_session, and saves it for later search and saving flows.",
                     handleXiaohongshuCookieFetch
                   )}
               </div>
@@ -1025,7 +1025,7 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
 
             {!showCookieSetup && (
               <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                只有启用 B 站或小红书模块时，才会显示对应的一键获取入口。
+                The one-click fetch entry only appears when the Bilibili or Xiaohongshu module is enabled.
               </div>
             )}
           </div>
@@ -1044,9 +1044,9 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
           }}
         >
           <div>
-            <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "var(--text-main)" }}>自动化模块</div>
+            <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "var(--text-main)" }}>Automation Modules</div>
             <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px" }}>
-              这里只做开关和关键词。小红书、B 站、论文的精细监控去对应主动工具页配置。
+              This only toggles modules and keywords. Configure fine-grained Xiaohongshu, Bilibili, and paper monitors on their Active Tool pages.
             </div>
           </div>
           <button
@@ -1064,7 +1064,7 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
               whiteSpace: "nowrap",
             }}
           >
-            {showAdvancedModules ? "隐藏 TODO 模块" : `显示 TODO 模块 ${advancedCount}`}
+            {showAdvancedModules ? "Hide TODO modules" : `Show TODO modules ${advancedCount}`}
           </button>
         </div>
 
@@ -1176,13 +1176,13 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
                     fontWeight: 500,
                   }}
                 >
-                  关键词（用逗号分隔）
+                  Keywords (comma-separated)
                 </label>
                 <input
                   type="text"
                   value={module.keywords.join(", ")}
                   onChange={(e) => updateKeywords(module.id, e.target.value)}
-                  placeholder="可先留空，稍后再配置"
+                  placeholder="Leave blank for now, configure later"
                   style={{
                     width: "100%",
                     padding: "10px 14px",
@@ -1209,10 +1209,10 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
                   }}
                 >
                   {module.keywords.length > 0
-                    ? "也可以稍后回到主动工具里继续细调。"
+                    ? "You can also fine-tune later in the Active Tools."
                     : module.requiresCookie
-                      ? "可以先留空，稍后再配置；但最好先把 Cookie 配好。"
-                      : "可以先留空，稍后再配置。"}
+                      ? "Can be left blank for now; but configure the cookie first."
+                      : "Can be left blank and configured later."}
                 </p>
               </div>
             )}
@@ -1248,7 +1248,7 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
           }}
         >
           <ArrowLeft style={{ width: "18px", height: "18px" }} />
-          返回
+          Back
         </button>
 
         <button
@@ -1284,11 +1284,11 @@ export default function QuickConfigStep({ onNext, onBack }: QuickConfigStepProps
           {isSaving ? (
             <>
               <Loader2 style={{ width: "18px", height: "18px", animation: "spin 1s linear infinite" }} />
-              保存中...
+              Saving...
             </>
           ) : (
             <>
-              继续
+              Continue
               <ArrowRight style={{ width: "18px", height: "18px" }} />
             </>
           )}

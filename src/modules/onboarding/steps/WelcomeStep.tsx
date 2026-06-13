@@ -14,16 +14,16 @@ interface WelcomeStepProps {
 }
 
 const firstRunChecklist = [
-  "选好情报库和文献库",
-  "一键连接小红书 / B 站 Cookie",
-  "设置论文、AI 和每日推送偏好",
-  "看懂左侧导航该从哪里开始",
+  "Choose your Intel Library and Literature Library",
+  "One-click connect Xiaohongshu / Bilibili cookies",
+  "Set paper, AI, and daily push preferences",
+  "Understand where to start in the left navigation",
 ];
 
 const heroStats = [
-  { label: "主入口", value: "8", hint: "角色主页到手记" },
-  { label: "主动工具", value: "5", hint: "先试跑再定时" },
-  { label: "配置时间", value: "10s", hint: "基础跑通" },
+  { label: "Main entries", value: "8", hint: "Character Home to Journal" },
+  { label: "Active tools", value: "5", hint: "Try first, then schedule" },
+  { label: "Setup time", value: "10s", hint: "Basics working" },
 ];
 
 export default function WelcomeStep({ onNext }: WelcomeStepProps) {
@@ -59,7 +59,7 @@ export default function WelcomeStep({ onNext }: WelcomeStepProps) {
           }}
         >
           <Compass style={{ width: "16px", height: "16px" }} />
-          第一次启动 · 研究工作台初始化
+          First launch · research workspace setup
         </div>
 
         <h1
@@ -73,7 +73,7 @@ export default function WelcomeStep({ onNext }: WelcomeStepProps) {
             marginBottom: "22px",
           }}
         >
-          把散落的收藏、论文，整理成自己的大脑操作台。
+          Turn scattered bookmarks and papers into your own brain console.
         </h1>
 
         <p
@@ -85,8 +85,8 @@ export default function WelcomeStep({ onNext }: WelcomeStepProps) {
             marginBottom: "30px",
           }}
         >
-          ABO 不是单个爬虫按钮。它的主线是“注意力 {"->"} 知识 {"->"} 入库 {"->"} Wiki / 助手推进 {"->"} 手记复盘”。
-          这份向导会先帮你完成必要配置，再用真实侧边栏教你每天该怎么用。
+          ABO is not a single crawler button. Its main line is "attention {"->"} knowledge {"->"} save {"->"} Wiki / assistant {"->"} journal review".
+          This wizard helps you finish the required setup first, then teaches daily use with the real sidebar.
         </p>
 
         <div
@@ -146,7 +146,7 @@ export default function WelcomeStep({ onNext }: WelcomeStepProps) {
             event.currentTarget.style.boxShadow = "0 14px 34px rgba(188, 164, 227, 0.38)";
           }}
         >
-          开始 10 秒钟配置
+          Start 10-second setup
           <ArrowRight style={{ width: "20px", height: "20px" }} />
         </button>
       </section>
@@ -192,8 +192,8 @@ export default function WelcomeStep({ onNext }: WelcomeStepProps) {
             <Sparkles style={{ width: "24px", height: "24px" }} />
           </div>
           <div>
-            <div style={{ fontSize: "1.05rem", fontWeight: 900, color: "var(--text-main)" }}>你会得到什么</div>
-            <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "2px" }}>按这个流程走完即可开始使用</div>
+            <div style={{ fontSize: "1.05rem", fontWeight: 900, color: "var(--text-main)" }}>What you'll get</div>
+            <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "2px" }}>Finish this flow and you're ready to go</div>
           </div>
         </div>
 
@@ -255,7 +255,7 @@ export default function WelcomeStep({ onNext }: WelcomeStepProps) {
         >
           <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
             <BookHeart style={{ width: "16px", height: "16px", color: "var(--color-primary)" }} />
-            <span style={{ fontSize: "0.82rem", fontWeight: 850, color: "var(--text-main)" }}>向导会覆盖</span>
+            <span style={{ fontSize: "0.82rem", fontWeight: 850, color: "var(--text-main)" }}>The wizard covers</span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "8px" }}>
             {firstRunChecklist.map((item) => (
@@ -278,7 +278,7 @@ export default function WelcomeStep({ onNext }: WelcomeStepProps) {
 
         <div style={{ marginTop: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
           <div style={{ fontSize: "0.76rem", fontWeight: 850, color: "var(--text-muted)", letterSpacing: "0.04em" }}>
-            先认识这几个入口
+            Get to know these entries first
           </div>
           {primaryNavigation.map((item) => (
             <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>

@@ -25,7 +25,7 @@ export function CookieValidator({
     if (!cookie.trim()) {
       const result: CookieValidationResult = {
         valid: false,
-        message: 'Cookie 不能为空',
+        message: 'Cookie cannot be empty',
       };
       setValidationResult(result);
       onValidationChange?.(result);
@@ -43,7 +43,7 @@ export function CookieValidator({
     } catch (err) {
       const result: CookieValidationResult = {
         valid: false,
-        message: err instanceof Error ? err.message : '验证失败',
+        message: err instanceof Error ? err.message : 'Validation failed',
       };
       setValidationResult(result);
       onValidationChange?.(result);
@@ -85,12 +85,12 @@ export function CookieValidator({
           setValidationResult(validationResult);
           onValidationChange?.(validationResult);
         } else {
-          throw new Error('剪贴板中没有有效的 Cookie');
+          throw new Error('No valid cookie in the clipboard');
         }
       } catch (clipboardErr) {
         const result: CookieValidationResult = {
           valid: false,
-          message: '无法自动获取 Cookie。请手动复制 Cookie 到输入框。',
+          message: 'Could not fetch the cookie automatically. Please paste it into the input manually.',
         };
         setValidationResult(result);
         onValidationChange?.(result);
@@ -120,7 +120,7 @@ export function CookieValidator({
         <textarea
           value={cookie}
           onChange={(e) => handleCookieChange(e.target.value)}
-          placeholder="请输入 Cookie 字符串..."
+          placeholder="Enter the cookie string..."
           rows={3}
           className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-mono text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
         />
@@ -138,7 +138,7 @@ export function CookieValidator({
           ) : (
             <Globe className="w-4 h-4" />
           )}
-          从浏览器获取
+          Get from browser
         </button>
         <button
           onClick={validateCookie}
@@ -150,7 +150,7 @@ export function CookieValidator({
           ) : (
             <RefreshCw className="w-4 h-4" />
           )}
-          验证
+          Validate
         </button>
       </div>
 
@@ -176,7 +176,7 @@ export function CookieValidator({
                   : 'text-red-800 dark:text-red-200'
               }`}
             >
-              {validationResult.valid ? 'Cookie 有效' : 'Cookie 无效'}
+              {validationResult.valid ? 'Cookie valid' : 'Cookie invalid'}
             </p>
             <p
               className={`text-xs mt-1 ${
@@ -189,7 +189,7 @@ export function CookieValidator({
             </p>
             {validationResult.expiryDate && (
               <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                过期时间: {new Date(validationResult.expiryDate).toLocaleString('zh-CN')}
+                Expires: {new Date(validationResult.expiryDate).toLocaleString('en-US')}
               </p>
             )}
           </div>
@@ -198,7 +198,7 @@ export function CookieValidator({
 
       {/* Help Text */}
       <p className="text-xs text-gray-500 dark:text-gray-400">
-        提示: 在目标网站登录后，打开浏览器开发者工具 (F12) → Application → Cookies，复制对应的 Cookie 值。
+        Tip: log in to the target site, open the browser dev tools (F12) → Application → Cookies, and copy the relevant cookie value.
       </p>
     </div>
   );

@@ -42,8 +42,8 @@ export default function VaultSetupStep({ onNext, onBack, onVaultPathSet }: Vault
         setPaths({ vault, literature });
         setUseSamePath(!config.literature_path || config.literature_path === vault);
         setValidation({
-          vault: vault ? { status: "success", message: "已读取现有情报库路径" } : { status: "idle", message: "" },
-          literature: literature ? { status: "success", message: "已读取现有文献库路径" } : { status: "idle", message: "" },
+          vault: vault ? { status: "success", message: "Loaded existing Intel Library path" } : { status: "idle", message: "" },
+          literature: literature ? { status: "success", message: "Loaded existing Literature Library path" } : { status: "idle", message: "" },
         });
       } catch {
         // The user can still select paths manually if config loading fails.
@@ -60,7 +60,7 @@ export default function VaultSetupStep({ onNext, onBack, onVaultPathSet }: Vault
 
     setValidation((prev) => ({
       ...prev,
-      [type]: { status: "validating", message: "正在验证路径..." },
+      [type]: { status: "validating", message: "Validating path..." },
     }));
 
     try {
@@ -71,20 +71,20 @@ export default function VaultSetupStep({ onNext, onBack, onVaultPathSet }: Vault
       if (result.valid) {
         setValidation((prev) => ({
           ...prev,
-          [type]: { status: "success", message: "路径验证成功" },
+          [type]: { status: "success", message: "Path validated" },
         }));
         return true;
       } else {
         setValidation((prev) => ({
           ...prev,
-          [type]: { status: "error", message: result.message || "路径无效" },
+          [type]: { status: "error", message: result.message || "Invalid path" },
         }));
         return false;
       }
     } catch (error) {
       setValidation((prev) => ({
         ...prev,
-        [type]: { status: "error", message: "验证失败" },
+        [type]: { status: "error", message: "Validation failed" },
       }));
       return false;
     }
@@ -92,7 +92,7 @@ export default function VaultSetupStep({ onNext, onBack, onVaultPathSet }: Vault
 
   const selectFolder = async (type: PathType) => {
     try {
-      const title = type === "vault" ? "选择情报库文件夹" : "选择文献库文件夹";
+      const title = type === "vault" ? "Choose Intel Library folder" : "Choose Literature Library folder";
       const selected = await open({
         directory: true,
         multiple: false,
@@ -109,7 +109,7 @@ export default function VaultSetupStep({ onNext, onBack, onVaultPathSet }: Vault
           setPaths({ vault: selected, literature: selected });
           setValidation((prev) => ({
             ...prev,
-            literature: { status: "success", message: "已同步情报库路径" },
+            literature: { status: "success", message: "Synced Intel Library path" },
           }));
         }
       }
@@ -143,7 +143,7 @@ export default function VaultSetupStep({ onNext, onBack, onVaultPathSet }: Vault
     } catch (error) {
       setValidation((prev) => ({
         ...prev,
-        vault: { status: "error", message: "保存配置失败" },
+        vault: { status: "error", message: "Failed to save configuration" },
       }));
     } finally {
       setIsSaving(false);
@@ -237,7 +237,7 @@ export default function VaultSetupStep({ onNext, onBack, onVaultPathSet }: Vault
                 whiteSpace: "nowrap",
               }}
             >
-              {path || "点击选择文件夹"}
+              {path || "Click to choose a folder"}
             </p>
           </div>
           {status !== "idle" && !disabled && getStatusIcon(status)}
@@ -311,7 +311,7 @@ export default function VaultSetupStep({ onNext, onBack, onVaultPathSet }: Vault
           textAlign: "center",
         }}
       >
-        连接你的本地知识库
+        Connect your local knowledge base
       </h2>
 
       <p
@@ -323,8 +323,8 @@ export default function VaultSetupStep({ onNext, onBack, onVaultPathSet }: Vault
           lineHeight: 1.6,
         }}
       >
-        ABO 会把抓取结果写成 Markdown。第一次使用建议选一个 Obsidian Vault；
-        文献库可以先和情报库共用，后续再拆开。
+        ABO writes crawl results as Markdown. For first use we recommend choosing an Obsidian Vault;
+        the Literature Library can share the Intel Library path at first and be split out later.
       </p>
 
       {/* Path Selectors */}
@@ -332,8 +332,8 @@ export default function VaultSetupStep({ onNext, onBack, onVaultPathSet }: Vault
         <PathSelector
           type="vault"
           icon={BookOpen}
-          title="情报库"
-          description="存储小红书、Bilibili、知乎、收藏和网页等非论文内容"
+          title="Intel Library"
+          description="Stores non-paper content: Xiaohongshu, Bilibili, Zhihu, bookmarks, web pages"
         />
 
         {/* Use same path toggle */}
@@ -372,15 +372,15 @@ export default function VaultSetupStep({ onNext, onBack, onVaultPathSet }: Vault
             />
           </button>
           <span style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}>
-            文献库使用相同路径
+            Literature Library uses the same path
           </span>
         </div>
 
         <PathSelector
           type="literature"
           icon={Database}
-          title="文献库"
-          description="存储 arXiv、Semantic Scholar、Follow Up 等论文和文献内容"
+          title="Literature Library"
+          description="Stores papers and literature: arXiv, Semantic Scholar, Follow Up"
           disabled={useSamePath}
         />
       </div>
@@ -413,7 +413,7 @@ export default function VaultSetupStep({ onNext, onBack, onVaultPathSet }: Vault
           }}
         >
           <ArrowLeft style={{ width: "18px", height: "18px" }} />
-          返回
+          Back
         </button>
 
         <button
@@ -440,11 +440,11 @@ export default function VaultSetupStep({ onNext, onBack, onVaultPathSet }: Vault
           {isSaving ? (
             <>
               <Loader2 style={{ width: "18px", height: "18px", animation: "spin 1s linear infinite" }} />
-              保存中...
+              Saving...
             </>
           ) : (
             <>
-              继续
+              Continue
               <ArrowRight style={{ width: "18px", height: "18px" }} />
             </>
           )}
@@ -466,7 +466,7 @@ export default function VaultSetupStep({ onNext, onBack, onVaultPathSet }: Vault
           textUnderlineOffset: "4px",
         }}
       >
-        稍后再选库，继续 10 秒钟配置
+        Choose libraries later, continue the 10-second setup
       </button>
 
       <style>{`

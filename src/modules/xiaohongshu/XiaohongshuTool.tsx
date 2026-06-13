@@ -530,7 +530,7 @@ export function XiaohongshuTool() {
   });
 
   const browserLabelMap: Record<BrowserChoice, string> = {
-    default: "默认浏览器",
+    default: "Default browser",
     edge: "Edge",
     chrome: "Chrome",
     brave: "Brave",
@@ -553,28 +553,28 @@ export function XiaohongshuTool() {
   const formatStrategyLabel = (strategy?: string | null) => {
     switch (strategy) {
       case "extension_note_detail_map":
-        return "插件详情 state";
+        return "Extension detail state";
       case "extension_state_tree_detail":
       case "extension_state_tree_note":
-        return "插件页面 state 补抓";
+        return "Extension page state re-fetch";
       case "extension_dom_fallback":
-        return "插件 DOM 补抓";
+        return "Extension DOM re-fetch";
       case "extension_state_machine":
-        return "插件评论状态机";
+        return "Extension comment state machine";
       case "plugin_state_urls":
-        return "插件 state 媒体链接";
+        return "Extension state media links";
       case "plugin_dom_urls":
-        return "插件 DOM 媒体链接";
+        return "Extension DOM media links";
       case "cdp_initial_state":
-        return "CDP 详情兜底";
+        return "CDP detail fallback";
       case "cdp_state_urls":
-        return "CDP 媒体链接";
+        return "CDP media links";
       case "html_initial_state":
-        return "后端 HTML/Initial State";
+        return "Backend HTML/Initial State";
       case "html_state_urls":
-        return "后端 HTML 媒体链接";
+        return "Backend HTML media links";
       default:
-        return strategy || "未标记";
+        return strategy || "Unlabeled";
     }
   };
 
@@ -582,9 +582,9 @@ export function XiaohongshuTool() {
     used_extension?: boolean;
     used_cdp?: boolean;
   } | null) => {
-    if (payload?.used_extension) return "插件主链路";
-    if (payload?.used_cdp) return "CDP 兜底";
-    return "后端 HTML 兜底";
+    if (payload?.used_extension) return "Extension main path";
+    if (payload?.used_cdp) return "CDP fallback";
+    return "Backend HTML fallback";
   };
 
   const normalizeAuthorKey = (value?: string | null) => String(value || "").trim().toLowerCase();
@@ -600,10 +600,10 @@ export function XiaohongshuTool() {
     return cleanUserId ? `https://www.xiaohongshu.com/user/profile/${encodeURIComponent(cleanUserId)}` : "";
   };
 
-  const openExternalUrl = async (url?: string | null, label = "页面") => {
+  const openExternalUrl = async (url?: string | null, label = "page") => {
     const cleanUrl = String(url || "").trim();
     if (!cleanUrl) {
-      toast.error(`${label}链接不存在`);
+      toast.error(`No link for ${label}`);
       return;
     }
     try {
@@ -615,7 +615,7 @@ export function XiaohongshuTool() {
       } catch {
         // fall through
       }
-      toast.error(`打开${label}失败`, e instanceof Error ? e.message : "未知错误");
+      toast.error(`Failed to open ${label}`, e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -1024,9 +1024,9 @@ export function XiaohongshuTool() {
         },
       });
       await refreshTrackerConfig();
-      toast.success("共享映射已保存", "下次执行“共享智能分组”会优先使用这份映射。");
+      toast.success("Shared mapping saved", "The next \"shared smart grouping\" run will use this mapping first.");
     } catch (err) {
-      toast.error("保存失败", err instanceof Error ? err.message : "未知错误");
+      toast.error("Save failed", err instanceof Error ? err.message : "Unknown error");
     } finally {
       setSavingSignalMappings(false);
     }
@@ -1121,7 +1121,7 @@ export function XiaohongshuTool() {
     return parts.join("; ");
   };
 
-  const requireCookie = (message = "请先配置 Cookie") => {
+  const requireCookie = (message = "Please configure the cookie first") => {
     if (hasCookie) return true;
     setShowCookieModal(true);
     toast.error(message);
@@ -1169,20 +1169,20 @@ export function XiaohongshuTool() {
     onStarted?: (taskId: string) => void,
   ) => {
     if (isTaskRunning(kind)) {
-      toast.info("任务正在执行", "同类型任务完成后再启动新的。");
+      toast.info("Task already running", "Start a new one after the current task of this type finishes.");
       return;
     }
     setTaskRunning(kind, true);
     try {
       const started = await start();
       onStarted?.(started.task_id);
-      setBackgroundTask({ kind, stage: "任务已创建", taskId: started.task_id });
+      setBackgroundTask({ kind, stage: "Task created", taskId: started.task_id });
       setTaskHistory((prev) => [
         {
           task_id: started.task_id,
           kind,
           status: "running" as const,
-          stage: "任务已创建",
+          stage: "Task created",
           result: null,
           error: null,
         },
@@ -1203,14 +1203,14 @@ export function XiaohongshuTool() {
             return;
           }
           if (progress.status === "failed") {
-            toast.error("后台任务失败", progress.error || "未知错误");
+            toast.error("Background task failed", progress.error || "Unknown error");
             setTaskHistory((prev) => [progress, ...prev.filter((item) => item.task_id !== progress.task_id)].slice(0, 20));
             setBackgroundTask(null);
             setTaskRunning(kind, false);
             return;
           }
           if (progress.status === "cancelled" || progress.status === "interrupted") {
-            toast.info("任务已停止", progress.stage || "已中断");
+            toast.info("Task stopped", progress.stage || "Interrupted");
             setTaskHistory((prev) => [progress, ...prev.filter((item) => item.task_id !== progress.task_id)].slice(0, 20));
             setBackgroundTask(null);
             setTaskRunning(kind, false);
@@ -1218,7 +1218,7 @@ export function XiaohongshuTool() {
           }
           window.setTimeout(poll, 1000);
         } catch (err) {
-          toast.error("读取后台进度失败", err instanceof Error ? err.message : "未知错误");
+          toast.error("Failed to read background progress", err instanceof Error ? err.message : "Unknown error");
           setBackgroundTask(null);
           setTaskRunning(kind, false);
         }
@@ -1284,7 +1284,7 @@ export function XiaohongshuTool() {
     try {
       const res = await xiaohongshuGetCookieFromBrowser({ browser });
       if (!res.success) {
-        toast.error("一键获取失败", res.error || "请先在本机浏览器登录小红书");
+        toast.error("One-click fetch failed", res.error || "Log in to Xiaohongshu in your local browser first");
         return;
       }
 
@@ -1294,9 +1294,9 @@ export function XiaohongshuTool() {
       setBackendCookieConfigured(true);
       setCookieVerified(Boolean(res.web_session || res.cookie));
       setShowCookieModal(false);
-      toast.success("Cookie 已保存", res.message || `获取到 ${res.cookie_count || 0} 个 Cookie`);
+      toast.success("Cookie saved", res.message || `Got ${res.cookie_count || 0} cookies`);
     } catch (err) {
-      toast.error("一键获取失败", err instanceof Error ? err.message : "请检查浏览器是否已登录");
+      toast.error("One-click fetch failed", err instanceof Error ? err.message : "Check that the browser is logged in");
     } finally {
       setGettingCookie(false);
     }
@@ -1317,12 +1317,12 @@ export function XiaohongshuTool() {
     setFullCookie("");
     setCookieVerified(false);
     setBackendCookieConfigured(false);
-    toast.success("本地缓存已清空", "已清空 ABO 保存的小红书专辑和 Cookie 缓存，请重新登录并更新 Cookie");
+    toast.success("Local cache cleared", "ABO's saved Xiaohongshu album and cookie caches were cleared. Log in again and update the cookie");
   };
 
   const handleVerifyCookie = async () => {
     if (!webSession.trim()) {
-      toast.error("请输入 web_session");
+      toast.error("Please enter web_session");
       return;
     }
     setVerifying(true);
@@ -1339,14 +1339,14 @@ export function XiaohongshuTool() {
         setCookieVerified(true);
         setBackendCookieConfigured(true);
         setShowCookieModal(false);
-        toast.success("Cookie 验证成功", res.message);
+        toast.success("Cookie verified", res.message);
       } else {
         setCookieVerified(false);
-        toast.error("Cookie 验证失败", res.message);
+        toast.error("Cookie verification failed", res.message);
       }
     } catch (err) {
       setCookieVerified(false);
-      toast.error("验证失败", err instanceof Error ? err.message : "未知错误");
+      toast.error("Verification failed", err instanceof Error ? err.message : "Unknown error");
     } finally {
       setVerifying(false);
     }
@@ -1354,7 +1354,7 @@ export function XiaohongshuTool() {
 
   const handleSearch = async () => {
     if (!searchKeyword.trim()) {
-      toast.error("请输入关键词");
+      toast.error("Please enter keywords");
       return;
     }
     if (!requireCookie()) {
@@ -1380,17 +1380,17 @@ export function XiaohongshuTool() {
             void handleSaveSearchResults(result.notes, result.keyword);
           }
         },
-        (result) => ({ title: `找到 ${result.total_found} 条结果` }),
+        (result) => ({ title: `Found ${result.total_found} results` }),
       );
     } catch (e) {
       console.error("Search failed:", e);
-      toast.error("搜索失败", e instanceof Error ? e.message : "请先配置有效的 Cookie");
+      toast.error("Search failed", e instanceof Error ? e.message : "Configure a valid cookie first");
     }
   };
 
   const handleComments = async () => {
     if (!noteId.trim()) {
-      toast.error("请输入笔记 ID");
+      toast.error("Please enter a note ID");
       return;
     }
     if (!requireCookie()) {
@@ -1414,17 +1414,17 @@ export function XiaohongshuTool() {
           max_replies_threshold: 10,
         }),
         (result) => setCommentsResult(result),
-        (result) => ({ title: `获取 ${result.total_comments} 条评论` }),
+        (result) => ({ title: `Fetched ${result.total_comments} comments` }),
       );
     } catch (e) {
       console.error("Fetch comments failed:", e);
-      toast.error("获取评论失败");
+      toast.error("Failed to fetch comments");
     }
   };
 
   const handleFollowingFeed = async () => {
     if (!followingKeywords.trim()) {
-      toast.error("请输入关键词");
+      toast.error("Please enter keywords");
       return;
     }
     if (!requireCookie()) {
@@ -1452,13 +1452,13 @@ export function XiaohongshuTool() {
             void handleSaveFollowingResults(result.notes, keywordLabel);
           }
         },
-        (result) => ({ title: `已关注筛选中找到 ${result.total_found} 条匹配结果` }),
+        (result) => ({ title: `Found ${result.total_found} matches in the followed filter` }),
         (taskId) => setFollowingFeedTaskId(taskId),
       );
     } catch (e) {
-      console.error("获取关注流关键词结果失败:", e);
+      console.error("Failed to fetch follow-feed keyword results:", e);
       setFollowingFeedTaskId(null);
-      toast.error("获取关注流关键词结果失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Failed to fetch follow-feed keyword results", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -1468,7 +1468,7 @@ export function XiaohongshuTool() {
   ) => {
     const trimmedQuery = String(nextCreatorQuery || "").trim();
     if (!trimmedQuery) {
-      toast.error("请输入博主名称、主页链接或 user_id");
+      toast.error("Enter a blogger name, profile link, or user_id");
       return;
     }
     if (!requireCookie()) {
@@ -1505,7 +1505,7 @@ export function XiaohongshuTool() {
             void handleSaveCreatorRecentNotes(
               result.notes,
               result.resolved_author || result.creator_query,
-              "博主最近动态已入库",
+              "Blogger's recent posts saved",
               result.resolved_user_id,
             );
           }
@@ -1515,14 +1515,14 @@ export function XiaohongshuTool() {
             result.resolved_author || result.creator_query,
             result.notes,
             result.resolved_user_id,
-          )} 最近 ${result.recent_days} 天 ${result.total_found} 条`,
+          )} last ${result.recent_days} days, ${result.total_found} items`,
         }),
         (taskId) => setCreatorRecentTaskId(taskId),
       );
     } catch (e) {
-      console.error("抓取指定博主失败:", e);
+      console.error("Failed to crawl the specified blogger:", e);
       setCreatorRecentTaskId(null);
-      toast.error("抓取指定博主失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Failed to crawl the specified blogger", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -1537,10 +1537,10 @@ export function XiaohongshuTool() {
         return progress.result;
       }
       if (progress.status === "failed") {
-        throw new Error(progress.error || progress.stage || "任务执行失败");
+        throw new Error(progress.error || progress.stage || "Task execution failed");
       }
       if (progress.status === "cancelled" || progress.status === "interrupted") {
-        throw new Error(progress.stage || "任务已停止");
+        throw new Error(progress.stage || "Task stopped");
       }
       await new Promise((resolve) => window.setTimeout(resolve, 800));
     }
@@ -1569,9 +1569,9 @@ export function XiaohongshuTool() {
     if (!followingFeedTaskId) return;
     try {
       await xiaohongshuCancelTask(followingFeedTaskId);
-      toast.info("已发送停止指令", "关注流关键词搜索正在中断。");
+      toast.info("Stop signal sent", "Follow-feed keyword search is being interrupted.");
     } catch (e) {
-      toast.error("停止失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Stop failed", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -1579,15 +1579,15 @@ export function XiaohongshuTool() {
     if (!creatorRecentTaskId) return;
     try {
       await xiaohongshuCancelTask(creatorRecentTaskId);
-      toast.info("已发送停止指令", "指定 UP 主抓取正在中断。");
+      toast.info("Stop signal sent", "Targeted creator crawl is being interrupted.");
     } catch (e) {
-      toast.error("停止失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Stop failed", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
   const handleCrawlNote = async () => {
     if (!crawlUrl.trim()) {
-      toast.error("请输入小红书笔记链接");
+      toast.error("Please enter a Xiaohongshu note link");
       return;
     }
     if (!requireCookie()) {
@@ -1608,20 +1608,20 @@ export function XiaohongshuTool() {
         }),
         (result) => setCrawlResult(result),
         (result) => ({
-          title: "已保存到 xhs/主动保存",
+          title: "Saved to xhs/主动保存",
           description: formatLibraryLocation(result.markdown_path, "vault", config),
         }),
       );
     } catch (e) {
       console.error("Crawl note failed:", e);
-      toast.error("入库失败", e instanceof Error ? e.message : "请检查链接、Cookie 或本地浏览器调试端口");
+      toast.error("Save failed", e instanceof Error ? e.message : "Check the link, cookie, or local browser debug port");
     }
   };
 
   const handleCrawlBatch = async (urls?: string[]) => {
     const targetUrls = urls || batchUrls.split(/\n+/).map((item) => item.trim()).filter(Boolean);
     if (targetUrls.length === 0) {
-      toast.error("请输入至少一个小红书链接");
+      toast.error("Enter at least one Xiaohongshu link");
       return;
     }
     if (!requireCookie()) {
@@ -1644,9 +1644,9 @@ export function XiaohongshuTool() {
         (result) => {
           const firstSavedResult = result.results.find((item): item is CrawlNoteResponse => item.success === true);
           return {
-            title: "批量入库完成",
+            title: "Bulk save finished",
             description: withLocationSuffix(
-              `成功 ${result.saved} 条，失败 ${result.failed} 条`,
+              `${result.saved} succeeded, ${result.failed} failed`,
               firstSavedResult?.xhs_dir || firstSavedResult?.markdown_path,
               "vault",
               config,
@@ -1656,7 +1656,7 @@ export function XiaohongshuTool() {
       );
     } catch (e) {
       console.error("Crawl batch failed:", e);
-      toast.error("批量入库失败", e instanceof Error ? e.message : "请检查链接或 Cookie");
+      toast.error("Bulk save failed", e instanceof Error ? e.message : "Check the links or cookie");
     }
   };
 
@@ -1709,11 +1709,11 @@ export function XiaohongshuTool() {
   ) => {
     const targetNotes = notes.filter((note) => note.url);
     if (targetNotes.length === 0) {
-      toast.error(options.emptyMessage || "没有可入库的搜索结果");
+      toast.error(options.emptyMessage || "No search results to save");
       return;
     }
     if (previewSaveRunning) {
-      toast.info("预览入库正在执行");
+      toast.info("Preview save already running");
       return;
     }
     setTaskRunning("save-previews", true);
@@ -1731,24 +1731,24 @@ export function XiaohongshuTool() {
       });
       const status: XHSTaskStatus["status"] = result.failed > 0 ? "failed" : "completed";
       toast.success(
-        options.successTitle || "已保存到 xhs/主动保存",
-        withLocationSuffix(`成功 ${result.saved} 条，失败 ${result.failed} 条`, result.xhs_dir, "vault", config),
+        options.successTitle || "Saved to xhs/主动保存",
+        withLocationSuffix(`${result.saved} succeeded, ${result.failed} failed`, result.xhs_dir, "vault", config),
       );
       setTaskHistory((prev) => [
         {
           task_id: `preview-${Date.now()}`,
           kind: "save-previews",
           status,
-          stage: `统一入库完成：成功 ${result.saved} 条，失败 ${result.failed} 条`,
+          stage: `Unified save finished: ${result.saved} succeeded, ${result.failed} failed`,
           result,
-          error: result.failed > 0 ? "部分搜索结果保存失败" : null,
+          error: result.failed > 0 ? "Some search results failed to save" : null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
         ...prev,
       ].slice(0, 20));
     } catch (e) {
-      toast.error("预览入库失败", e instanceof Error ? e.message : "请检查情报库路径");
+      toast.error("Preview save failed", e instanceof Error ? e.message : "Check the Intel Library path");
     } finally {
       setTaskRunning("save-previews", false);
     }
@@ -1763,29 +1763,29 @@ export function XiaohongshuTool() {
     await handleSavePreviewNotesWithOptions(notes, {
       subfolder: buildCreatorSaveSubfolder(rawSubfolder, notes, explicitAuthorId),
       successTitle,
-      emptyMessage: "没有可入库的博主动态",
+      emptyMessage: "No blogger posts to save",
     });
   };
 
   const handleSaveSearchResults = async (notes: XHSNote[], keyword: string) => {
     await handleSavePreviewNotesWithOptions(notes, {
       subfolder: buildKeywordSaveSubfolder(keyword),
-      successTitle: "关键词结果已入库",
+      successTitle: "Keyword results saved",
       includeComments: searchSaveComments,
       commentsLimit: searchSaveCommentsLimit,
       commentsSortBy: searchSaveCommentsSortBy,
-      emptyMessage: "没有可入库的关键词结果",
+      emptyMessage: "No keyword results to save",
     });
   };
 
   const handleSaveFollowingResults = async (notes: XHSNote[], keywordLabel: string) => {
     await handleSavePreviewNotesWithOptions(notes, {
       subfolder: buildFollowingSaveSubfolder(keywordLabel),
-      successTitle: "关注流搜索结果已入库",
+      successTitle: "Follow-feed search results saved",
       includeComments: searchSaveComments,
       commentsLimit: searchSaveCommentsLimit,
       commentsSortBy: searchSaveCommentsSortBy,
-      emptyMessage: "没有可入库的关注流结果",
+      emptyMessage: "No follow-feed results to save",
     });
   };
 
@@ -1795,11 +1795,11 @@ export function XiaohongshuTool() {
         await api.post(`/api/tools/xiaohongshu/albums/tasks/${albumListTaskId}/cancel`, {});
         if (albumListTimerRef.current) window.clearInterval(albumListTimerRef.current);
         albumListTimerRef.current = null;
-        setAlbumListProgress((prev: any) => ({ ...(prev || {}), status: "cancelled", stage: "已中断" }));
+        setAlbumListProgress((prev: any) => ({ ...(prev || {}), status: "cancelled", stage: "Interrupted" }));
         setAlbumListTaskId(null);
-        toast.info("专辑读取已中断");
+        toast.info("Album reading interrupted");
       } catch (e) {
-        toast.error("中断失败", e instanceof Error ? e.message : "未知错误");
+        toast.error("Interrupt failed", e instanceof Error ? e.message : "Unknown error");
       }
       return;
     }
@@ -1815,7 +1815,7 @@ export function XiaohongshuTool() {
         ...xhsBridgeOptions,
       });
       setAlbumListTaskId(started.task_id);
-      setAlbumListProgress({ status: "running", stage: "任务已创建", albums_total: 0 });
+      setAlbumListProgress({ status: "running", stage: "Task created", albums_total: 0 });
       const timer = window.setInterval(async () => {
         try {
           const progress = await api.get<any>(`/api/tools/xiaohongshu/albums/${started.task_id}`);
@@ -1828,8 +1828,8 @@ export function XiaohongshuTool() {
             setAlbums(normalizedAlbums);
             setSelectedAlbumIds(new Set(normalizedAlbums.map((album) => album.board_id)));
             setAlbumListTaskId(null);
-            if (normalizedAlbums.length > 0) toast.success(`找到 ${normalizedAlbums.length} 个专辑`);
-            else toast.info("未发现专辑", result.message);
+            if (normalizedAlbums.length > 0) toast.success(`Found ${normalizedAlbums.length} albums`);
+            else toast.info("No albums found", result.message);
           } else if (progress.status === "cancelled") {
             window.clearInterval(timer);
             albumListTimerRef.current = null;
@@ -1838,20 +1838,20 @@ export function XiaohongshuTool() {
             window.clearInterval(timer);
             albumListTimerRef.current = null;
             setAlbumListTaskId(null);
-            toast.error("获取专辑失败", progress.error || "未知错误");
+            toast.error("Failed to fetch albums", progress.error || "Unknown error");
           }
         } catch (err) {
           window.clearInterval(timer);
           albumListTimerRef.current = null;
           setAlbumListTaskId(null);
-          toast.error("读取进度失败", err instanceof Error ? err.message : "未知错误");
+          toast.error("Failed to read progress", err instanceof Error ? err.message : "Unknown error");
         }
       }, 800);
       albumListTimerRef.current = timer;
     } catch (e) {
       setAlbumListTaskId(null);
       console.error("Fetch albums failed:", e);
-      toast.error("获取专辑失败", e instanceof Error ? e.message : "请先在浏览器打开个人主页的收藏专辑页");
+      toast.error("Failed to fetch albums", e instanceof Error ? e.message : "Open your profile's bookmark album page in the browser first");
     }
   };
 
@@ -1870,17 +1870,17 @@ export function XiaohongshuTool() {
         await api.post(`/api/tools/xiaohongshu/albums/tasks/${albumCrawlTaskId}/cancel`, {});
         if (albumCrawlTimerRef.current) window.clearInterval(albumCrawlTimerRef.current);
         albumCrawlTimerRef.current = null;
-        setAlbumProgress((prev: any) => ({ ...(prev || {}), status: "cancelled", stage: "已中断" }));
+        setAlbumProgress((prev: any) => ({ ...(prev || {}), status: "cancelled", stage: "Interrupted" }));
         setAlbumCrawlTaskId(null);
-        toast.info("专辑抓取已中断");
+        toast.info("Album crawl interrupted");
       } catch (e) {
-        toast.error("中断失败", e instanceof Error ? e.message : "未知错误");
+        toast.error("Interrupt failed", e instanceof Error ? e.message : "Unknown error");
       }
       return;
     }
     const selected = albums.filter((album) => selectedAlbumIds.has(album.board_id));
     if (selected.length === 0) {
-      toast.error("请选择至少一个专辑");
+      toast.error("Select at least one album");
       return;
     }
     if (!requireCookie()) {
@@ -1911,7 +1911,7 @@ export function XiaohongshuTool() {
         ...xhsBridgeOptions,
       });
       setAlbumCrawlTaskId(started.task_id);
-      setAlbumProgress({ status: "running", stage: "任务已创建", total_albums: selected.length, saved: 0, skipped: 0, failed: 0 });
+      setAlbumProgress({ status: "running", stage: "Task created", total_albums: selected.length, saved: 0, skipped: 0, failed: 0 });
       const timer = window.setInterval(async () => {
         try {
           const progress = await api.get<any>(`/api/tools/xiaohongshu/albums/crawl/${started.task_id}`);
@@ -1927,12 +1927,12 @@ export function XiaohongshuTool() {
             const firstFailedItem = Array.isArray(progress.result?.results)
               ? progress.result.results.find((item: any) => !item?.success)
               : null;
-            const failureDetail = firstFailedItem?.error ? `；原因：${firstFailedItem.error}` : "";
+            const failureDetail = firstFailedItem?.error ? `; reason: ${firstFailedItem.error}` : "";
             if (failedCount > 0) {
               toast.error(
-                `专辑${mode === "full" ? "全量" : "增量"}抓取结束`,
+                `Album ${mode === "full" ? "full" : "incremental"} crawl ended`,
                 withLocationSuffix(
-                  `新增 ${savedCount} 条，跳过 ${skippedCount} 条，失败 ${failedCount} 条；已保留当前专辑列表${failureDetail}`,
+                  `Added ${savedCount}, skipped ${skippedCount}, failed ${failedCount}; current album list kept${failureDetail}`,
                   dirnamePath(progress.result?.progress_path),
                   "vault",
                   config,
@@ -1940,9 +1940,9 @@ export function XiaohongshuTool() {
               );
             } else {
               toast.success(
-                `专辑${mode === "full" ? "全量" : "增量"}抓取完成`,
+                `Album ${mode === "full" ? "full" : "incremental"} crawl finished`,
                 withLocationSuffix(
-                  `新增 ${savedCount} 条，跳过 ${skippedCount} 条；已保留当前专辑列表`,
+                  `Added ${savedCount}, skipped ${skippedCount}; current album list kept`,
                   dirnamePath(progress.result?.progress_path),
                   "vault",
                   config,
@@ -1957,20 +1957,20 @@ export function XiaohongshuTool() {
             window.clearInterval(timer);
             albumCrawlTimerRef.current = null;
             setAlbumCrawlTaskId(null);
-            toast.error("专辑抓取失败", progress.error || "未知错误");
+            toast.error("Album crawl failed", progress.error || "Unknown error");
           }
         } catch (err) {
           window.clearInterval(timer);
           albumCrawlTimerRef.current = null;
           setAlbumCrawlTaskId(null);
-          toast.error("读取进度失败", err instanceof Error ? err.message : "未知错误");
+          toast.error("Failed to read progress", err instanceof Error ? err.message : "Unknown error");
         }
       }, 1200);
       albumCrawlTimerRef.current = timer;
     } catch (e) {
       setAlbumCrawlTaskId(null);
       console.error("Crawl albums failed:", e);
-      toast.error("专辑抓取失败", e instanceof Error ? e.message : "请确认专辑页面可访问");
+      toast.error("Album crawl failed", e instanceof Error ? e.message : "Confirm the album page is accessible");
     }
   };
 
@@ -1983,11 +1983,11 @@ export function XiaohongshuTool() {
       await api.post("/api/modules/xiaohongshu-tracker/config", buildTrackerConfigPayload({
         keyword_monitors: nextKeywordMonitors,
       }));
-      toast.success("情报推送已保存", "模块管理会按定时任务抓取这些定义");
+      toast.success("Intel push saved", "Module management will crawl these definitions on schedule");
       await refreshTrackerConfig();
       setExpandedPushes((prev) => new Set(prev).add("keyword"));
     } catch (e) {
-      toast.error("保存失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Save failed", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -1997,7 +1997,7 @@ export function XiaohongshuTool() {
       ? applyKeywordDraftToMonitors(trackerKeywordDraft)
       : commitKeywordMonitorsForSave();
     if (existingMonitors.length === 0) {
-      toast.error("请先添加至少一个关键词定义");
+      toast.error("Add at least one keyword definition first");
       return;
     }
     const next = !trackerEnableKeywordSearch;
@@ -2010,9 +2010,9 @@ export function XiaohongshuTool() {
         keyword_monitors: nextKeywordMonitors,
       }));
       await refreshTrackerConfig();
-      toast.success(next ? "情报推送已开启" : "情报推送已关闭");
+      toast.success(next ? "Intel push enabled" : "Intel push disabled");
     } catch (e) {
-      toast.error("保存失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Save failed", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -2032,9 +2032,9 @@ export function XiaohongshuTool() {
         next.delete("keyword");
         return next;
       });
-      toast.success("情报推送已删除");
+      toast.success("Intel push deleted");
     } catch (e) {
-      toast.error("删除失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Delete failed", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -2048,9 +2048,9 @@ export function XiaohongshuTool() {
         creator_push_enabled: next,
       }));
       await refreshTrackerConfig();
-      toast.success(next ? "全部博主已开启" : "全部博主已关闭");
+      toast.success(next ? "All bloggers enabled" : "All bloggers disabled");
     } catch (e) {
-      toast.error("保存失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Save failed", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -2067,9 +2067,9 @@ export function XiaohongshuTool() {
         next.delete("creator");
         return next;
       });
-      toast.success("特定关注已删除");
+      toast.success("Targeted follow deleted");
     } catch (e) {
-      toast.error("删除失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Delete failed", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -2087,7 +2087,7 @@ export function XiaohongshuTool() {
       }));
       await refreshTrackerConfig();
     } catch (e) {
-      toast.error("保存失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Save failed", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -2100,9 +2100,9 @@ export function XiaohongshuTool() {
         creator_monitors: nextCreatorMonitors,
       }));
       await refreshTrackerConfig();
-      toast.success("博主已移除");
+      toast.success("Blogger removed");
     } catch (e) {
-      toast.error("删除失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Delete failed", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -2122,7 +2122,7 @@ export function XiaohongshuTool() {
         .map((monitor) => monitor.id),
     );
     if (removeIds.size === 0) {
-      toast.info("当前没有可删除的关注");
+      toast.info("No follows to delete");
       return;
     }
     const nextCreatorMonitors = scope === "all"
@@ -2135,9 +2135,9 @@ export function XiaohongshuTool() {
       }));
       await refreshTrackerConfig();
       setCreatorMonitorPage(0);
-      toast.success("关注已批量删除", `删除 ${removeIds.size} 个博主`);
+      toast.success("Follows bulk-deleted", `Removed ${removeIds.size} bloggers`);
     } catch (e) {
-      toast.error("批量删除失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Bulk delete failed", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -2157,7 +2157,7 @@ export function XiaohongshuTool() {
         smart_group_labels: member.profile.smart_group_labels || [],
       }));
     if (importedMonitors.length === 0) {
-      toast.info("这个智能分组里的博主都已添加");
+      toast.info("All bloggers in this smart group are already added");
       return;
     }
     const nextCreatorMonitors = [...currentMonitors, ...importedMonitors];
@@ -2169,9 +2169,9 @@ export function XiaohongshuTool() {
       setCreatorMonitorGroupFilter(groupValue);
       setCreatorMonitorPage(0);
       setExpandedPushes((prev) => new Set(prev).add("creator"));
-      toast.success("已从智能分组导入", `新增 ${importedMonitors.length} 个博主`);
+      toast.success("Imported from smart group", `Added ${importedMonitors.length} bloggers`);
     } catch (e) {
-      toast.error("导入失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Import failed", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -2199,13 +2199,13 @@ export function XiaohongshuTool() {
         },
         (result) => ({
           title: result.workflow_mode === "creator-only"
-            ? "博主 / UP 已重新整理"
-            : (result.already_grouped ? "智能分组已增量更新" : "智能分组已生成"),
+            ? "Creators re-organized"
+            : (result.already_grouped ? "Smart groups incrementally updated" : "Smart groups generated"),
           description: result.message,
         }),
       );
     } catch (e) {
-      toast.error("智能分组失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Smart grouping failed", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -2220,12 +2220,12 @@ export function XiaohongshuTool() {
   const handleAddFrequentAuthorToCreatorMonitor = async (candidate: XHSAuthorCandidate) => {
     const candidateAuthorId = normalizeXhsProfileUserId(candidate.author_id || resolveKnownAuthorId(candidate.author));
     if (!candidateAuthorId) {
-      toast.error("这个博主还没解析出 user_id", "先重新执行一次“共享智能分组”。");
+      toast.error("No user_id resolved for this blogger yet", "Re-run \"shared smart grouping\" first.");
       return;
     }
     if (creatorMonitorByUserId.has(candidateAuthorId)) {
       setExpandedPushes((prev) => new Set(prev).add("creator"));
-      toast.info("这个博主已经在指定关注里");
+      toast.info("This blogger is already in targeted follows");
       return;
     }
     try {
@@ -2242,9 +2242,9 @@ export function XiaohongshuTool() {
       ]);
       await refreshTrackerConfig();
       setExpandedPushes((prev) => new Set(prev).add("creator"));
-      toast.success("已加入指定关注爬取", `新增 ${result.added_count} 个博主，当前总数 ${result.total_user_ids}`);
+      toast.success("Added to targeted follow crawl", `Added ${result.added_count} bloggers, ${result.total_user_ids} total`);
     } catch (e) {
-      toast.error("加入失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Failed to add", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -2296,8 +2296,8 @@ export function XiaohongshuTool() {
       >
         <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
           {layout === "horizontal"
-            ? "结果已整理成横向轨道。可左右滑动，或用 Q / E、← / → 快速翻页。"
-            : "结果已切回竖向原版卡片。适合逐条细看、连续入库和对比详情。"}
+            ? "Results arranged in a horizontal track. Swipe left/right, or use Q / E and ← / → to flip pages."
+            : "Results switched back to vertical cards. Good for item-by-item review, continuous saving, and detail comparison."}
         </div>
         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
           <button
@@ -2305,7 +2305,7 @@ export function XiaohongshuTool() {
             onClick={() => onLayoutChange(layout === "horizontal" ? "vertical" : "horizontal")}
             style={segmentedButtonStyle(layout === "vertical")}
           >
-            {layout === "horizontal" ? "切到竖排" : "切到横排"}
+            {layout === "horizontal" ? "Switch to vertical" : "Switch to horizontal"}
           </button>
           <button
             type="button"
@@ -2315,7 +2315,7 @@ export function XiaohongshuTool() {
               includeComments: searchSaveComments,
               commentsLimit: searchSaveCommentsLimit,
               commentsSortBy: searchSaveCommentsSortBy,
-              emptyMessage: "没有可入库的搜索结果",
+              emptyMessage: "No search results to save",
             })}
             disabled={previewSaveRunning || notes.length === 0}
             style={{
@@ -2335,15 +2335,15 @@ export function XiaohongshuTool() {
             }}
           >
             <FolderDown style={{ width: "14px", height: "14px" }} />
-            {previewSaveRunning ? "入库中..." : "全部入库"}
+            {previewSaveRunning ? "Saving..." : "Save all"}
           </button>
           {layout === "horizontal" ? (
             <>
               <button type="button" onClick={() => scrollNoteCarousel(carouselRef, -1)} style={segmentedButtonStyle(false)}>
-                ← Q 上一页
+                ← Q Previous
               </button>
               <button type="button" onClick={() => scrollNoteCarousel(carouselRef, 1)} style={segmentedButtonStyle(false)}>
-                E 下一页 →
+                E Next →
               </button>
             </>
           ) : null}
@@ -2404,7 +2404,7 @@ export function XiaohongshuTool() {
                   disabled: !authorId,
                 }}
                 primaryAction={{
-                  label: "入库",
+                  label: "Save",
                   onClick: () => handleSavePreviewNotesWithOptions([note], {
                     subfolder: saveSubfolder(note),
                     successTitle: saveSuccessTitle,
@@ -2449,12 +2449,12 @@ export function XiaohongshuTool() {
     expandedIds,
     onToggleExpand,
     saveSubfolder: () => buildCreatorSaveSubfolder(sourceLabel),
-    saveSuccessTitle: "博主动态已入库",
+    saveSuccessTitle: "Blogger posts saved",
     saveAllSubfolder: buildCreatorSaveSubfolder(sourceLabel),
     saveAllSuccessTitle: saveAllTitle,
     creatorSourceLabel: (note) => ({
       tags: [sourceLabel].filter(Boolean),
-      summary: `来自指定博主抓取：${sourceLabel || note.author}`,
+      summary: `From targeted blogger crawl: ${sourceLabel || note.author}`,
     }),
   });
 
@@ -2469,21 +2469,21 @@ export function XiaohongshuTool() {
       {[
         {
           id: "collections" as const,
-          label: "收藏专辑抓取",
+          label: "Bookmark album crawl",
           icon: Save,
           accent: "#FF6B81",
           bg: "rgba(255, 107, 129, 0.14)",
         },
         {
           id: "search" as const,
-          label: "主动爬取",
+          label: "Manual crawl",
           icon: Filter,
           accent: "#EF4444",
           bg: "rgba(239, 68, 68, 0.12)",
         },
         {
           id: "following" as const,
-          label: "关注监控",
+          label: "Follow monitor",
           icon: Users,
           accent: "#FF8A00",
           bg: "rgba(255, 138, 0, 0.14)",
@@ -2531,7 +2531,7 @@ export function XiaohongshuTool() {
   );
 
   const formatTaskTime = (value?: string) => {
-    if (!value) return "未知时间";
+    if (!value) return "Unknown time";
     try {
       return new Date(value).toLocaleString("zh-CN", {
         month: "2-digit",
@@ -2547,23 +2547,23 @@ export function XiaohongshuTool() {
   const formatTaskKindLabel = (kind: string) => {
     switch (kind) {
       case "search":
-        return "关键词扫描";
+        return "Keyword scan";
       case "following-feed":
-        return "关注流扫描";
+        return "Follow-feed scan";
       case "creator-recent":
-        return "指定博主抓取";
+        return "Targeted blogger crawl";
       case "crawl-note":
-        return "单条入库";
+        return "Single save";
       case "crawl-batch":
-        return "批量入库";
+        return "Bulk save";
       case "comments":
-        return "评论抓取";
+        return "Comment crawl";
       case "author-candidates":
-        return "博主候选分析";
+        return "Blogger candidate analysis";
       case "smart-groups":
-        return "智能分组";
+        return "Smart grouping";
       case "save-previews":
-        return "搜索结果入库";
+        return "Search result save";
       default:
         return kind;
     }
@@ -2575,40 +2575,40 @@ export function XiaohongshuTool() {
 
     if (task.input_summary) lines.push(task.input_summary);
     if (typeof input.keyword === "string" && input.keyword && !lines.some((line) => line.includes(String(input.keyword)))) {
-      lines.push(`关键词：${input.keyword}`);
+      lines.push(`Keyword: ${input.keyword}`);
     }
     if (Array.isArray(input.keywords) && input.keywords.length > 0) {
-      lines.push(`关键词组：${input.keywords.join("，")}`);
+      lines.push(`Keywords: ${input.keywords.join(", ")}`);
     }
     if (typeof input.url === "string" && input.url) {
-      lines.push(`链接：${input.url}`);
+      lines.push(`Link: ${input.url}`);
     }
     if (Array.isArray(input.urls) && input.urls.length > 0) {
-      lines.push(`链接数：${input.urls.length}`);
+      lines.push(`Links: ${input.urls.length}`);
     }
     if (Array.isArray(input.albums) && input.albums.length > 0) {
-      lines.push(`专辑数：${input.albums.length}`);
+      lines.push(`Albums: ${input.albums.length}`);
     }
     if (typeof input.min_likes === "number") {
-      lines.push(`最低点赞：${input.min_likes}`);
+      lines.push(`Min likes: ${input.min_likes}`);
     }
     if (typeof input.max_results === "number") {
-      lines.push(`结果上限：${input.max_results}`);
+      lines.push(`Result limit: ${input.max_results}`);
     }
     if (typeof input.max_comments === "number") {
-      lines.push(`评论数：${input.max_comments}`);
+      lines.push(`Comments: ${input.max_comments}`);
     }
     if (typeof input.max_notes === "number") {
-      lines.push(`抓取上限：${input.max_notes}`);
+      lines.push(`Fetch limit: ${input.max_notes}`);
     }
     if (typeof input.max_creators === "number") {
-      lines.push(`博主上限：${input.max_creators}`);
+      lines.push(`Blogger limit: ${input.max_creators}`);
     }
     if (typeof input.creator_query === "string" && input.creator_query) {
-      lines.push(`博主：${input.creator_query}`);
+      lines.push(`Blogger: ${input.creator_query}`);
     }
     if (typeof input.recent_days === "number") {
-      lines.push(`最近天数：${input.recent_days}`);
+      lines.push(`Day range: ${input.recent_days}`);
     }
 
     if (lines.length === 0) return null;
@@ -2626,10 +2626,10 @@ export function XiaohongshuTool() {
 
   const renderManualCrawlTools = () => (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      <Card title="保存笔记到 xhs/主动保存" icon={<FolderDown style={{ width: "18px", height: "18px" }} />}>
+      <Card title="Save Notes to xhs/主动保存" icon={<FolderDown style={{ width: "18px", height: "18px" }} />}>
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", margin: 0 }}>
-            粘贴小红书详情链接，ABO 会抓取正文、远程图片链接和本地资源，保存到情报库的 xhs/主动保存/ 文件夹。
+            Paste a Xiaohongshu detail link. ABO fetches the body, remote image links, and local assets, and saves them to the Intel Library's xhs/主动保存/ folder.
           </p>
 
           <div style={{ display: "flex", gap: "12px", alignItems: "stretch" }}>
@@ -2670,10 +2670,10 @@ export function XiaohongshuTool() {
 	                opacity: crawlNoteRunning || !crawlUrl.trim() ? 0.6 : 1,
               }}
             >
-	              {crawlNoteRunning ? "入库中..." : (
+	              {crawlNoteRunning ? "Saving..." : (
                 <>
                   <Save style={{ width: "16px", height: "16px" }} />
-                  保存入库
+                  Save
                 </>
               )}
             </button>
@@ -2686,7 +2686,7 @@ export function XiaohongshuTool() {
                 checked={includeImages}
                 onChange={(e) => setIncludeImages(e.target.checked)}
               />
-              下载图片到本地
+              Download images locally
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.875rem", color: "var(--text-main)" }}>
               <input
@@ -2694,7 +2694,7 @@ export function XiaohongshuTool() {
                 checked={includeLivePhoto}
                 onChange={(e) => setIncludeLivePhoto(e.target.checked)}
               />
-              下载 Live 图动态片段
+              Download Live photo clips
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.875rem", color: "var(--text-main)" }}>
               <input
@@ -2702,7 +2702,7 @@ export function XiaohongshuTool() {
                 checked={includeVideo}
                 onChange={(e) => setIncludeVideo(e.target.checked)}
               />
-              下载视频 MP4
+              Download video MP4
             </label>
             <div style={{ flexBasis: "100%" }} />
             <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.875rem", color: "var(--text-main)" }}>
@@ -2711,10 +2711,10 @@ export function XiaohongshuTool() {
                 checked={includeComments}
                 onChange={(e) => setIncludeComments(e.target.checked)}
               />
-              记录评论（测试中，需要打开浏览器页面）
+              Record comments (beta, requires an open browser page)
             </label>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.875rem", color: "var(--text-main)" }}>
-              评论数量
+              Comment count
               <input
                 type="number"
                 min={1}
@@ -2735,10 +2735,10 @@ export function XiaohongshuTool() {
         </div>
       </Card>
 
-      <Card title="批量链接入库" icon={<BookOpen style={{ width: "18px", height: "18px" }} />}>
+      <Card title="Bulk Link Save" icon={<BookOpen style={{ width: "18px", height: "18px" }} />}>
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", margin: 0 }}>
-            每行一个小红书链接，使用同一套媒体下载和 Markdown 格式保存。
+            One Xiaohongshu link per line, saved with the same media download and Markdown format.
           </p>
           <textarea
             value={batchUrls}
@@ -2777,13 +2777,13 @@ export function XiaohongshuTool() {
             }}
           >
             <FolderDown style={{ width: "16px", height: "16px" }} />
-            批量保存
+            Bulk save
           </button>
         </div>
       </Card>
 
       {crawlResult && (
-        <Card title="入库结果" icon={<CheckCircle style={{ width: "18px", height: "18px" }} />}>
+        <Card title="Save Results" icon={<CheckCircle style={{ width: "18px", height: "18px" }} />}>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <div style={{ color: "var(--text-main)", fontWeight: 600 }}>{crawlResult.title}</div>
             <div style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>
@@ -2802,15 +2802,15 @@ export function XiaohongshuTool() {
               Markdown：{crawlResult.markdown_path}
             </div>
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", color: "var(--text-muted)", fontSize: "0.8125rem" }}>
-              <span>执行路径：{formatExecutionRoute(crawlResult)}</span>
-              <span>图片 {crawlResult.remote_resources.images.length}</span>
+              <span>Execution route: {formatExecutionRoute(crawlResult)}</span>
+              <span>Images {crawlResult.remote_resources.images.length}</span>
               <span>Live {crawlResult.remote_resources.live.length}</span>
-              <span>视频 {crawlResult.remote_resources.video ? 1 : 0}</span>
-              <span>本地资源 {crawlResult.local_resources.length}</span>
-              <span>详情链路：{formatStrategyLabel(crawlResult.detail_strategy)}</span>
-              <span>媒体链路：{formatStrategyLabel(crawlResult.media_strategy)}</span>
+              <span>Videos {crawlResult.remote_resources.video ? 1 : 0}</span>
+              <span>Local assets {crawlResult.local_resources.length}</span>
+              <span>Detail path: {formatStrategyLabel(crawlResult.detail_strategy)}</span>
+              <span>Media path: {formatStrategyLabel(crawlResult.media_strategy)}</span>
               {crawlResult.comment_strategy ? (
-                <span>评论链路：{formatStrategyLabel(crawlResult.comment_strategy)}</span>
+                <span>Comment path: {formatStrategyLabel(crawlResult.comment_strategy)}</span>
               ) : null}
             </div>
             {crawlResult.warnings.length > 0 && (
@@ -2823,12 +2823,12 @@ export function XiaohongshuTool() {
       )}
 
       {batchResult && (
-        <Card title="批量入库结果" icon={<CheckCircle style={{ width: "18px", height: "18px" }} />}>
+        <Card title="Bulk Save Results" icon={<CheckCircle style={{ width: "18px", height: "18px" }} />}>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", color: "var(--text-main)", fontSize: "0.875rem" }}>
-              <span>总数 {batchResult.total}</span>
-              <span>成功 {batchResult.saved}</span>
-              <span>失败 {batchResult.failed}</span>
+              <span>Total {batchResult.total}</span>
+              <span>Succeeded {batchResult.saved}</span>
+              <span>Failed {batchResult.failed}</span>
             </div>
             {batchResult.results.slice(0, 8).map((item, index) => (
               <div
@@ -2843,8 +2843,8 @@ export function XiaohongshuTool() {
                 }}
               >
                 {"markdown_path" in item
-                  ? `已保存：${item.markdown_path} · ${formatExecutionRoute(item)} · ${formatStrategyLabel(item.detail_strategy)}`
-                  : `失败：${item.url} · ${item.error}`}
+                  ? `Saved: ${item.markdown_path} · ${formatExecutionRoute(item)} · ${formatStrategyLabel(item.detail_strategy)}`
+                  : `Failed: ${item.url} · ${item.error}`}
               </div>
             ))}
           </div>
@@ -2857,7 +2857,7 @@ export function XiaohongshuTool() {
 
   const renderCollectionsTab = () => (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      <Card title="收藏专辑抓取（反爬严格，约 10s 一条）（如遇限流，等待，更新 Cookie，切换 IP，重新登录）" icon={<Save style={{ width: "18px", height: "18px" }} />}>
+      <Card title="Bookmark Album Crawl (strict anti-crawling, ~10s per item) (if rate-limited: wait, update cookie, switch IP, re-login)" icon={<Save style={{ width: "18px", height: "18px" }} />}>
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           <div
             style={{
@@ -2871,12 +2871,12 @@ export function XiaohongshuTool() {
               fontWeight: 600,
             }}
           >
-            <div>因小红书限制，一次只能执行一个任务。请耐心等待当前任务完成后，再启动下一项抓取或入库。</div>
-            <div>需要桌面非全屏，并漏出后台浏览器的一点点像素，才能正常滚动和爬取。</div>
+            <div>Due to Xiaohongshu limits, only one task can run at a time. Wait for the current task to finish before starting another crawl or save.</div>
+            <div>The desktop must not be fullscreen, and a few pixels of the background browser must remain visible for scrolling and crawling to work.</div>
           </div>
 
           <div style={{ fontSize: "0.875rem", color: "var(--text-secondary)", lineHeight: 1.7 }}>
-            <div>当前默认是插件优先，失败后再走兜底；增量会跳过本地仍存在 Markdown 文件的已抓笔记，最近天数留空表示不限。</div>
+            <div>Defaults to extension-first with fallback on failure; incremental mode skips notes whose Markdown files still exist locally, and an empty day range means unlimited.</div>
           </div>
 
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
@@ -2898,11 +2898,11 @@ export function XiaohongshuTool() {
               }}
             >
               <Search style={{ width: "16px", height: "16px" }} />
-              {albumListTaskId ? "获取收藏专辑中，点击中断" : "获取收藏专辑"}
+              {albumListTaskId ? "Fetching albums, click to interrupt" : "Fetch bookmark albums"}
             </button>
 
             <label style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--text-main)", fontSize: "0.875rem" }}>
-              最近
+              Last
               <input
                 type="number"
                 min={1}
@@ -2922,10 +2922,10 @@ export function XiaohongshuTool() {
                   setAlbumRecentDaysInput(String(Math.max(1, Math.min(3650, next))));
                 }}
                 inputMode="numeric"
-                placeholder="不限"
+                placeholder="Unlimited"
                 style={{ ...compactControlStyle, width: "82px", background: "transparent" }}
               />
-              天
+              days
             </label>
             <button
               type="button"
@@ -2938,7 +2938,7 @@ export function XiaohongshuTool() {
               }}
             >
               <Zap style={{ width: "15px", height: "15px" }} />
-              恢复抓取设置
+              Recovery crawl settings
               {showAlbumRecoveryOptions ? <ChevronUp style={{ width: "14px", height: "14px" }} /> : <ChevronDown style={{ width: "14px", height: "14px" }} />}
             </button>
           </div>
@@ -2956,7 +2956,7 @@ export function XiaohongshuTool() {
               }}
             >
               <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
-                <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>恢复浏览器</span>
+                <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>Recovery browser</span>
                 <select
                   value={albumCookieBrowser}
                   onChange={(e) => setAlbumCookieBrowser(e.target.value as BrowserChoice)}
@@ -2972,23 +2972,23 @@ export function XiaohongshuTool() {
                   disabled={gettingCookie}
                   style={segmentedButtonStyle(false)}
                 >
-                  {gettingCookie ? "更新 Cookie 中..." : `用${browserLabelMap[albumCookieBrowser]}更新 Cookie`}
+                  {gettingCookie ? "Updating cookie..." : `Update cookie with ${browserLabelMap[albumCookieBrowser]}`}
                 </button>
                 <button
                   type="button"
                   onClick={handleClearXhsLocalCache}
                   style={{ ...segmentedButtonStyle(false), borderColor: "rgba(239, 68, 68, 0.2)", color: "var(--color-danger)" }}
                 >
-                  清本地缓存
+                  Clear local cache
                 </button>
               </div>
 
               <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
                 <button type="button" onClick={() => setAlbumRecoveryMode((prev) => !prev)} style={segmentedButtonStyle(albumRecoveryMode)}>
-                  低频多次分批抓取
+                  Low-frequency batched crawl
                 </button>
                 <label style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--text-main)", fontSize: "0.875rem" }}>
-                  每批
+                  Per batch
                   <input
                     type="number"
                     min={1}
@@ -2997,10 +2997,10 @@ export function XiaohongshuTool() {
                     onChange={(e) => setAlbumBatchSize(Number(e.target.value || 5))}
                     style={{ ...compactControlStyle, width: "74px" }}
                   />
-                  条
+                  items
                 </label>
                 <label style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--text-main)", fontSize: "0.875rem" }}>
-                  批间等待
+                  Wait between batches
                   <input
                     type="number"
                     min={10}
@@ -3009,20 +3009,20 @@ export function XiaohongshuTool() {
                     onChange={(e) => setAlbumBatchPauseSeconds(Number(e.target.value || 30))}
                     style={{ ...compactControlStyle, width: "82px" }}
                   />
-                  秒
+                  seconds
                 </label>
               </div>
 
               <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-                可先切换浏览器重新获取 Cookie。若仍限流，建议先清浏览器站点缓存并重新登录，再用低频分批模式继续抓取。
+                Try switching browsers and re-fetching the cookie first. If still rate-limited, clear the browser site cache, log in again, and continue in low-frequency batch mode.
               </div>
             </div>
           )}
 
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
-            <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>抓取方式</span>
+            <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>Crawl mode</span>
             <button type="button" onClick={() => setAlbumCrawlMode("incremental")} style={segmentedButtonStyle(albumCrawlMode === "incremental")}>
-              增量
+              Incremental
             </button>
             <button
               type="button"
@@ -3033,32 +3033,32 @@ export function XiaohongshuTool() {
                 background: albumCrawlMode === "full" ? "#FF6B81" : "transparent",
               }}
             >
-              全量
+              Full
             </button>
-            <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>默认只保存 Markdown 和远程链接，本地资源按需下载</span>
+            <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>By default only Markdown and remote links are saved; local assets download on demand</span>
             <button type="button" onClick={() => setIncludeImages((v) => !v)} style={segmentedButtonStyle(includeImages)}>
-              下载图片
+              Download images
             </button>
             <button type="button" onClick={() => setIncludeLivePhoto((v) => !v)} style={segmentedButtonStyle(includeLivePhoto)}>
-              下载 Live 图
+              Download Live photos
             </button>
             <button type="button" onClick={() => setIncludeVideo((v) => !v)} style={segmentedButtonStyle(includeVideo)}>
-              下载视频
+              Download videos
             </button>
           </div>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
             <button type="button" onClick={() => setIncludeComments((v) => !v)} style={segmentedButtonStyle(includeComments)}>
-              记录评论（插件状态机）
+              Record comments (extension state machine)
             </button>
             <button
               type="button"
               onClick={() => setAlbumDedicatedWindowMode((v) => !v)}
               style={segmentedButtonStyle(albumDedicatedWindowMode)}
             >
-              当前 Edge 独立窗口
+              Dedicated Edge window
             </button>
             <label style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--text-main)", fontSize: "0.875rem" }}>
-              扩展端口
+              Extension port
               <input
                 type="number"
                 min={1024}
@@ -3070,7 +3070,7 @@ export function XiaohongshuTool() {
             </label>
           </div>
           <div style={{ color: "var(--text-muted)", fontSize: "0.8125rem" }}>
-            抓取链路：插件优先（端口 {albumExtensionPort}，{albumDedicatedWindowMode ? "独立窗口" : "当前窗口"}）{` -> `}CDP / 后端兜底
+            Crawl path: extension first (port {albumExtensionPort}, {albumDedicatedWindowMode ? "dedicated window" : "current window"}){` -> `}CDP / backend fallback
           </div>
 
           {albumListProgress && (
@@ -3087,10 +3087,10 @@ export function XiaohongshuTool() {
             >
               <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--text-main)", fontSize: "0.875rem", fontWeight: 600 }}>
                 <TrendingUp style={{ width: "16px", height: "16px" }} />
-                专辑读取进度
+                Album read progress
               </div>
               <div style={{ color: "var(--text-main)", fontSize: "0.9375rem", fontWeight: 600 }}>
-                {albumListProgress.stage || "执行中"}
+                {albumListProgress.stage || "Running"}
               </div>
               <div
                 style={{
@@ -3108,17 +3108,17 @@ export function XiaohongshuTool() {
                         ? "100%"
                         : albumListProgress.total_steps
                           ? `${Math.max(((albumListProgress.current_step || 0) / albumListProgress.total_steps) * 100, 8)}%`
-                        : albumListProgress.stage === "任务已创建"
+                        : albumListProgress.stage === "Task created"
                           ? "8%"
-                          : albumListProgress.stage === "启动无界面浏览器"
+                          : albumListProgress.stage === "Launching headless browser"
                             ? "18%"
-                            : albumListProgress.stage === "进入小红书首页"
+                            : albumListProgress.stage === "Entering Xiaohongshu home"
                               ? "34%"
-                              : albumListProgress.stage === "打开个人主页"
+                              : albumListProgress.stage === "Opening profile page"
                                 ? "52%"
-                                : albumListProgress.stage === "打开收藏页"
+                                : albumListProgress.stage === "Opening bookmarks page"
                                   ? "70%"
-                                  : albumListProgress.stage === "打开专辑页"
+                                  : albumListProgress.stage === "Opening album page"
                                     ? "86%"
                                     : "94%",
                     height: "100%",
@@ -3129,12 +3129,12 @@ export function XiaohongshuTool() {
               </div>
               <div style={{ color: "var(--text-muted)", fontSize: "0.8125rem" }}>
                 {albumListProgress.status === "completed"
-                  ? `已读取 ${albumListProgress.albums_total || 0} 个专辑`
+                  ? `Read ${albumListProgress.albums_total || 0} albums`
                   : albumListProgress.status === "cancelled"
-                    ? "已中断，保留当前页面已有专辑。"
+                    ? "Interrupted; albums already on the page are kept."
                   : albumDedicatedWindowMode
-                    ? `当前 Edge 独立窗口读取中。步骤 ${albumListProgress.current_step || 0}/${albumListProgress.total_steps || 7}`
-                    : `后台无界面加载中，不会影响当前窗口。步骤 ${albumListProgress.current_step || 0}/${albumListProgress.total_steps || 7}`}
+                    ? `Reading in the dedicated Edge window. Step ${albumListProgress.current_step || 0}/${albumListProgress.total_steps || 7}`
+                    : `Loading headlessly in the background; your current window is unaffected. Step ${albumListProgress.current_step || 0}/${albumListProgress.total_steps || 7}`}
               </div>
             </div>
           )}
@@ -3153,10 +3153,10 @@ export function XiaohongshuTool() {
             >
               <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--text-main)", fontSize: "0.875rem", fontWeight: 600 }}>
                 <TrendingUp style={{ width: "16px", height: "16px" }} />
-                抓取进度
+                Crawl progress
               </div>
               <div style={{ color: "var(--text-main)", fontSize: "0.9375rem", fontWeight: 600 }}>
-                {albumProgress.stage || "执行中"}
+                {albumProgress.stage || "Running"}
               </div>
               <div
                 style={{
@@ -3186,29 +3186,29 @@ export function XiaohongshuTool() {
                 />
               </div>
               <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", color: "var(--text-muted)", fontSize: "0.8125rem" }}>
-                <span>当前专辑：{albumProgress.current_album || "准备中"}</span>
-                <span>专辑进度：{albumProgress.current_album_index || 0}/{albumProgress.total_albums || 0}</span>
-                <span>已加载：{albumProgress.total_notes || 0}/{albumProgress.expected_total || "?"} 条</span>
-                <span>已翻页：{albumProgress.pages_loaded || 0} 次</span>
-                <span>新增：{albumProgress.saved || 0}</span>
-                <span>跳过：{albumProgress.skipped || 0}</span>
-                <span>失败：{albumProgress.failed || 0}</span>
+                <span>Current album: {albumProgress.current_album || "Preparing"}</span>
+                <span>Album progress: {albumProgress.current_album_index || 0}/{albumProgress.total_albums || 0}</span>
+                <span>Loaded: {albumProgress.total_notes || 0}/{albumProgress.expected_total || "?"}</span>
+                <span>Pages flipped: {albumProgress.pages_loaded || 0}</span>
+                <span>Added: {albumProgress.saved || 0}</span>
+                <span>Skipped: {albumProgress.skipped || 0}</span>
+                <span>Failed: {albumProgress.failed || 0}</span>
                 {albumProgress.pruned_seen_count ? (
-                  <span>修正无效已抓 {albumProgress.pruned_seen_count}</span>
+                  <span>Pruned invalid seen {albumProgress.pruned_seen_count}</span>
                 ) : null}
               </div>
               {albumProgress.total_notes ? (
                 <div style={{ color: "var(--text-secondary)", fontSize: "0.8125rem" }}>
-                  当前专辑笔记进度：{albumProgress.current_note_index || 0}/{albumProgress.total_notes}
-                  {albumProgress.stage === "专辑列表翻页" || albumProgress.stage === "读取专辑笔记列表"
-                    ? " · 后台无界面加载中"
+                  Current album note progress: {albumProgress.current_note_index || 0}/{albumProgress.total_notes}
+                  {albumProgress.stage === "Paging album list" || albumProgress.stage === "Reading album note list"
+                    ? " · loading headlessly in background"
                     : ""}
-                  {albumProgress.delay_seconds ? ` · 等待 ${albumProgress.delay_seconds} 秒后继续` : ""}
+                  {albumProgress.delay_seconds ? ` · waiting ${albumProgress.delay_seconds}s before continuing` : ""}
                 </div>
               ) : null}
               {albumProgress.skip_breakdown ? (
                 <div style={{ color: "var(--text-secondary)", fontSize: "0.8125rem" }}>
-                  过滤明细：已抓 {albumProgress.skip_breakdown.already_seen || 0} · 较旧 {albumProgress.skip_breakdown.older_than_recent_days || 0} · 较新 {albumProgress.skip_breakdown.newer_than_before_date || 0} · 无效 {albumProgress.skip_breakdown.invalid_note || 0}
+                  Filter breakdown: seen {albumProgress.skip_breakdown.already_seen || 0} · older {albumProgress.skip_breakdown.older_than_recent_days || 0} · newer {albumProgress.skip_breakdown.newer_than_before_date || 0} · invalid {albumProgress.skip_breakdown.invalid_note || 0}
                 </div>
               ) : null}
             </div>
@@ -3218,7 +3218,7 @@ export function XiaohongshuTool() {
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
                 <span style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>
-                  已读取 {albums.length} 个专辑，当前选中 {selectedAlbumIds.size} 个（因帖子删除，总数可能对不上）
+                  Read {albums.length} albums, {selectedAlbumIds.size} selected (totals may not match due to deleted posts)
                 </span>
                 <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                   <button
@@ -3234,7 +3234,7 @@ export function XiaohongshuTool() {
                       fontSize: "0.8125rem",
                     }}
                   >
-                    {selectedAlbumIds.size === albums.length ? "取消全选" : "全选"}
+                    {selectedAlbumIds.size === albums.length ? "Deselect all" : "Select all"}
                   </button>
                   <button
                     onClick={() => handleCrawlSelectedAlbums(albumCrawlMode)}
@@ -3259,7 +3259,7 @@ export function XiaohongshuTool() {
                     }}
                   >
                     <FolderDown style={{ width: "16px", height: "16px" }} />
-                    {albumCrawlTaskId ? "正在爬取中，点击中断" : albumCrawlMode === "full" ? "全量抓取选中专辑" : "增量抓取选中专辑"}
+                    {albumCrawlTaskId ? "Crawling, click to interrupt" : albumCrawlMode === "full" ? "Full crawl selected albums" : "Incremental crawl selected albums"}
                   </button>
                 </div>
               </div>
@@ -3310,18 +3310,18 @@ export function XiaohongshuTool() {
                           />
                         ) : (
                           <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)" }}>
-                            无预览图
+                            No preview image
                           </div>
                         )}
                       </div>
                       <div style={{ padding: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
                         <div style={{ fontWeight: 600, fontSize: "0.9375rem", lineHeight: 1.4 }}>{album.name}</div>
                         <div style={{ color: "var(--text-muted)", fontSize: "0.8125rem" }}>
-                          {album.count ?? "未知"} 条 · 已抓 {album.seen_count || 0} 条
+                          {album.count ?? "?"} items · {album.seen_count || 0} crawled
                         </div>
                         {album.latest_title && (
                           <div style={{ color: "var(--text-secondary)", fontSize: "0.8125rem", lineHeight: 1.5 }}>
-                            最新：{album.latest_title}
+                            Latest: {album.latest_title}
                           </div>
                         )}
                       </div>
@@ -3336,12 +3336,12 @@ export function XiaohongshuTool() {
         </Card>
 
       {albumResult && (
-        <Card title="专辑抓取结果" icon={<CheckCircle style={{ width: "18px", height: "18px" }} />}>
+        <Card title="Album Crawl Results" icon={<CheckCircle style={{ width: "18px", height: "18px" }} />}>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", fontSize: "0.875rem", color: "var(--text-main)" }}>
-              <span>新增 {albumResult.saved}</span>
-              <span>跳过 {albumResult.skipped}</span>
-              <span>失败 {albumResult.failed}</span>
+              <span>Added {albumResult.saved}</span>
+              <span>Skipped {albumResult.skipped}</span>
+              <span>Failed {albumResult.failed}</span>
             </div>
             {albumResult.results.map((item, index) => (
               <div
@@ -3355,12 +3355,12 @@ export function XiaohongshuTool() {
                 }}
               >
                 {item.success
-                  ? `${item.album}：发现 ${item.found || 0}，新增 ${item.saved || 0}，跳过 ${item.skipped || 0}${item.mode ? ` · ${item.mode === "full" ? "全量" : "增量"}` : ""}`
-                  : `${item.album || "专辑"}：${item.error || "失败"}`}
+                  ? `${item.album}: found ${item.found || 0}, added ${item.saved || 0}, skipped ${item.skipped || 0}${item.mode ? ` · ${item.mode === "full" ? "full" : "incremental"}` : ""}`
+                  : `${item.album || "Album"}: ${item.error || "failed"}`}
                 {item.success && item.diagnostics ? (
                   <div style={{ marginTop: "6px", color: "var(--text-muted)" }}>
-                    已抓校验：原记录 {item.diagnostics.raw_seen_count || 0} · 有效 {item.diagnostics.valid_seen_count || 0} · 已修正 {item.diagnostics.pruned_seen_count || 0} · 可处理 {item.diagnostics.processable_notes || 0}
-                    {item.diagnostics.skip_breakdown ? ` · 过滤：已抓 ${item.diagnostics.skip_breakdown.already_seen || 0} / 较旧 ${item.diagnostics.skip_breakdown.older_than_recent_days || 0} / 较新 ${item.diagnostics.skip_breakdown.newer_than_before_date || 0}` : ""}
+                    Seen check: raw {item.diagnostics.raw_seen_count || 0} · valid {item.diagnostics.valid_seen_count || 0} · pruned {item.diagnostics.pruned_seen_count || 0} · processable {item.diagnostics.processable_notes || 0}
+                    {item.diagnostics.skip_breakdown ? ` · filtered: seen ${item.diagnostics.skip_breakdown.already_seen || 0} / older ${item.diagnostics.skip_breakdown.older_than_recent_days || 0} / newer ${item.diagnostics.skip_breakdown.newer_than_before_date || 0}` : ""}
                   </div>
                 ) : null}
               </div>
@@ -3429,7 +3429,7 @@ export function XiaohongshuTool() {
               </span>
             </span>
           </button>
-          <button type="button" onClick={onToggle} aria-label={active ? "关闭推送" : "开启推送"} style={switchStyle(active)}>
+          <button type="button" onClick={onToggle} aria-label={active ? "Disable push" : "Enable push"} style={switchStyle(active)}>
             <span style={switchKnobStyle(active)} />
           </button>
           {onDelete ? (
@@ -3448,7 +3448,7 @@ export function XiaohongshuTool() {
                 alignItems: "center",
                 justifyContent: "center",
               }}
-              aria-label="删除推送"
+              aria-label="Delete push"
             >
               <Trash2 style={{ width: "15px", height: "15px" }} />
             </button>
@@ -3547,7 +3547,7 @@ export function XiaohongshuTool() {
     .filter(([profileId, profile]) => predicate(profile, profileId))
     .map(([profileId, profile]) => {
       const authorId = String(profile.author_id || profileId || "").trim();
-      const author = String(profile.author || authorId || "未命名博主").trim() || "未命名博主";
+      const author = String(profile.author || authorId || "Unnamed blogger").trim() || "Unnamed blogger";
       return {
         profileId,
         profile,
@@ -3578,7 +3578,7 @@ export function XiaohongshuTool() {
     ...sharedCreatorGroups,
     ...(ungroupedCreatorMembers.length > 0 ? [{
       value: "__ungrouped__",
-      label: "未分组",
+      label: "Ungrouped",
       count: ungroupedCreatorMembers.length,
       members: ungroupedCreatorMembers,
       isUngrouped: true,
@@ -3693,7 +3693,7 @@ export function XiaohongshuTool() {
     );
     if (singleNoteAuthor && shouldPreferMappedAuthor) return singleNoteAuthor;
     if (mappedAuthor && shouldPreferMappedAuthor) return mappedAuthor;
-    return cleanRawLabel || mappedAuthor || singleNoteAuthor || "未命名用户";
+    return cleanRawLabel || mappedAuthor || singleNoteAuthor || "Unnamed user";
   };
   const frequentAuthorCandidates = [...authorCandidates].sort((a, b) => {
     if (b.note_count !== a.note_count) return b.note_count - a.note_count;
@@ -3746,7 +3746,7 @@ export function XiaohongshuTool() {
       await refreshTrackerConfig();
       toast.success(successTitle, successDescription);
     } catch (e) {
-      toast.error("保存失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Save failed", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -3756,7 +3756,7 @@ export function XiaohongshuTool() {
       ? applyFollowingScanDraftToMonitors(trackerFollowingScanKeywordDraft)
       : commitFollowingScanMonitorsForSave();
     if (existingMonitors.length === 0) {
-      toast.error("请先添加至少一个关注流关键词定义");
+      toast.error("Add at least one follow-feed keyword definition first");
       return;
     }
     const next = !trackerFollowingScan.enabled;
@@ -3774,9 +3774,9 @@ export function XiaohongshuTool() {
         following_scan_monitors: payload.followingScanMonitors,
       }));
       await refreshTrackerConfig();
-      toast.success(next ? "关注流情报推送已开启" : "关注流情报推送已关闭");
+      toast.success(next ? "Follow-feed intel push enabled" : "Follow-feed intel push disabled");
     } catch (e) {
-      toast.error("保存失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Save failed", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -3791,11 +3791,11 @@ export function XiaohongshuTool() {
         following_scan: payload.followingScan,
         following_scan_monitors: payload.followingScanMonitors,
       }));
-      toast.success("关注流情报推送已保存", "模块管理会按定时任务抓取这些定义");
+      toast.success("Follow-feed intel push saved", "Module management will crawl these definitions on schedule");
       await refreshTrackerConfig();
       setExpandedPushes((prev) => new Set(prev).add("following-scan"));
     } catch (e) {
-      toast.error("保存失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Save failed", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -3815,9 +3815,9 @@ export function XiaohongshuTool() {
         next.delete("following-scan");
         return next;
       });
-      toast.success("关注流情报推送已清空");
+      toast.success("Follow-feed intel push cleared");
     } catch (e) {
-      toast.error("删除失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Delete failed", e instanceof Error ? e.message : "Unknown error");
     }
   };
 
@@ -3854,7 +3854,7 @@ export function XiaohongshuTool() {
 
   const runCreatorRecentBatch = async (targets: CreatorBatchTarget[], sourceLabel: string) => {
     if (creatorRecentRunning || creatorRecentBatchRunning) {
-      toast.info("任务正在执行", "当前有博主抓取任务在进行，完成后再启动新的。");
+      toast.info("Task already running", "A blogger crawl is in progress; start a new one after it finishes.");
       return;
     }
     if (!requireCookie()) {
@@ -3870,7 +3870,7 @@ export function XiaohongshuTool() {
         .map((target) => [target.profileId, target]),
     ).values());
     if (normalizedTargets.length === 0) {
-      toast.error("没有可抓取的博主");
+      toast.error("No bloggers to crawl");
       return;
     }
 
@@ -3897,7 +3897,7 @@ export function XiaohongshuTool() {
           setCreatorBatchProgress({
             completed: index,
             total: normalizedTargets.length,
-            currentLabel: `等待 ${delaySeconds} 秒后抓取 ${target.author}`,
+            currentLabel: `Waiting ${delaySeconds}s before crawling ${target.author}`,
           });
           await wait(delaySeconds * 1000);
         }
@@ -3912,11 +3912,11 @@ export function XiaohongshuTool() {
         } catch (err) {
           nextResults.push({
             target,
-            error: err instanceof Error ? err.message : "未知错误",
+            error: err instanceof Error ? err.message : "Unknown error",
           });
           if (isXhsCreatorRiskError(err)) {
             fuseStopped = true;
-            toast.error("博主批量抓取已熔断", "检测到访问频繁/验证/登录限制，已停止后续博主抓取。等待恢复后再重试。");
+            toast.error("Blogger batch crawl tripped", "Rate limiting / verification / login restriction detected — remaining blogger crawls stopped. Wait for recovery before retrying.");
             setCreatorBatchResults([...nextResults]);
             break;
           }
@@ -3930,7 +3930,7 @@ export function XiaohongshuTool() {
       setCreatorBatchProgress({
         completed: normalizedTargets.length,
         total: normalizedTargets.length,
-        currentLabel: "已完成",
+        currentLabel: "Done",
       });
       if (successCount > 0) {
         focusCreatorRecentResults();
@@ -3938,18 +3938,18 @@ export function XiaohongshuTool() {
           await handleSaveCreatorRecentNotes(
             successfulNotes,
             sourceLabel,
-            "批量抓取结果已入库",
+            "Batch crawl results saved",
           );
         }
       }
       if (successCount > 0 && failedCount === 0) {
-        toast.success("批量抓取完成", `${sourceLabel} 共抓取 ${successCount} 位博主`);
+        toast.success("Batch crawl finished", `${sourceLabel}: crawled ${successCount} bloggers`);
       } else if (successCount > 0) {
-        toast.success("批量抓取已完成", `成功 ${successCount} 位，失败 ${failedCount} 位`);
+        toast.success("Batch crawl finished", `${successCount} succeeded, ${failedCount} failed`);
       } else if (fuseStopped) {
-        toast.error("批量抓取已停止", "触发风险熔断，未继续抓取后续博主。 ");
+        toast.error("Batch crawl stopped", "Risk circuit breaker tripped; remaining bloggers were not crawled.");
       } else {
-        toast.error("批量抓取失败", "这批博主都没有成功抓取到结果");
+        toast.error("Batch crawl failed", "None of these bloggers returned results");
       }
     } finally {
       setTaskRunning("creator-recent-batch", false);
@@ -3958,7 +3958,7 @@ export function XiaohongshuTool() {
   };
 
   const handleRunSelectedCreatorBatch = async () => {
-    await runCreatorRecentBatch(selectedCreatorBatchTargets, "已选博主");
+    await runCreatorRecentBatch(selectedCreatorBatchTargets, "Selected bloggers");
   };
 
   const handleRefreshCreatorRecentResult = async () => {
@@ -3977,7 +3977,7 @@ export function XiaohongshuTool() {
     if (creatorBatchResults.length === 0) return;
     const targets = creatorBatchResults.map((item) => item.target);
     setCreatorBatchResults([]);
-    await runCreatorRecentBatch(targets, "当前批量结果");
+    await runCreatorRecentBatch(targets, "Current batch results");
   };
 
   const handleRunGroupCreatorBatch = async (
@@ -3991,7 +3991,7 @@ export function XiaohongshuTool() {
   ) => {
     const targets = buildCreatorBatchTargetsFromMembers(members, groupLabel, groupValue);
     if (targets.length === 0) {
-      toast.error("这个分组里没有可抓取的博主");
+      toast.error("No crawlable bloggers in this group");
       return;
     }
     setSelectedCreatorBatchIds(new Set(targets.map((target) => target.profileId)));
@@ -4004,7 +4004,7 @@ export function XiaohongshuTool() {
 
     const currentProfile = trackerCreatorProfiles[normalizedProfileId];
     if (!currentProfile) {
-      toast.error("没找到这个博主的共享分组信息");
+      toast.error("No shared group info found for this blogger");
       return;
     }
 
@@ -4028,7 +4028,7 @@ export function XiaohongshuTool() {
     }
 
     const normalizedAuthorId = String(currentProfile.author_id || normalizedProfileId).trim();
-    const authorLabel = currentProfile.author || normalizedAuthorId || "该博主";
+    const authorLabel = currentProfile.author || normalizedAuthorId || "this blogger";
 
     setUpdatingSharedCreatorIds((prev) => new Set(prev).add(normalizedProfileId));
     try {
@@ -4071,13 +4071,13 @@ export function XiaohongshuTool() {
       setTrackerCreatorProfiles(nextCreatorProfiles);
       setTrackerCreatorMonitors(nextCreatorMonitors);
       toast.success(
-        nextGroups.length > 0 ? "共享分组已更新" : "已移到未分组",
+        nextGroups.length > 0 ? "Shared groups updated" : "Moved to ungrouped",
         nextGroups.length > 0
-          ? `${authorLabel} 已加入 ${nextGroupLabels.join("、")}`
-          : `${authorLabel} 已移到未分组`,
+          ? `${authorLabel} joined ${nextGroupLabels.join(", ")}`
+          : `${authorLabel} moved to ungrouped`,
       );
     } catch (e) {
-      toast.error("调整共享分组失败", e instanceof Error ? e.message : "未知错误");
+      toast.error("Failed to adjust shared groups", e instanceof Error ? e.message : "Unknown error");
     } finally {
       setUpdatingSharedCreatorIds((prev) => {
         const next = new Set(prev);
@@ -4093,7 +4093,7 @@ export function XiaohongshuTool() {
     if (!normalizedProfileId || !normalizedGroupValue) return;
     const currentProfile = trackerCreatorProfiles[normalizedProfileId];
     if (!currentProfile) {
-      toast.error("没找到这个博主的共享分组信息");
+      toast.error("No shared group info found for this blogger");
       return;
     }
     const currentGroups = Array.from(new Set(
@@ -4111,7 +4111,7 @@ export function XiaohongshuTool() {
     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
       <div style={{ flex: 1, height: "1px", background: "var(--border-light)" }} />
       <span style={{ fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-muted)" }}>
-        详细配置
+        Detailed settings
       </span>
       <div style={{ flex: 1, height: "1px", background: "var(--border-light)" }} />
     </div>
@@ -4152,7 +4152,7 @@ export function XiaohongshuTool() {
     if (visibleSharedCreatorGroups.length === 0) {
       return (
         <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-          先跑一次“共享智能分组”，这里才会出现最终的小红书分组结果；到时你可以整组抓，也可以选几个博主做批量抓取。
+          Run "shared smart grouping" once first; the final Xiaohongshu grouping results appear here. Then you can crawl whole groups or pick several bloggers for a batch crawl.
         </div>
       );
     }
@@ -4171,10 +4171,10 @@ export function XiaohongshuTool() {
       >
         <div>
           <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-main)" }}>
-            共享分组批量抓取
+            Shared-group batch crawl
           </div>
           <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.6, marginTop: "4px" }}>
-            这里直接复用共享智能分组的最终小红书结果。你可以整组抓，也可以勾选若干博主后统一批量抓取。
+            This reuses the final Xiaohongshu results of shared smart grouping. Crawl whole groups, or check several bloggers and batch-crawl them together.
           </div>
         </div>
 
@@ -4192,9 +4192,9 @@ export function XiaohongshuTool() {
           }}
         >
           <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-            <span>已选 {selectedCreatorBatchTargets.length} 位博主</span>
-            <span>共享组 {visibleSharedCreatorGroups.length} 个</span>
-            <span>抓取范围 最近 {creatorRecentDays} 天 / 每位 {creatorRecentLimit} 条</span>
+            <span>{selectedCreatorBatchTargets.length} bloggers selected</span>
+            <span>{visibleSharedCreatorGroups.length} shared groups</span>
+            <span>Scope: last {creatorRecentDays} days / {creatorRecentLimit} per blogger</span>
           </div>
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
             <button
@@ -4207,7 +4207,7 @@ export function XiaohongshuTool() {
                 cursor: selectedCreatorBatchTargets.length === 0 || creatorRecentBatchRunning ? "not-allowed" : "pointer",
               }}
             >
-              {creatorRecentBatchRunning ? "批量抓取中..." : "抓取已选博主"}
+              {creatorRecentBatchRunning ? "Batch crawling..." : "Crawl selected bloggers"}
             </button>
             <button
               type="button"
@@ -4219,7 +4219,7 @@ export function XiaohongshuTool() {
                 cursor: selectedCreatorBatchTargets.length === 0 || creatorRecentBatchRunning ? "not-allowed" : "pointer",
               }}
             >
-              清空已选
+              Clear selection
             </button>
           </div>
         </div>
@@ -4236,7 +4236,7 @@ export function XiaohongshuTool() {
               fontWeight: 700,
             }}
           >
-            批量抓取进度 {creatorBatchProgress.completed}/{creatorBatchProgress.total} · 当前 {creatorBatchProgress.currentLabel}
+            Batch crawl progress {creatorBatchProgress.completed}/{creatorBatchProgress.total} · current: {creatorBatchProgress.currentLabel}
           </div>
         ) : null}
 
@@ -4291,8 +4291,8 @@ export function XiaohongshuTool() {
                         {group.label}
                       </span>
                       <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                        {group.count} 位博主 · 已选中 {selectedMemberCount} 位
-                        {isUngrouped ? " · 手动整理区" : ""}
+                        {group.count} bloggers · {selectedMemberCount} selected
+                        {isUngrouped ? " · manual sorting area" : ""}
                       </span>
                     </span>
                   </button>
@@ -4328,8 +4328,8 @@ export function XiaohongshuTool() {
                       }}
                     >
                       {selectableMembers.length > 0 && selectableMembers.every((member) => selectedCreatorBatchIds.has(member.profileId))
-                        ? "取消本组选择"
-                        : "选中本组"}
+                        ? "Deselect this group"
+                        : "Select this group"}
                     </button>
                     <button
                       type="button"
@@ -4342,7 +4342,7 @@ export function XiaohongshuTool() {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      抓这一组
+                      Crawl this group
                     </button>
                   </div>
                 </div>
@@ -4359,8 +4359,8 @@ export function XiaohongshuTool() {
                   >
                     <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.6, marginTop: "10px" }}>
                       {isUngrouped
-                        ? "这里是暂时不放进任何共享组的博主。可以先勾选再批量抓，或直接单独抓某个博主。"
-                        : "你可以勾选几个博主后统一批量抓，也可以对某个博主单独立即抓最近内容。"}
+                        ? "Bloggers not yet placed in any shared group. Check them for a batch crawl, or crawl one individually."
+                        : "Check several bloggers for a unified batch crawl, or immediately crawl one blogger's recent content individually."}
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                       {group.members.map((member) => {
@@ -4387,16 +4387,16 @@ export function XiaohongshuTool() {
                                   {member.author}
                                 </span>
                                 <span style={{ fontSize: "0.6875rem", color: memberSelected ? "var(--color-primary)" : "var(--text-muted)" }}>
-                                  {memberSelected ? "已加入批量列表" : canSelectIndividually ? "未选中" : "待补 user_id"}
+                                  {memberSelected ? "In batch list" : canSelectIndividually ? "Not selected" : "Needs user_id"}
                                 </span>
                                 {member.inTracker ? (
                                   <span style={{ fontSize: "0.6875rem", color: "#C2410C" }}>
-                                    已在关注推送
+                                    In follow push
                                   </span>
                                 ) : null}
                               </div>
                               <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
-                                最近：{member.latestTitle || "暂无样本标题"}
+                                Latest: {member.latestTitle || "no sample title"}
                               </div>
                               {member.sampleLabels.length > 0 ? (
                                 <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
@@ -4436,7 +4436,7 @@ export function XiaohongshuTool() {
                                   whiteSpace: "nowrap",
                                 }}
                               >
-                                {!canSelectIndividually ? "待补 user_id" : memberSelected ? "取消选择" : "选中博主"}
+                                {!canSelectIndividually ? "Needs user_id" : memberSelected ? "Deselect" : "Select blogger"}
                               </button>
                               <button
                                 type="button"
@@ -4453,11 +4453,11 @@ export function XiaohongshuTool() {
                                   cursor: !canSelectIndividually || creatorRecentBatchRunning ? "not-allowed" : "pointer",
                                 }}
                               >
-                                单独抓取
+                                Crawl individually
                               </button>
                               <button
                                 type="button"
-                                onClick={() => void openExternalUrl(member.profileUrl, `${member.author}主页`)}
+                                onClick={() => void openExternalUrl(member.profileUrl, `${member.author}'s profile`)}
                                 disabled={!member.profileUrl}
                                 style={{
                                   ...segmentedButtonStyle(false),
@@ -4467,7 +4467,7 @@ export function XiaohongshuTool() {
                                   cursor: member.profileUrl ? "pointer" : "not-allowed",
                                 }}
                               >
-                                主页
+                                Profile
                               </button>
                             </div>
                           </div>
@@ -4514,10 +4514,10 @@ export function XiaohongshuTool() {
             <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
               <div>
                 <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-main)" }}>
-                  管理共享分组
+                  Manage shared groups
                 </div>
                 <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.6, marginTop: "4px" }}>
-                  还没有可管理的 UP 主成员。
+                  No manageable creator members yet.
                 </div>
               </div>
               <span
@@ -4535,13 +4535,13 @@ export function XiaohongshuTool() {
                 }}
               >
                 {showSharedCreatorGroupManager ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                {showSharedCreatorGroupManager ? "收起" : "展开"}
+                {showSharedCreatorGroupManager ? "Collapse" : "Expand"}
               </span>
             </div>
           </button>
           {showSharedCreatorGroupManager ? (
             <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-              先跑一次“共享智能分组”，这里才会出现可手动整理的小红书博主成员。
+              Run "shared smart grouping" once first; manually sortable Xiaohongshu blogger members appear here afterwards.
             </div>
           ) : null}
         </div>
@@ -4576,10 +4576,10 @@ export function XiaohongshuTool() {
           <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
             <div>
               <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-main)" }}>
-                管理共享分组
+                Manage shared groups
               </div>
               <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.6, marginTop: "4px" }}>
-                全部博主 {allSharedCreatorMembers.length} 位 · 当前筛出 {filteredSharedCreatorMembers.length} 位 · 未分组 {ungroupedCreatorMembers.length} 位 · 共享组 {trackerCreatorGroupOptions.length} 个
+                {allSharedCreatorMembers.length} bloggers total · {filteredSharedCreatorMembers.length} filtered · {ungroupedCreatorMembers.length} ungrouped · {trackerCreatorGroupOptions.length} shared groups
               </div>
             </div>
             <span
@@ -4597,7 +4597,7 @@ export function XiaohongshuTool() {
               }}
             >
               {showSharedCreatorGroupManager ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-              {showSharedCreatorGroupManager ? "收起" : "展开"}
+              {showSharedCreatorGroupManager ? "Collapse" : "Expand"}
             </span>
           </div>
         </button>
@@ -4605,7 +4605,7 @@ export function XiaohongshuTool() {
         {showSharedCreatorGroupManager ? (
           <>
             <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
-              先点组名展开，再点具体 UP 主名字展开详情。每个博主都可以同时加入多个共享组；把所有组都移掉后，这个博主就会回到“未分组”。
+              Click a group name to expand, then click a creator name for details. Each blogger can join multiple shared groups; removing all groups returns them to "ungrouped".
             </div>
 
         <div
@@ -4622,21 +4622,21 @@ export function XiaohongshuTool() {
           }}
         >
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-            <span>全部博主 {allSharedCreatorMembers.length} 位</span>
-            <span>当前筛出 {filteredSharedCreatorMembers.length} 位</span>
-            <span>未分组 {ungroupedCreatorMembers.length} 位</span>
-            <span>共享组 {trackerCreatorGroupOptions.length} 个</span>
+            <span>{allSharedCreatorMembers.length} bloggers total</span>
+            <span>{filteredSharedCreatorMembers.length} filtered</span>
+            <span>{ungroupedCreatorMembers.length} ungrouped</span>
+            <span>{trackerCreatorGroupOptions.length} shared groups</span>
           </div>
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center", flex: "1 1 420px", justifyContent: "flex-end" }}>
             <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-              每页显示
+              Per page
               <select
                 value={sharedCreatorManagerPageSize}
                 onChange={(e) => setSharedCreatorManagerPageSize(Number(e.target.value) === 50 ? 50 : 20)}
                 style={{ ...compactControlStyle, padding: "8px 10px", width: "84px" }}
               >
-                <option value={20}>20 个</option>
-                <option value={50}>50 个</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
               </select>
             </label>
             <input
@@ -4646,7 +4646,7 @@ export function XiaohongshuTool() {
                 setSharedCreatorManagerQuery(e.target.value);
                 setSharedCreatorManagerPages({});
               }}
-              placeholder="搜索博主、标题或分组"
+              placeholder="Search bloggers, titles, or groups"
               style={{ ...compactControlStyle, minWidth: "240px", flex: "1 1 240px", maxWidth: "360px" }}
             />
           </div>
@@ -4698,13 +4698,13 @@ export function XiaohongshuTool() {
                           {group.label}
                         </div>
                         <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.5 }}>
-                          {group.members.length} 位 UP 主
-                          {isUngrouped ? " · 未归组成员" : ""}
+                          {group.members.length} creators
+                          {isUngrouped ? " · ungrouped members" : ""}
                         </div>
                       </div>
                     </div>
                     <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
-                      {expanded ? "收起" : "展开"}
+                      {expanded ? "Collapse" : "Expand"}
                     </span>
                   </button>
 
@@ -4721,8 +4721,8 @@ export function XiaohongshuTool() {
                       <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", alignItems: "center", flexWrap: "wrap", marginTop: "12px" }}>
                         <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
                           {isUngrouped
-                            ? "这里是已经被手动移出全部共享组的 UP 主。"
-                            : "点具体 UP 主名字展开详情，再做分组调整或单独抓取。"}
+                            ? "Creators manually removed from all shared groups."
+                            : "Click a creator name to expand details, then adjust groups or crawl individually."}
                         </div>
                         {pageCount > 1 ? (
                           <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
@@ -4741,10 +4741,10 @@ export function XiaohongshuTool() {
                                 cursor: normalizedPage === 0 ? "not-allowed" : "pointer",
                               }}
                             >
-                              上一页
+                              Previous
                             </button>
                             <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                              第 {normalizedPage + 1} / {pageCount} 页
+                              Page {normalizedPage + 1} / {pageCount}
                             </span>
                             <button
                               type="button"
@@ -4761,7 +4761,7 @@ export function XiaohongshuTool() {
                                 cursor: normalizedPage >= pageCount - 1 ? "not-allowed" : "pointer",
                               }}
                             >
-                              下一页
+                              Next
                             </button>
                           </div>
                         ) : null}
@@ -4814,16 +4814,16 @@ export function XiaohongshuTool() {
                                       {member.author}
                                     </span>
                                     <span style={{ fontSize: "0.6875rem", color: memberSelected ? "var(--color-primary)" : "var(--text-muted)" }}>
-                                      {memberSelected ? "已加入批量列表" : canSelectIndividually ? "可管理" : "待补 user_id"}
+                                      {memberSelected ? "In batch list" : canSelectIndividually ? "Manageable" : "Needs user_id"}
                                     </span>
                                     {member.inTracker ? (
                                       <span style={{ fontSize: "0.6875rem", color: "#C2410C" }}>
-                                        已在关注推送
+                                        In follow push
                                       </span>
                                     ) : null}
                                   </div>
                                   <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
-                                    最近：{member.latestTitle || "暂无样本标题"}
+                                    Latest: {member.latestTitle || "no sample title"}
                                   </div>
                                   <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                                     {currentGroupLabels.length > 0 ? currentGroupLabels.slice(0, 3).map((label) => (
@@ -4851,13 +4851,13 @@ export function XiaohongshuTool() {
                                           fontWeight: 700,
                                         }}
                                       >
-                                        未分组
+                                        Ungrouped
                                       </span>
                                     )}
                                   </div>
                                 </div>
                                 <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
-                                  {memberExpanded ? "收起详情" : "展开详情"}
+                                  {memberExpanded ? "Collapse details" : "Expand details"}
                                 </span>
                               </button>
 
@@ -4872,7 +4872,7 @@ export function XiaohongshuTool() {
                                   }}
                                 >
                                   <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.6, marginTop: "10px" }}>
-                                    {member.sourceSummary || "来源：本地收藏 / 分组整理"}
+                                    {member.sourceSummary || "Source: local bookmarks / group sorting"}
                                   </div>
 
                                   <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
@@ -4910,7 +4910,7 @@ export function XiaohongshuTool() {
                                         whiteSpace: "nowrap",
                                       }}
                                     >
-                                      {!canSelectIndividually ? "待补 user_id" : memberSelected ? "取消选择" : "加入批量抓取"}
+                                      {!canSelectIndividually ? "Needs user_id" : memberSelected ? "Deselect" : "Add to batch crawl"}
                                     </button>
                                     <button
                                       type="button"
@@ -4927,11 +4927,11 @@ export function XiaohongshuTool() {
                                         cursor: !canSelectIndividually || creatorRecentBatchRunning ? "not-allowed" : "pointer",
                                       }}
                                     >
-                                      单独抓取
+                                      Crawl individually
                                     </button>
                                     <button
                                       type="button"
-                                      onClick={() => void openExternalUrl(member.profileUrl, `${member.author}主页`)}
+                                      onClick={() => void openExternalUrl(member.profileUrl, `${member.author}'s profile`)}
                                       disabled={!member.profileUrl}
                                       style={{
                                         ...segmentedButtonStyle(false),
@@ -4941,13 +4941,13 @@ export function XiaohongshuTool() {
                                         cursor: member.profileUrl ? "pointer" : "not-allowed",
                                       }}
                                     >
-                                      主页
+                                      Profile
                                     </button>
                                   </div>
 
                                   <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
                                     <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                                      共享分组
+                                      Shared groups
                                     </span>
                                     {trackerCreatorGroupOptions.map((option) => {
                                       const active = currentGroups.includes(option.value);
@@ -4970,7 +4970,7 @@ export function XiaohongshuTool() {
                                             whiteSpace: "nowrap",
                                           }}
                                         >
-                                          {active ? `已在 ${option.label}` : `加入 ${option.label}`}
+                                          {active ? `In ${option.label}` : `Join ${option.label}`}
                                         </button>
                                       );
                                     })}
@@ -4991,10 +4991,10 @@ export function XiaohongshuTool() {
                                         whiteSpace: "nowrap",
                                       }}
                                     >
-                                      移到未分组
+                                      Move to ungrouped
                                     </button>
                                     <span style={{ fontSize: "0.6875rem", color: savingSharedGroup ? "#C2410C" : "var(--text-muted)" }}>
-                                      {savingSharedGroup ? "保存中..." : "支持同时加入多个分组"}
+                                      {savingSharedGroup ? "Saving..." : "Multiple groups supported"}
                                     </span>
                                   </div>
                                 </div>
@@ -5011,7 +5011,7 @@ export function XiaohongshuTool() {
           </div>
         ) : (
           <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-            当前搜索条件下没有匹配到共享分组成员。
+            No shared group members match the current search.
           </div>
         )}
           </>
@@ -5036,18 +5036,18 @@ export function XiaohongshuTool() {
         >
           <div>
             <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-main)" }}>
-              高频博主快捷添加
+              Quick-add frequent bloggers
             </div>
             <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.6, marginTop: "4px" }}>
-              共享智能分组完成后，会按本地内容里作者出现次数整理高频博主；<span style={{ fontWeight: 800, color: "var(--color-primary)" }}>点击头像加入</span>，也可以直接用卡片里的按钮添加到“指定关注爬取”。
+              After shared smart grouping finishes, frequent bloggers are sorted by how often authors appear in local content; <span style={{ fontWeight: 800, color: "var(--color-primary)" }}>click an avatar to add</span>, or use the card buttons to add them to targeted follow crawls.
             </div>
           </div>
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             <button type="button" onClick={handleBuildSmartGroups} style={segmentedButtonStyle(true)}>
-              生成共享智能分组
+              Generate shared smart groups
             </button>
             <button type="button" onClick={handleRefreshSharedCreatorAssignments} style={segmentedButtonStyle(false)}>
-              仅整理博主 / UP
+              Organize creators only
             </button>
           </div>
         </div>
@@ -5069,18 +5069,18 @@ export function XiaohongshuTool() {
         <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
           <div>
             <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-main)" }}>
-              高频博主快捷添加
+              Quick-add frequent bloggers
             </div>
             <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.6, marginTop: "4px" }}>
-              按收藏里出现次数排序，每页 12 个；<span style={{ fontWeight: 800, color: "var(--color-primary)" }}>点击头像加入</span>，也可以直接用卡片按钮添加或删除。
+              Sorted by frequency in bookmarks, 12 per page; <span style={{ fontWeight: 800, color: "var(--color-primary)" }}>click an avatar to add</span>, or use the card buttons to add or remove.
             </div>
           </div>
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             <button type="button" onClick={handleBuildSmartGroups} style={segmentedButtonStyle(false)}>
-              刷新共享智能分组
+              Refresh shared smart groups
             </button>
             <button type="button" onClick={handleRefreshSharedCreatorAssignments} style={segmentedButtonStyle(false)}>
-              仅整理博主 / UP
+              Organize creators only
             </button>
           </div>
         </div>
@@ -5097,7 +5097,7 @@ export function XiaohongshuTool() {
             onClick={() => setFrequentAuthorGroupFilter("all")}
             style={segmentedButtonStyle(frequentAuthorGroupFilter === "all")}
           >
-            全部 · {frequentAuthorCandidates.length}
+            All · {frequentAuthorCandidates.length}
           </button>
           {frequentAuthorGroupOptions.map((option) => (
             <button
@@ -5117,9 +5117,9 @@ export function XiaohongshuTool() {
               totalCount={filteredFrequentAuthorCandidates.length}
               page={safeFrequentAuthorPage}
               pageSize={FREQUENT_AUTHOR_PAGE_SIZE}
-              itemLabel="个博主"
+              itemLabel="bloggers"
               onPageChange={setFrequentAuthorPage}
-              emptyText="当前筛选条件下没有匹配到博主"
+              emptyText="No bloggers match the current filter"
             />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "10px" }}>
             {visibleFrequentAuthorCandidates.map((candidate, index) => {
@@ -5145,7 +5145,7 @@ export function XiaohongshuTool() {
                     type="button"
                     onClick={() => void handleAddFrequentAuthorToCreatorMonitor(candidate)}
                     disabled={!candidateAuthorId}
-                    title={candidateAuthorId ? "点头像直接加入指定关注爬取" : "这个作者还没有解析出 user_id"}
+                    title={candidateAuthorId ? "Click the avatar to add to targeted follow crawls" : "No user_id resolved for this author yet"}
                     style={{
                       width: "44px",
                       height: "44px",
@@ -5171,14 +5171,14 @@ export function XiaohongshuTool() {
                         {candidate.author}
                       </span>
                       <span style={{ fontSize: "0.6875rem", color: alreadyTracked ? "var(--color-primary)" : "var(--text-muted)", whiteSpace: "nowrap" }}>
-                        {alreadyTracked ? "已加入" : `TOP ${rank}`}
+                        {alreadyTracked ? "Added" : `TOP ${rank}`}
                       </span>
                     </div>
                     <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                      收藏出现 {candidate.note_count} 次 · 收藏 {candidate.total_collects} · 点赞 {candidate.total_likes}
+                      Appears {candidate.note_count} times in bookmarks · saves {candidate.total_collects} · likes {candidate.total_likes}
                     </div>
                     <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
-                      最近：{candidate.latest_title || "暂无"}
+                      Latest: {candidate.latest_title || "none"}
                     </div>
                     {groupLabels.length > 0 ? (
                       <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
@@ -5215,7 +5215,7 @@ export function XiaohongshuTool() {
                             cursor: "pointer",
                           }}
                         >
-                          删除
+                          Delete
                         </button>
                       ) : (
                         <button
@@ -5233,7 +5233,7 @@ export function XiaohongshuTool() {
                             cursor: candidateAuthorId ? "pointer" : "not-allowed",
                           }}
                         >
-                          {candidateAuthorId ? "一键添加" : "待解析 user_id"}
+                          {candidateAuthorId ? "One-click add" : "user_id pending"}
                         </button>
                       )}
                     </div>
@@ -5246,14 +5246,14 @@ export function XiaohongshuTool() {
               totalCount={filteredFrequentAuthorCandidates.length}
               page={safeFrequentAuthorPage}
               pageSize={FREQUENT_AUTHOR_PAGE_SIZE}
-              itemLabel="个博主"
+              itemLabel="bloggers"
               onPageChange={setFrequentAuthorPage}
-              emptyText="当前筛选条件下没有匹配到博主"
+              emptyText="No bloggers match the current filter"
             />
           </>
         ) : (
           <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-            当前筛选条件下还没有匹配到博主。可以切回“全部”，或者先重新执行一次智能分组。
+            No bloggers match the current filter. Switch back to "All" or re-run smart grouping first.
           </div>
         )}
       </div>
@@ -5278,10 +5278,10 @@ export function XiaohongshuTool() {
         <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
           <div>
             <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-main)" }}>
-              输入博主名称、主页链接或 `user_id`，主动补抓最近动态
+              Enter a blogger name, profile link, or `user_id` to manually crawl recent posts
             </div>
             <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.6, marginTop: "4px" }}>
-              默认折叠。展开后可直接抓最近内容；共享分组里的整组抓取和批量选中也都复用这里的链路。
+              Collapsed by default. Expand to crawl recent content directly; whole-group crawls and batch selections in shared groups reuse this same flow.
             </div>
           </div>
           <div
@@ -5299,7 +5299,7 @@ export function XiaohongshuTool() {
             }}
           >
             {showCreatorRecentWorkbench ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            {showCreatorRecentWorkbench ? "收起" : "展开"}
+            {showCreatorRecentWorkbench ? "Collapse" : "Expand"}
           </div>
         </div>
       </button>
@@ -5307,7 +5307,7 @@ export function XiaohongshuTool() {
       {showCreatorRecentWorkbench && (
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
           <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
-            如果输入的是名称，会优先在本地已记录的名字到 ID 映射里匹配，再抓取最近几天内容。下面也可以直接使用共享分组结果做整组或多博主批量抓取，并手动整理分组成员。
+            If you enter a name, it first matches against the locally recorded name-to-ID mapping, then crawls recent days. Below you can also use shared group results for whole-group or multi-blogger batch crawls and manually sort group members.
           </div>
 
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
@@ -5321,11 +5321,11 @@ export function XiaohongshuTool() {
                   void handleFetchCreatorRecent();
                 }
               }}
-              placeholder="输入博主名称、主页链接或 user_id"
+              placeholder="Enter blogger name, profile link, or user_id"
               style={{ ...compactControlStyle, flex: 1, minWidth: "260px" }}
             />
             <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.875rem", color: "var(--text-main)" }}>
-              最近
+              Last
               <input
                 type="number"
                 min={1}
@@ -5334,10 +5334,10 @@ export function XiaohongshuTool() {
                 onChange={(e) => setCreatorRecentDays(Number(e.target.value || 1))}
                 style={{ ...compactControlStyle, width: "88px" }}
               />
-              天
+              days
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.875rem", color: "var(--text-main)" }}>
-              抓取
+              Fetch
               <input
                 type="number"
                 min={1}
@@ -5346,7 +5346,7 @@ export function XiaohongshuTool() {
                 onChange={(e) => setCreatorRecentLimit(Number(e.target.value || 1))}
                 style={{ ...compactControlStyle, width: "88px" }}
               />
-              条
+              items
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.875rem", color: "var(--text-main)" }}>
               <input
@@ -5354,7 +5354,7 @@ export function XiaohongshuTool() {
                 checked={creatorRecentAutoSaveAfterFetch}
                 onChange={(e) => setCreatorRecentAutoSaveAfterFetch(e.target.checked)}
               />
-              抓取后自动一键入库
+              Auto-save after crawling
             </label>
             <button
               type="button"
@@ -5362,7 +5362,7 @@ export function XiaohongshuTool() {
               disabled={creatorRecentRunning || !creatorSearchQuery.trim()}
               style={segmentedButtonStyle(true)}
             >
-              {creatorRecentRunning ? "抓取中..." : "抓取最近动态"}
+              {creatorRecentRunning ? "Crawling..." : "Crawl recent posts"}
             </button>
             {creatorRecentRunning && creatorRecentTaskId ? (
               <button
@@ -5370,13 +5370,13 @@ export function XiaohongshuTool() {
                 onClick={() => void handleCancelCreatorRecent()}
                 style={segmentedButtonStyle(false)}
               >
-                停止
+                Stop
               </button>
             ) : null}
           </div>
           <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-            指定博主抓取使用插件 bridge 优先链路：由浏览器扩展打开博主主页并读取页面状态 / DOM，和专辑、搜索抓取保持一致。
-            当前不会静默回退 Playwright；如插件未连接、页面没有读到笔记、访问频繁、扫码或登录限制，任务会停止并提示处理。批量抓取仍建议控制频率。
+            Targeted blogger crawls use the extension-bridge-first path: the browser extension opens the blogger's profile and reads page state / DOM, consistent with album and search crawls.
+            There is no silent Playwright fallback; if the extension is disconnected, no notes are read, or rate-limit / QR / login restrictions occur, the task stops and prompts you. Keep batch crawl frequency low.
           </div>
           <div
             style={{
@@ -5390,7 +5390,7 @@ export function XiaohongshuTool() {
               lineHeight: 1.6,
             }}
           >
-            风险提示：访问指定博主主页本身就可能触发小红书“访问频繁/安全验证”，即使走插件 bridge 也不稳定。建议优先使用插件路径、小批量低频执行，遇到限制立即停止并等待恢复。
+            Risk note: visiting a blogger's profile can itself trigger Xiaohongshu rate limiting / security verification, even via the extension bridge. Prefer the extension path, run small low-frequency batches, and stop immediately when restricted.
           </div>
 
           {renderSharedCreatorBatchSelector()}
@@ -5401,15 +5401,15 @@ export function XiaohongshuTool() {
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
             <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-main)" }}>
-              批量抓取结果 · 成功 {creatorBatchResults.filter((item) => item.result).length} 位 / 失败 {creatorBatchResults.filter((item) => item.error).length} 位
+              Batch crawl results · {creatorBatchResults.filter((item) => item.result).length} succeeded / {creatorBatchResults.filter((item) => item.error).length} failed
             </div>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
               <button
                 type="button"
                 onClick={() => void handleSaveCreatorRecentNotes(
                   creatorBatchResults.flatMap((item) => item.result?.notes || []),
-                  "博主最近动态批量抓取",
-                  "批量抓取结果已入库",
+                  "Blogger recent posts batch crawl",
+                  "Batch crawl results saved",
                 )}
                 disabled={previewSaveRunning || creatorBatchResults.every((item) => !item.result?.notes?.length)}
                 style={{
@@ -5419,7 +5419,7 @@ export function XiaohongshuTool() {
                 }}
               >
                 <FolderDown style={{ width: "14px", height: "14px" }} />
-                {previewSaveRunning ? "入库中..." : "一键入库全部结果"}
+                {previewSaveRunning ? "Saving..." : "Save all results"}
               </button>
               <button
                 type="button"
@@ -5432,7 +5432,7 @@ export function XiaohongshuTool() {
                 }}
               >
                 <RefreshCw style={{ width: "14px", height: "14px" }} />
-                {creatorRecentBatchRunning ? "刷新中..." : "刷新结果"}
+                {creatorRecentBatchRunning ? "Refreshing..." : "Refresh results"}
               </button>
               <button
                 type="button"
@@ -5444,7 +5444,7 @@ export function XiaohongshuTool() {
                   cursor: creatorRecentBatchRunning ? "not-allowed" : "pointer",
                 }}
               >
-                清空结果
+                Clear results
               </button>
             </div>
           </div>
@@ -5474,8 +5474,8 @@ export function XiaohongshuTool() {
                   <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
                     {item.target.groupLabel ? `${item.target.groupLabel} · ` : ""}
                     {item.result
-                      ? `最近 ${item.result.recent_days} 天 ${item.result.total_found} 条`
-                      : item.error || "抓取失败"}
+                      ? `Last ${item.result.recent_days} days, ${item.result.total_found} items`
+                      : item.error || "Crawl failed"}
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
@@ -5493,7 +5493,7 @@ export function XiaohongshuTool() {
                           item.result?.resolved_author || item.target.author,
                           item.result?.notes || [],
                           item.result?.resolved_user_id || item.target.authorId,
-                        )}动态已入库`,
+                        )} posts saved`,
                         item.result?.resolved_user_id || item.target.authorId,
                       )}
                       disabled={previewSaveRunning || item.result.notes.length === 0}
@@ -5504,7 +5504,7 @@ export function XiaohongshuTool() {
                       }}
                     >
                       <FolderDown style={{ width: "14px", height: "14px" }} />
-                      {previewSaveRunning ? "入库中..." : "全部入库"}
+                      {previewSaveRunning ? "Saving..." : "Save all"}
                     </button>
                   ) : null}
                   {item.result?.profile_url || item.target.authorId ? (
@@ -5516,11 +5516,11 @@ export function XiaohongshuTool() {
                           item.result?.resolved_author || item.target.author,
                           item.result?.notes || [],
                           item.result?.resolved_user_id || item.target.authorId,
-                        )}主页`,
+                        )}'s profile`,
                       )}
                       style={segmentedButtonStyle(false)}
                     >
-                      主页
+                      Profile
                     </button>
                   ) : null}
                 </div>
@@ -5549,11 +5549,11 @@ export function XiaohongshuTool() {
                       item.result.resolved_author || item.target.author,
                       item.result.notes,
                       item.result.resolved_user_id || item.target.authorId,
-                    )}动态已入库`,
+                    )} posts saved`,
                   })
                 ) : (
                   <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                    这位博主在当前时间范围内没有可用内容。
+                    This blogger has no available content in the current time range.
                   </div>
                 )
               ) : null}
@@ -5566,7 +5566,7 @@ export function XiaohongshuTool() {
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
             <div style={{ fontSize: "0.875rem", color: "var(--text-main)", fontWeight: 700 }}>
-              {creatorRecentDisplayLabel} · 最近 {creatorRecentResult.recent_days} 天 {creatorRecentResult.total_found} 条
+              {creatorRecentDisplayLabel} · last {creatorRecentResult.recent_days} days, {creatorRecentResult.total_found} items
             </div>
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
               <button
@@ -5574,7 +5574,7 @@ export function XiaohongshuTool() {
                 onClick={() => void handleSaveCreatorRecentNotes(
                   creatorRecentResult.notes,
                   creatorRecentResult.resolved_author || creatorRecentResult.creator_query,
-                  "博主最近动态已入库",
+                  "Blogger's recent posts saved",
                   creatorRecentResult.resolved_user_id,
                 )}
                 disabled={previewSaveRunning || creatorRecentResult.notes.length === 0}
@@ -5585,7 +5585,7 @@ export function XiaohongshuTool() {
                 }}
               >
                 <FolderDown style={{ width: "14px", height: "14px" }} />
-                {previewSaveRunning ? "入库中..." : "一键入库"}
+                {previewSaveRunning ? "Saving..." : "Save all"}
               </button>
               <button
                 type="button"
@@ -5598,7 +5598,7 @@ export function XiaohongshuTool() {
                 }}
               >
                 <RefreshCw style={{ width: "14px", height: "14px" }} />
-                {creatorRecentRunning ? "刷新中..." : "刷新结果"}
+                {creatorRecentRunning ? "Refreshing..." : "Refresh results"}
               </button>
               <button
                 type="button"
@@ -5615,7 +5615,7 @@ export function XiaohongshuTool() {
                   sample_titles: creatorRecentResult.notes.map((item) => item.title).filter(Boolean).slice(0, 6),
                   sample_albums: [],
                   sample_tags: [],
-                  source_summary: `来自指定博主抓取：${creatorRecentResult.creator_query}`,
+                  source_summary: `From targeted blogger crawl: ${creatorRecentResult.creator_query}`,
                   score: creatorRecentResult.notes.reduce((sum, item) => sum + (item.likes || 0) + (item.collects || 0), 0),
                 })}
                 style={segmentedButtonStyle(
@@ -5623,14 +5623,14 @@ export function XiaohongshuTool() {
                 )}
               >
                 {trackerCreatorMonitors.some((monitor) => monitor.user_id === creatorRecentResult.resolved_user_id)
-                  ? "已在特定关注"
-                  : "加入特定关注"}
+                  ? "Already followed"
+                  : "Add targeted follow"}
               </button>
               <button
                 type="button"
                 onClick={() => void openExternalUrl(
                   creatorRecentResult.profile_url || buildXhsProfileUrl(creatorRecentResult.resolved_user_id),
-                  `${creatorRecentDisplayLabel}主页`,
+                  `${creatorRecentDisplayLabel}'s profile`,
                 )}
                 style={{
                   display: "inline-flex",
@@ -5647,7 +5647,7 @@ export function XiaohongshuTool() {
                 }}
               >
                 <ExternalLink size={14} />
-                打开主页
+                Open profile
               </button>
             </div>
           </div>
@@ -5664,10 +5664,10 @@ export function XiaohongshuTool() {
               return next;
             }),
             sourceLabel: creatorRecentDisplayLabel,
-            saveAllTitle: "博主最近动态已入库",
+            saveAllTitle: "Blogger's recent posts saved",
           }) : (
             <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-              这位博主在你设定的最近天数内没有读到可用内容。
+              No usable content was read for this blogger within your day range.
             </div>
           )}
         </div>
@@ -5677,7 +5677,7 @@ export function XiaohongshuTool() {
 
   const renderCreatorRecentPanel = () => (
     <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-      <Card title="主动抓取 / 指定博主最近动态" icon={<Search style={{ width: "18px", height: "18px" }} />}>
+      <Card title="Manual Crawl / Targeted Blogger Recent Posts" icon={<Search style={{ width: "18px", height: "18px" }} />}>
         {renderCreatorRecentWorkbenchContent()}
       </Card>
       {renderSharedCreatorGroupManager()}
@@ -5688,9 +5688,9 @@ export function XiaohongshuTool() {
     const enabledCreatorCount = creatorEntries.filter((monitor) => monitor.enabled).length;
     const hasSmartGroups = visibleSharedCreatorGroups.length > 0;
     const filterLabel = creatorMonitorGroupFilter === "all"
-      ? "全部"
+      ? "All"
       : creatorMonitorGroupFilter === "__ungrouped__"
-        ? "未分组"
+        ? "Ungrouped"
         : creatorGroupLabelMap.get(creatorMonitorGroupFilter) || creatorMonitorGroupFilter;
     const startIndex = filteredCreatorEntries.length === 0 ? 0 : safeCreatorMonitorPage * creatorMonitorPageSize + 1;
     const endIndex = Math.min(filteredCreatorEntries.length, startIndex + visibleCreatorEntries.length - 1);
@@ -5698,18 +5698,18 @@ export function XiaohongshuTool() {
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {renderPushRow(
           "creator",
-          "特定关注爬取",
-          `${creatorEntries.length} 个博主定义 · 已单独开启 ${enabledCreatorCount} 个 · 当前筛选 ${filterLabel} · 每页 8 个 · 标题开关用于一键全开/全关`,
+          "Targeted follow crawl",
+          `${creatorEntries.length} blogger definitions · ${enabledCreatorCount} individually enabled · current filter ${filterLabel} · 8 per page · the title switch toggles all on/off`,
           trackerCreatorPushEnabled,
           handleToggleCreatorPush,
           handleDeleteCreatorPush,
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <div>
               <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--text-main)" }}>
-                具体博主定义
+                Blogger definitions
               </div>
               <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.6, marginTop: "4px" }}>
-                每个博主都可以独立开启、关闭和删除；手动添加时填写显示名称，以及主页 /user/profile/ 后面的用户号，不是小红书号。
+                Each blogger can be enabled, disabled, and deleted independently; when adding manually, fill in a display name and the user number after /user/profile/ in the URL, not the Xiaohongshu ID.
               </div>
               <div
                 style={{
@@ -5724,7 +5724,7 @@ export function XiaohongshuTool() {
                   lineHeight: 1.6,
                 }}
               >
-                可能触发反爬，并不稳定：特定关注/指定博主会访问博主主页，频率过高时容易出现访问频繁或验证页。建议分批低频运行。
+                May trigger anti-crawling and is unstable: targeted follows / targeted bloggers visit profile pages, and high frequency easily triggers rate limiting or verification pages. Run in small low-frequency batches.
               </div>
             </div>
 
@@ -5736,14 +5736,14 @@ export function XiaohongshuTool() {
               >
                 <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
                   <FolderDown style={{ width: "14px", height: "14px" }} />
-                  从智能分组快速导入
+                  Quick import from smart groups
                 </span>
-                <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{showCreatorImportPanel ? "收起" : "展开"}</span>
+                <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{showCreatorImportPanel ? "Collapse" : "Expand"}</span>
               </button>
               {showCreatorImportPanel ? (
                 <>
                   <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                    {hasSmartGroups ? "选择分组后点击添加，会只导入未添加的博主。" : "先执行共享智能分组后可按组导入。"}
+                    {hasSmartGroups ? "Pick a group and click add; only bloggers not yet added are imported." : "Run shared smart grouping first to import by group."}
                   </span>
                   <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                     {visibleSharedCreatorGroups.map((group) => {
@@ -5755,16 +5755,16 @@ export function XiaohongshuTool() {
                           onClick={() => void handleImportCreatorGroup(group.value)}
                           disabled={importableCount === 0}
                           style={segmentedButtonStyle(false)}
-                          title={importableCount === 0 ? "该组博主都已在特定关注里" : `导入 ${importableCount} 个未添加博主`}
+                          title={importableCount === 0 ? "All bloggers in this group are already in targeted follows" : `Import ${importableCount} unadded bloggers`}
                         >
                           <FolderDown style={{ width: "14px", height: "14px" }} />
-                          {group.label} · 添加 {importableCount}
+                          {group.label} · add {importableCount}
                         </button>
                       );
                     })}
                     {!hasSmartGroups ? (
                       <button type="button" onClick={handleRefreshSharedCreatorAssignments} style={segmentedButtonStyle(false)}>
-                        生成智能分组
+                        Generate smart groups
                       </button>
                     ) : null}
                   </div>
@@ -5780,9 +5780,9 @@ export function XiaohongshuTool() {
               >
                 <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
                   <Filter style={{ width: "14px", height: "14px" }} />
-                  标签过滤
+                  Tag filter
                 </span>
-                <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{filterLabel} · {showCreatorFilterPanel ? "收起" : "展开"}</span>
+                <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{filterLabel} · {showCreatorFilterPanel ? "Collapse" : "Expand"}</span>
               </button>
               {showCreatorFilterPanel ? (
                 <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -5791,7 +5791,7 @@ export function XiaohongshuTool() {
                 onClick={() => { setCreatorMonitorGroupFilter("all"); setCreatorMonitorPage(0); }}
                 style={segmentedButtonStyle(creatorMonitorGroupFilter === "all")}
               >
-                全部 · {creatorEntries.length}
+                All · {creatorEntries.length}
               </button>
               {creatorGroupDisplayOptions.map((option) => (
                 <button
@@ -5808,7 +5808,7 @@ export function XiaohongshuTool() {
                 onClick={() => { setCreatorMonitorGroupFilter("__ungrouped__"); setCreatorMonitorPage(0); }}
                 style={segmentedButtonStyle(creatorMonitorGroupFilter === "__ungrouped__")}
               >
-                未分组 · {creatorEntries.filter((monitor) => getMonitorGroupValues(monitor).length === 0).length}
+                Ungrouped · {creatorEntries.filter((monitor) => getMonitorGroupValues(monitor).length === 0).length}
               </button>
                 </div>
               ) : null}
@@ -5820,7 +5820,7 @@ export function XiaohongshuTool() {
                   const userId = normalizeXhsProfileUserId(creatorMonitor.user_id);
                   const profile = trackerCreatorProfiles[userId];
                   const active = creatorMonitor.enabled;
-                  const source = profile?.source_summary || profile?.latest_title || "来自共享智能分组 / 手动添加";
+                  const source = profile?.source_summary || profile?.latest_title || "From shared smart grouping / manual add";
                   const groupLabels = getCreatorMonitorGroupLabels(creatorMonitor);
                   return (
                     <div
@@ -5850,7 +5850,7 @@ export function XiaohongshuTool() {
                           }}
                         />
                         <strong style={{ fontSize: "0.8125rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {profile?.author || creatorMonitor.label || userId || "未设置用户号"}
+                          {profile?.author || creatorMonitor.label || userId || "No user number set"}
                         </strong>
                       </div>
                       <input
@@ -5861,7 +5861,7 @@ export function XiaohongshuTool() {
                             ? { ...monitor, label: e.target.value, author: e.target.value || monitor.author }
                             : monitor
                         )))}
-                        placeholder="博主显示名称"
+                        placeholder="Blogger display name"
                         style={{ ...compactControlStyle, width: "100%" }}
                       />
                       <input
@@ -5872,7 +5872,7 @@ export function XiaohongshuTool() {
                             ? { ...monitor, user_id: normalizeXhsProfileUserId(e.target.value) }
                             : monitor
                         )))}
-                        placeholder="填写主页 /user/profile/ 后面的用户号，不是小红书号"
+                        placeholder="User number after /user/profile/ in the URL, not the Xiaohongshu ID"
                         style={{ ...compactControlStyle, width: "100%" }}
                       />
                       <span style={{ color: "var(--text-secondary)", fontSize: "0.75rem", lineHeight: 1.45, minHeight: "2.1em", overflow: "hidden" }}>
@@ -5885,40 +5885,40 @@ export function XiaohongshuTool() {
                           disabled={!creatorMonitor.user_id}
                           style={segmentedButtonStyle(active)}
                         >
-                          {active ? "已开启" : "已关闭"}
+                          {active ? "On" : "Off"}
                         </button>
                         <button
                           type="button"
                           onClick={() => void handleRemoveCreatorMonitor(creatorMonitor)}
                           style={{ ...segmentedButtonStyle(false), color: "var(--color-danger)" }}
                         >
-                          删除
+                          Delete
                         </button>
                       </div>
                       <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                         {resolveCreatorProfileUrl(profile, userId) ? (
                           <button
                             type="button"
-                            onClick={() => void openExternalUrl(resolveCreatorProfileUrl(profile, userId), `${profile?.author || userId}主页`)}
+                            onClick={() => void openExternalUrl(resolveCreatorProfileUrl(profile, userId), `${profile?.author || userId}'s profile`)}
                             style={{ ...segmentedButtonStyle(false), fontSize: "0.6875rem", padding: "5px 8px" }}
                           >
-                            访问主页
+                            Visit profile
                             <ExternalLink size={12} />
                           </button>
                         ) : null}
                         {profile?.sample_note_urls?.[0] ? (
                           <button
                             type="button"
-                            onClick={() => void openExternalUrl(profile.sample_note_urls?.[0], `${profile?.author || userId}样本内容`)}
+                            onClick={() => void openExternalUrl(profile.sample_note_urls?.[0], `${profile?.author || userId}'s sample content`)}
                             style={{ ...segmentedButtonStyle(false), fontSize: "0.6875rem", padding: "5px 8px" }}
                           >
-                            预览样本
+                            Preview sample
                             <ExternalLink size={12} />
                           </button>
                         ) : null}
                       </div>
                       <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
-                        <label style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>每次抓取</label>
+                        <label style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>Per crawl</label>
                         <input
                           type="number"
                           min={1}
@@ -5931,8 +5931,8 @@ export function XiaohongshuTool() {
                           )))}
                           style={{ ...compactControlStyle, width: "72px" }}
                         />
-                        <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>条</span>
-                        <label style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>最近</label>
+                        <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>items</span>
+                        <label style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>Last</label>
                         <input
                           type="number"
                           min={1}
@@ -5945,7 +5945,7 @@ export function XiaohongshuTool() {
                           )))}
                           style={{ ...compactControlStyle, width: "72px" }}
                         />
-                        <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>天</span>
+                        <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>days</span>
                       </div>
                       <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
                         <input
@@ -5957,7 +5957,7 @@ export function XiaohongshuTool() {
                               : monitor
                           )))}
                         />
-                        选爬评论
+                        Fetch comments
                       </label>
                       {groupLabels.length > 0 ? (
                         <span style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
@@ -5984,20 +5984,20 @@ export function XiaohongshuTool() {
               </div>
             ) : (
               <div style={{ padding: "14px", borderRadius: "var(--radius-sm)", border: "1px dashed var(--border-light)", color: "var(--text-muted)", fontSize: "0.8125rem" }}>
-                当前筛选下还没有博主，可以从智能分组导入或手动新增。
+                No bloggers under the current filter; import from smart groups or add manually.
               </div>
             )}
 
             <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
               <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                {filteredCreatorEntries.length > 0 ? `第 ${startIndex}-${endIndex} 个，共 ${filteredCreatorEntries.length} 个` : "共 0 个"}
+                {filteredCreatorEntries.length > 0 ? `${startIndex}-${endIndex} of ${filteredCreatorEntries.length}` : "0 total"}
               </span>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                 <button type="button" disabled={safeCreatorMonitorPage <= 0} onClick={() => setCreatorMonitorPage((page) => Math.max(0, page - 1))} style={segmentedButtonStyle(false)}>
-                  上一页
+                  Previous
                 </button>
                 <button type="button" disabled={safeCreatorMonitorPage >= creatorMonitorPageCount - 1} onClick={() => setCreatorMonitorPage((page) => Math.min(creatorMonitorPageCount - 1, page + 1))} style={segmentedButtonStyle(false)}>
-                  下一页
+                  Next
                 </button>
               </div>
             </div>
@@ -6005,22 +6005,22 @@ export function XiaohongshuTool() {
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
               <button type="button" onClick={() => setTrackerCreatorMonitors((prev) => [
                 ...prev,
-                createCreatorMonitor({ label: `手动新增 ${prev.length + 1}`, enabled: true }),
+                createCreatorMonitor({ label: `Manually added ${prev.length + 1}`, enabled: true }),
               ])} style={segmentedButtonStyle(false)}>
                 <Plus style={{ width: "14px", height: "14px" }} />
-                手动新增
+                Add manually
               </button>
-              <button type="button" onClick={() => persistTrackerDefinitions("特定关注定义已保存")} style={segmentedButtonStyle(true)}>
-                保存特定关注定义
+              <button type="button" onClick={() => persistTrackerDefinitions("Targeted follow definitions saved")} style={segmentedButtonStyle(true)}>
+                Save targeted follow definitions
               </button>
               <button type="button" onClick={() => void handleClearCreatorMonitors("page")} style={{ ...segmentedButtonStyle(false), color: "var(--color-danger)" }}>
-                删除本页关注
+                Delete this page's follows
               </button>
               <button type="button" onClick={() => void handleClearCreatorMonitors("filtered")} style={{ ...segmentedButtonStyle(false), color: "var(--color-danger)" }}>
-                删除当前筛选
+                Delete current filter
               </button>
               <button type="button" onClick={() => void handleClearCreatorMonitors("all")} style={{ ...segmentedButtonStyle(false), color: "var(--color-danger)" }}>
-                删除全部关注
+                Delete all follows
               </button>
             </div>
           </div>,
@@ -6030,12 +6030,12 @@ export function XiaohongshuTool() {
   };
 
   const renderFollowingWorkbenchCard = () => (
-    <Card title="关注监控实验台" icon={<Users style={{ width: "18px", height: "18px" }} />}>
+    <Card title="Follow Monitor Workbench" icon={<Users style={{ width: "18px", height: "18px" }} />}>
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", margin: 0 }}>
-          会先在搜索页搜索关键词，再自动点“筛选 -&gt; 已关注”，优先走插件 bridge 读取真实页面 state，再回退到浏览器兜底链路。
+          Searches the keyword on the search page first, then auto-clicks "Filter -&gt; Followed", preferring the extension bridge to read real page state before falling back to the browser path.
           {!cookieVerified && (
-            <span style={{ color: "var(--color-warning)" }}>（需先配置 Cookie）</span>
+            <span style={{ color: "var(--color-warning)" }}>(cookie required)</span>
           )}
         </p>
 
@@ -6045,10 +6045,10 @@ export function XiaohongshuTool() {
             onClick={() => setAlbumDedicatedWindowMode((v) => !v)}
             style={segmentedButtonStyle(albumDedicatedWindowMode)}
           >
-            {albumDedicatedWindowMode ? "当前 Edge 独立窗口" : "使用当前窗口"}
+            {albumDedicatedWindowMode ? "Dedicated Edge window" : "Use current window"}
           </button>
           <label style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--text-main)", fontSize: "0.875rem" }}>
-            扩展端口
+            Extension port
             <input
               type="number"
               min={1024}
@@ -6061,20 +6061,20 @@ export function XiaohongshuTool() {
         </div>
 
         <div style={{ color: "var(--text-muted)", fontSize: "0.8125rem" }}>
-          抓取链路：插件优先（端口 {albumExtensionPort}，{albumDedicatedWindowMode ? "独立窗口" : "当前窗口"}）{` -> `}Playwright 兜底
+          Crawl path: extension first (port {albumExtensionPort}, {albumDedicatedWindowMode ? "dedicated window" : "current window"}){` -> `}Playwright fallback
         </div>
 
         <div style={{ height: "1px", background: "var(--border-light)" }} />
 
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-main)" }}>关注流关键词搜索</div>
+          <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-main)" }}>Follow-feed keyword search</div>
           <div style={{ color: "var(--text-secondary)", fontSize: "0.8125rem" }}>
-            直接按关键词搜索，再切到“已关注”筛选，只保留你已关注博主的结果。
+            Searches by keyword, then switches to the "Followed" filter, keeping only results from bloggers you follow.
           </div>
         </div>
 
         <label style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--text-main)", fontSize: "0.875rem" }}>
-          抓取上限
+          Fetch limit
           <input
             type="number"
             min={1}
@@ -6084,11 +6084,11 @@ export function XiaohongshuTool() {
             onBlur={(e) => setFollowingLimit(normalizeFollowingLimit(e.target.value))}
             style={{ ...compactControlStyle, width: "88px" }}
           />
-          条
+          items
         </label>
 
         <label style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--text-main)", fontSize: "0.875rem" }}>
-          只保留最近
+          Keep only last
           <input
             type="number"
             min={1}
@@ -6097,7 +6097,7 @@ export function XiaohongshuTool() {
             onChange={(e) => setFollowingRecentDays(Math.max(1, Math.min(365, Number(e.target.value || 1))))}
             style={{ ...compactControlStyle, width: "88px" }}
           />
-          天内发布
+          days of posts
         </label>
 
         <label style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--text-main)", fontSize: "0.875rem" }}>
@@ -6106,7 +6106,7 @@ export function XiaohongshuTool() {
             checked={followingAutoSaveAfterFetch}
             onChange={(e) => setFollowingAutoSaveAfterFetch(e.target.checked)}
           />
-          抓取后自动一键入库
+          Auto-save after crawling
         </label>
 
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
@@ -6120,7 +6120,7 @@ export function XiaohongshuTool() {
                 handleFollowingFeed();
               }
             }}
-            placeholder="输入关键词，多个用逗号分隔..."
+            placeholder="Enter keywords, comma-separated..."
             disabled={!cookieVerified}
             style={{
               flex: 1,
@@ -6153,11 +6153,11 @@ export function XiaohongshuTool() {
             }}
           >
             {followingRunning ? (
-              <span>⟳ 获取中...</span>
+              <span>⟳ Fetching...</span>
             ) : (
               <>
                 <Users style={{ width: "16px", height: "16px" }} />
-                获取
+                Fetch
               </>
             )}
           </button>
@@ -6167,19 +6167,19 @@ export function XiaohongshuTool() {
               onClick={() => void handleCancelFollowingFeed()}
               style={segmentedButtonStyle(false)}
             >
-              停止
+              Stop
             </button>
             ) : null}
         </div>
         <div style={{ color: "var(--text-muted)", fontSize: "0.75rem", lineHeight: 1.6 }}>
-          默认只返回结果，不自动入库；勾选后会在抓取完成时把当前关注流结果整批写入情报库。
+          By default only returns results without auto-saving; when checked, the entire follow-feed result batch is written to the Intel Library when the crawl finishes.
         </div>
       </div>
     </Card>
   );
 
   const renderFollowingResultCard = () => followingResult ? (
-    <Card title={`已关注筛选结果 (${followingResult.total_found})`} icon={<BookOpen style={{ width: "18px", height: "18px" }} />}>
+    <Card title={`Followed Filter Results (${followingResult.total_found})`} icon={<BookOpen style={{ width: "18px", height: "18px" }} />}>
       <div ref={followingResultTopRef} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         <div
           style={{
@@ -6195,17 +6195,17 @@ export function XiaohongshuTool() {
           }}
         >
           <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
-            结果区已压缩。可以整块收起，也可以单条展开；需要快速定位时直接跳顶部或跳底部。
+            The results area is compressed. Collapse the whole block or expand single items; jump to top or bottom for quick navigation.
           </div>
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
             <button type="button" onClick={() => setShowFollowingResults((value) => !value)} style={segmentedButtonStyle(false)}>
-              {showFollowingResults ? "收起结果" : "展开结果"}
+              {showFollowingResults ? "Collapse results" : "Expand results"}
             </button>
             <button type="button" onClick={() => scrollToAnchor(followingResultTopRef)} style={segmentedButtonStyle(false)}>
-              回到顶部
+              Back to top
             </button>
             <button type="button" onClick={() => scrollToAnchor(followingResultBottomRef)} style={segmentedButtonStyle(false)}>
-              跳到底部
+              Jump to bottom
             </button>
           </div>
         </div>
@@ -6226,18 +6226,18 @@ export function XiaohongshuTool() {
             saveSubfolder: (note) => buildFollowingSaveSubfolder(
               note.matched_keywords?.join("，") || followingKeywords,
             ),
-            saveSuccessTitle: "关注流搜索笔记已入库",
+            saveSuccessTitle: "Follow-feed search note saved",
             saveAllSubfolder: buildFollowingSaveSubfolder(keywordLabelFromFollowingResult(followingResult, followingKeywords)),
-            saveAllSuccessTitle: "关注流搜索结果已入库",
+            saveAllSuccessTitle: "Follow-feed search results saved",
             creatorSourceLabel: (note) => ({
               tags: note.matched_keywords?.length ? note.matched_keywords : parseKeywordInput(followingKeywords),
-              summary: note.matched_keywords?.length ? `来自关注流搜索：${note.matched_keywords.join("，")}` : "来自关注流搜索",
+              summary: note.matched_keywords?.length ? `From follow-feed search: ${note.matched_keywords.join(", ")}` : "From follow-feed search",
             }),
             showMatchedKeywords: true,
           })
         ) : (
           <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-            结果已收起。需要继续看时点上面的“展开结果”。
+            Results collapsed. Click "Expand results" above to continue viewing.
           </div>
         )}
         <div ref={followingResultBottomRef} />
@@ -6255,12 +6255,12 @@ export function XiaohongshuTool() {
           alignItems: "start",
         }}
       >
-        <Card title="搜索关键词情报推送" icon={<Filter style={{ width: "18px", height: "18px" }} />}>
+        <Card title="Search Keyword Intel Push" icon={<Filter style={{ width: "18px", height: "18px" }} />}>
           <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
             {renderPushRow(
               "keyword",
-              "搜索关键词情报推送",
-              `${trackerKeywordMonitors.length} 条定义 · ${trackerEnableKeywordSearch ? "已开启" : "已关闭"}`,
+              "Search keyword intel push",
+              `${trackerKeywordMonitors.length} definitions · ${trackerEnableKeywordSearch ? "enabled" : "disabled"}`,
               trackerEnableKeywordSearch,
               handleToggleKeywordPush,
               handleDeleteKeywordPush,
@@ -6280,7 +6280,7 @@ export function XiaohongshuTool() {
                   >
                     <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
                       <div style={{ flex: 1, minWidth: "180px", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-                        关键词定义
+                        Keyword definition
                       </div>
                       <div style={{ display: "flex", gap: "10px", alignItems: "center", flexShrink: 0, flexWrap: "nowrap" }}>
                         <button
@@ -6290,14 +6290,14 @@ export function XiaohongshuTool() {
                           )))}
                           style={segmentedButtonStyle(monitor.enabled)}
                         >
-                          {monitor.enabled ? "已开启" : "已关闭"}
+                          {monitor.enabled ? "On" : "Off"}
                         </button>
                         <button
                           type="button"
                           onClick={() => handleRemoveKeywordMonitor(monitor.id)}
                           style={segmentedButtonStyle(false)}
                         >
-                          删除
+                          Delete
                         </button>
                       </div>
                     </div>
@@ -6316,12 +6316,12 @@ export function XiaohongshuTool() {
                           (e.target as HTMLInputElement).blur();
                         }
                       }}
-                      placeholder="例如：科研工具"
+                      placeholder="e.g. 科研工具"
                       style={{ ...compactControlStyle, width: "100%" }}
                     />
                     <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
                       <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-                        最低点赞
+                        Min likes
                         <input
                           type="number"
                           min={0}
@@ -6333,7 +6333,7 @@ export function XiaohongshuTool() {
                         />
                       </label>
                       <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-                        每词抓取
+                        Per-keyword fetch
                         <input
                           type="number"
                           min={1}
@@ -6344,10 +6344,10 @@ export function XiaohongshuTool() {
                           )))}
                           style={{ ...compactControlStyle, width: "88px" }}
                         />
-                        条
+                        items
                       </label>
                       <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-                        最近
+                        Last
                         <input
                           type="number"
                           min={1}
@@ -6358,7 +6358,7 @@ export function XiaohongshuTool() {
                           )))}
                           style={{ ...compactControlStyle, width: "72px" }}
                         />
-                        天内发布
+                        days of posts
                       </label>
                       <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
                         <input
@@ -6368,12 +6368,12 @@ export function XiaohongshuTool() {
                             item.id === monitor.id ? { ...item, include_comments: e.target.checked } : item
                           )))}
                         />
-                        选爬评论
+                        Fetch comments
                       </label>
                       {monitor.include_comments ? (
                         <>
                           <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-                            前
+                            Top
                             <input
                               type="number"
                               min={1}
@@ -6384,7 +6384,7 @@ export function XiaohongshuTool() {
                               )))}
                               style={{ ...compactControlStyle, width: "72px" }}
                             />
-                            条
+                            items
                           </label>
                           <select
                             value={monitor.comments_sort_by}
@@ -6393,8 +6393,8 @@ export function XiaohongshuTool() {
                             )))}
                             style={{ ...compactControlStyle, width: "120px" }}
                           >
-                            <option value="likes">高赞优先</option>
-                            <option value="time">最新优先</option>
+                            <option value="likes">Most liked first</option>
+                            <option value="time">Newest first</option>
                           </select>
                         </>
                       ) : null}
@@ -6403,7 +6403,7 @@ export function XiaohongshuTool() {
                 ))}
                 {trackerKeywordMonitors.length === 0 ? (
                   <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                    先在下面输入关键词并保存。保存时会按“一词一条定义”生成，这样每个关键词都能单独开关、单独设置评论抓取。
+                    Enter keywords below and save. Saving generates one definition per word, so each keyword can be toggled and have its comment crawling configured individually.
                   </div>
                 ) : null}
                 <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
@@ -6419,10 +6419,10 @@ export function XiaohongshuTool() {
                     style={segmentedButtonStyle(false)}
                   >
                     <Plus style={{ width: "14px", height: "14px" }} />
-                    新增定义
+                    Add definition
                   </button>
                   <button type="button" onClick={handleSaveTrackerKeywords} style={segmentedButtonStyle(true)}>
-                    保存搜索关键词情报推送
+                    Save search keyword intel push
                   </button>
                 </div>
               </div>,
@@ -6430,10 +6430,10 @@ export function XiaohongshuTool() {
 
             <div>
               <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-main)", marginBottom: "4px" }}>
-                搜索关键词情报推送
+                Search keyword intel push
               </div>
               <p style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                这里用于快速补充关键词，会自动拆成上面的独立定义；具体赞数、抓取条数和评论策略直接在上面的定义里调整。
+                Quickly add keywords here; they split automatically into the independent definitions above. Adjust like thresholds, fetch counts, and comment strategy in the definitions directly.
               </p>
             </div>
 
@@ -6461,7 +6461,7 @@ export function XiaohongshuTool() {
                 onClick={handleToggleKeywordPush}
                 style={segmentedButtonStyle(trackerEnableKeywordSearch)}
               >
-                {trackerEnableKeywordSearch ? "搜索关键词情报推送已开启" : "搜索关键词情报推送已关闭"}
+                {trackerEnableKeywordSearch ? "Search keyword intel push on" : "Search keyword intel push off"}
               </button>
               <button
                 type="button"
@@ -6471,18 +6471,18 @@ export function XiaohongshuTool() {
                 }}
                 style={segmentedButtonStyle(false)}
               >
-                使用推荐关键词
+                Use suggested keywords
               </button>
             </div>
           </div>
         </Card>
 
-        <Card title="关注流情报推送" icon={<Users style={{ width: "18px", height: "18px" }} />}>
+        <Card title="Follow-Feed Intel Push" icon={<Users style={{ width: "18px", height: "18px" }} />}>
           <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
             {renderPushRow(
               "following-scan",
-              "关注流情报推送",
-              `${trackerFollowingScanMonitors.length} 条定义 · 已开启 ${trackerFollowingScanMonitors.filter((monitor) => monitor.enabled).length} 条 · 已关注筛选链路 · ${trackerFollowingScan.enabled ? "已开启" : "已关闭"}`,
+              "Follow-feed intel push",
+              `${trackerFollowingScanMonitors.length} definitions · ${trackerFollowingScanMonitors.filter((monitor) => monitor.enabled).length} enabled · followed-filter path · ${trackerFollowingScan.enabled ? "on" : "off"}`,
               trackerFollowingScan.enabled,
               handleToggleFollowingScanPush,
               handleDeleteFollowingScanPush,
@@ -6502,7 +6502,7 @@ export function XiaohongshuTool() {
                   >
                     <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
                       <div style={{ flex: 1, minWidth: "180px", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-                        关注流关键词
+                        Follow-feed keyword
                       </div>
                       <div style={{ display: "flex", gap: "10px", alignItems: "center", flexShrink: 0, flexWrap: "nowrap" }}>
                         <button
@@ -6516,14 +6516,14 @@ export function XiaohongshuTool() {
                           }}
                           style={segmentedButtonStyle(monitor.enabled)}
                         >
-                          {monitor.enabled ? "已开启" : "已关闭"}
+                          {monitor.enabled ? "On" : "Off"}
                         </button>
                         <button
                           type="button"
                           onClick={() => handleRemoveFollowingScanMonitor(monitor.id)}
                           style={segmentedButtonStyle(false)}
                         >
-                          删除
+                          Delete
                         </button>
                       </div>
                     </div>
@@ -6542,12 +6542,12 @@ export function XiaohongshuTool() {
                           (e.target as HTMLInputElement).blur();
                         }
                       }}
-                      placeholder="例如：科研工具"
+                      placeholder="e.g. 科研工具"
                       style={{ ...compactControlStyle, width: "100%" }}
                     />
                     <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
                       <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-                        每词抓取
+                        Per-keyword fetch
                         <input
                           type="number"
                           min={1}
@@ -6562,10 +6562,10 @@ export function XiaohongshuTool() {
                           }}
                           style={{ ...compactControlStyle, width: "88px" }}
                         />
-                        条
+                        items
                       </label>
                       <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-                        只保留最近
+                        Keep only last
                         <input
                           type="number"
                           min={1}
@@ -6582,7 +6582,7 @@ export function XiaohongshuTool() {
                           }}
                           style={{ ...compactControlStyle, width: "72px" }}
                         />
-                        天
+                        days
                       </label>
                       <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
                         <input
@@ -6596,12 +6596,12 @@ export function XiaohongshuTool() {
                             syncFollowingScanFromMonitors(nextMonitors);
                           }}
                         />
-                        选爬评论
+                        Fetch comments
                       </label>
                       {monitor.include_comments ? (
                         <>
                           <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-                            前
+                            Top
                             <input
                               type="number"
                               min={1}
@@ -6616,7 +6616,7 @@ export function XiaohongshuTool() {
                               }}
                               style={{ ...compactControlStyle, width: "72px" }}
                             />
-                            条
+                            items
                           </label>
                           <select
                             value={monitor.comments_sort_by}
@@ -6629,8 +6629,8 @@ export function XiaohongshuTool() {
                             }}
                             style={{ ...compactControlStyle, width: "120px" }}
                           >
-                            <option value="likes">高赞优先</option>
-                            <option value="time">最新优先</option>
+                            <option value="likes">Most liked first</option>
+                            <option value="time">Newest first</option>
                           </select>
                         </>
                       ) : null}
@@ -6639,7 +6639,7 @@ export function XiaohongshuTool() {
                 ))}
                 {trackerFollowingScanMonitors.length === 0 ? (
                   <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                    先在下面输入关键词并保存。保存时会按“一词一条定义”生成，和搜索关键词情报推送一样，每个词都能单独开关和设置抓取参数。
+                    Enter keywords below and save. One definition per word is generated, same as Search keyword intel push — each word toggles and configures independently.
                   </div>
                 ) : null}
                 <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
@@ -6656,10 +6656,10 @@ export function XiaohongshuTool() {
                     style={segmentedButtonStyle(false)}
                   >
                     <Plus style={{ width: "14px", height: "14px" }} />
-                    新增定义
+                    Add definition
                   </button>
                   <button type="button" onClick={handleSaveFollowingScan} style={segmentedButtonStyle(true)}>
-                    保存关注流情报推送
+                    Save follow-feed intel push
                   </button>
                 </div>
               </div>,
@@ -6667,10 +6667,10 @@ export function XiaohongshuTool() {
 
             <div>
               <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-main)", marginBottom: "4px" }}>
-                关注流情报推送
+                Follow-feed intel push
               </div>
               <p style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                这里用于快速补充关键词，会自动拆成上面的独立定义；执行时复用关注监控实验台链路，先搜索关键词，再切到“已关注”筛选。
+                Quickly add keywords here; they split into the independent definitions above. Execution reuses the follow monitor workbench flow: search the keyword, then switch to the "Followed" filter.
               </p>
             </div>
 
@@ -6698,7 +6698,7 @@ export function XiaohongshuTool() {
                 onClick={handleToggleFollowingScanPush}
                 style={segmentedButtonStyle(trackerFollowingScan.enabled)}
               >
-                {trackerFollowingScan.enabled ? "关注流情报推送已开启" : "关注流情报推送已关闭"}
+                {trackerFollowingScan.enabled ? "Follow-feed intel push on" : "Follow-feed intel push off"}
               </button>
               <button
                 type="button"
@@ -6708,17 +6708,17 @@ export function XiaohongshuTool() {
                 }}
                 style={segmentedButtonStyle(false)}
               >
-                使用推荐关键词
+                Use suggested keywords
               </button>
             </div>
           </div>
         </Card>
       </div>
 
-      <Card title="博主最新动态爬取" icon={<BookOpen style={{ width: "18px", height: "18px" }} />}>
+      <Card title="Blogger Latest Posts Crawl" icon={<BookOpen style={{ width: "18px", height: "18px" }} />}>
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
-            这个工作台单独占一整栏，和上面的两类情报推送配置分开。这里统一处理高频博主补充、特定关注定义、共享分组批量抓取和手动分组整理。
+            This workbench takes a full column, separate from the two intel push configs above. It handles frequent blogger top-ups, targeted follow definitions, shared-group batch crawls, and manual group sorting.
           </div>
           <div
             style={{
@@ -6732,7 +6732,7 @@ export function XiaohongshuTool() {
               lineHeight: 1.6,
             }}
           >
-            风险提示：关注监控里的“博主最新动态爬取”会访问指定博主主页，频率过高时可能触发小红书访问频繁或安全验证，并不稳定。建议优先使用插件 bridge 路径，分批低频运行；一旦出现限制，应停止任务并等待恢复。
+            Risk note: "Blogger latest posts crawl" visits blogger profiles; high frequency can trigger Xiaohongshu rate limiting or security verification and is unstable. Prefer the extension bridge path, run small low-frequency batches, and stop and wait if restricted.
           </div>
           {renderFrequentAuthorQuickPicker()}
           {renderCreatorPushList()}
@@ -6744,17 +6744,17 @@ export function XiaohongshuTool() {
 
       {renderDetailDivider()}
 
-      <Card title="共享智能分组" icon={<Zap style={{ width: "18px", height: "18px" }} />}>
+      <Card title="Shared Smart Grouping" icon={<Zap style={{ width: "18px", height: "18px" }} />}>
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
           <div>
             <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-main)", marginBottom: "4px" }}>
-              共享智能分组
+              Shared smart grouping
             </div>
             <p style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-              完整模式会统一扫描本地 xhs + B站内容并维护共享标签库；如果标签和组别已经有了，可以直接点“仅整理博主 / UP”，只刷新作者归组。小红书只根据本地笔记映射作者，不再走网页关注列表。
+              Full mode scans local Xiaohongshu + Bilibili content and maintains the shared tag library; if tags and groups already exist, click "Organize creators only" to refresh author grouping only. Xiaohongshu maps authors from local notes only — no web follow list.
             </p>
             <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "8px", lineHeight: 1.7 }}>
-              原始标签 -&gt; 共享规则 -&gt; 共享组 -&gt; 作者入组。即博主会根据其笔记标签的分组情况加入对应共享组；这里管理的是笔记标签和分组的关系。
+              Raw tag -&gt; shared rule -&gt; shared group -&gt; author joins group. Bloggers join shared groups based on how their note tags are grouped; this manages the tag-to-group relations.
             </div>
           </div>
 
@@ -6762,7 +6762,7 @@ export function XiaohongshuTool() {
             <SmartGroupActionButton
               onClick={handleBuildSmartGroups}
               running={smartGroupRunning}
-              secondaryLabel="仅整理博主 / UP"
+              secondaryLabel="Organize creators only"
               onSecondaryClick={handleRefreshSharedCreatorAssignments}
               gradient="linear-gradient(135deg, #FF6B81, #FF8A00)"
               borderColor="rgba(255, 138, 0, 0.28)"
@@ -6793,25 +6793,25 @@ export function XiaohongshuTool() {
               <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
                 <div>
                   <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--text-main)" }}>
-                    {smartGroupRunning ? "正在整理共享智能分组" : smartGroupResult?.message || (Object.keys(trackerCreatorProfiles).length > 0
-                      ? "已生成共享智能分组，可直接按组管理推送。"
-                      : "先点“共享智能分组”做完整初始化；后续只想刷新作者归组时，直接点“仅整理博主 / UP”。")}
+                    {smartGroupRunning ? "Organizing shared smart groups" : smartGroupResult?.message || (Object.keys(trackerCreatorProfiles).length > 0
+                      ? "Shared smart groups generated — manage pushes by group."
+                      : "Click \"Shared smart grouping\" for full initialization first; later, to refresh author grouping only, click \"Organize creators only\".")}
                   </div>
                   <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
-                    当前博主 {trackerUserIds.length} 个 · 共享组别 {trackerCreatorGroupOptions.length} 个 ·
-                    {vaultSignalCount > 0 ? ` 全库标签 ${vaultSignalCount} 个 · 带标签笔记 ${vaultIndexedFileCount} 篇 ·` : ""}
-                    {showSharedGroupingDetail ? " 点击收起详情" : " 点击展开详情和规则词典"}
+                    {trackerUserIds.length} bloggers · {trackerCreatorGroupOptions.length} shared groups ·
+                    {vaultSignalCount > 0 ? ` ${vaultSignalCount} vault tags · ${vaultIndexedFileCount} tagged notes ·` : ""}
+                    {showSharedGroupingDetail ? " click to collapse details" : " click to expand details and the rule dictionary"}
                   </div>
                   {sharedTagIndexPath && (
                     <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px", lineHeight: 1.5 }}>
-                      共享标签库已写入情报库：{sharedTagIndexPath}
+                      Shared tag library written to Intel Library: {sharedTagIndexPath}
                     </div>
                   )}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
                   {smartGroupResult && (
                     <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                      新增 {smartGroupResult.new_profile_count} · 更新 {smartGroupResult.updated_profile_count}
+                      Added {smartGroupResult.new_profile_count} · updated {smartGroupResult.updated_profile_count}
                     </div>
                   )}
                   <div
@@ -6829,7 +6829,7 @@ export function XiaohongshuTool() {
                     }}
                   >
                     {showSharedGroupingDetail ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                    {showSharedGroupingDetail ? "收起" : "展开"}
+                    {showSharedGroupingDetail ? "Collapse" : "Expand"}
                   </div>
                 </div>
               </div>
@@ -6869,10 +6869,10 @@ export function XiaohongshuTool() {
                     <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
                       <div>
                         <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--text-main)" }}>
-                          共享分组规则词典
+                          Shared grouping rule dictionary
                         </div>
                         <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
-                          这里是“原始标签 -&gt; 共享组”的映射规则。只有分组不准时，才需要展开这里微调。
+                          These are the "raw tag -&gt; shared group" mapping rules. Only expand and fine-tune when grouping is off.
                         </div>
                       </div>
                       <div
@@ -6890,7 +6890,7 @@ export function XiaohongshuTool() {
                         }}
                       >
                         {showSharedSignalRules ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                        {showSharedSignalRules ? "收起规则" : "展开规则"}
+                        {showSharedSignalRules ? "Collapse rules" : "Expand rules"}
                       </div>
                     </div>
                   </button>
@@ -6898,13 +6898,13 @@ export function XiaohongshuTool() {
                   {showSharedSignalRules && (
                     <div style={{ padding: "0 12px 12px", borderTop: "1px solid rgba(255, 138, 0, 0.12)" }}>
                       <SharedSignalMappingPanel
-                        title="共享分组规则"
+                        title="Shared Grouping Rules"
                         entries={sharedSignalEntries}
                         groupOptions={trackerCreatorGroupOptions}
                         saving={savingSignalMappings}
                         updatedAt={sharedCreatorGrouping.updated_at}
                         onSave={handleSaveSharedSignalMappings}
-                        description="原始标签 -> 共享规则 -> 共享组 -> 作者入组。你可以把意思接近的标签并到同一个共享组里，也可以让一个标签同时挂多个共享组。保存后，重新执行一次“仅整理博主 / UP”或“共享智能分组”，作者会按这套规则重排。"
+                        description="Raw tag -> shared rule -> shared group -> author joins group. Merge similar tags into one shared group, or attach one tag to multiple shared groups. After saving, re-run Organize creators only or Shared smart grouping and authors are re-sorted by these rules."
                       />
                     </div>
                   )}
@@ -6920,8 +6920,8 @@ export function XiaohongshuTool() {
       {!followingResult && !followingRunning && !searchResult && !searchRunning && (
         <EmptyState
           icon={Users}
-          title="关注监控"
-          description="扫描关注用户最近发布的内容，再决定哪些作者和值得长期跟踪"
+          title="Follow Monitors"
+          description="Scan followed users' recent posts, then decide which authors are worth tracking long-term"
         />
       )}
 
@@ -6961,9 +6961,9 @@ export function XiaohongshuTool() {
       >
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px" }}>
           <div>
-            <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-main)" }}>配置小红书 Cookie</div>
+            <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-main)" }}>Configure Xiaohongshu Cookie</div>
             <div style={{ marginTop: "4px", fontSize: "0.875rem", color: "var(--text-muted)" }}>
-              首次使用或 Cookie 缺失时才会弹出。配置完成后页面内不再显示。
+              Only pops up on first use or when the cookie is missing. Once configured, it no longer appears on the page.
             </div>
           </div>
           {hasCookie && (
@@ -6990,9 +6990,9 @@ export function XiaohongshuTool() {
           }}
         >
           <div>
-            <div style={{ fontSize: "0.9375rem", fontWeight: 600, color: "var(--text-main)" }}>一键获取浏览器 Cookie</div>
+            <div style={{ fontSize: "0.9375rem", fontWeight: 600, color: "var(--text-main)" }}>One-click browser cookie</div>
             <div style={{ marginTop: "4px", fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-              优先读取后台浏览器环境；成功后自动保存并复用。
+              Reads the background browser environment first; on success it saves and reuses automatically.
             </div>
           </div>
           <button
@@ -7014,7 +7014,7 @@ export function XiaohongshuTool() {
             }}
           >
             <Cookie size={16} />
-            {gettingCookie ? "获取中..." : "一键获取"}
+            {gettingCookie ? "Getting..." : "One-click get"}
           </button>
         </div>
 
@@ -7034,7 +7034,7 @@ export function XiaohongshuTool() {
           }}
         >
           {showManualCookie ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          手动 Cookie 兜底
+          Manual cookie fallback
         </button>
 
         {showManualCookie && (
@@ -7050,14 +7050,14 @@ export function XiaohongshuTool() {
           >
             <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.875rem", color: "var(--text-main)" }}>
               <input type="checkbox" checked={showFullCookie} onChange={(e) => setShowFullCookie(e.target.checked)} />
-              展开完整 Cookie
+              Show full cookie
             </label>
 
             {showFullCookie && (
               <textarea
                 readOnly
                 value={fullCookie || buildCookie()}
-                placeholder="还没有完整 Cookie，请先点击一键获取。"
+                placeholder="No full cookie yet — click one-click get first."
                 style={{
                   width: "100%",
                   padding: "12px",
@@ -7081,7 +7081,7 @@ export function XiaohongshuTool() {
                 setCookieVerified(false);
                 setBackendCookieConfigured(false);
               }}
-              placeholder="粘贴 web_session..."
+              placeholder="Paste web_session..."
               style={{
                 width: "100%",
                 padding: "12px",
@@ -7104,7 +7104,7 @@ export function XiaohongshuTool() {
                 setCookieVerified(false);
                 setBackendCookieConfigured(false);
               }}
-              placeholder="粘贴 id_token（可选）..."
+              placeholder="Paste id_token (optional)..."
               style={{
                 width: "100%",
                 padding: "12px",
@@ -7138,7 +7138,7 @@ export function XiaohongshuTool() {
                 gap: "8px",
               }}
             >
-              {verifying ? "验证中..." : cookieVerified ? <><CheckCircle size={16} />已验证</> : <><AlertCircle size={16} />验证并保存</>}
+              {verifying ? "Verifying..." : cookieVerified ? <><CheckCircle size={16} />Verified</> : <><AlertCircle size={16} />Verify and save</>}
             </button>
           </div>
         )}
@@ -7160,14 +7160,14 @@ export function XiaohongshuTool() {
           fontWeight: 600,
         }}
       >
-        <div>因小红书限制，一次只能执行一个任务。请耐心等待当前任务完成后，再启动下一项抓取或入库。</div>
-        <div>需要桌面非全屏，并漏出后台浏览器的一点点像素，才能正常滚动和爬取。</div>
+        <div>Due to Xiaohongshu limits, only one task can run at a time. Wait for the current task to finish before starting another crawl or save.</div>
+        <div>The desktop must not be fullscreen, and a few pixels of the background browser must remain visible for scrolling and crawling to work.</div>
       </div>
 
-      <Card title="关键词扫描" icon={<Filter style={{ width: "18px", height: "18px" }} />}>
+      <Card title="Keyword Scan" icon={<Filter style={{ width: "18px", height: "18px" }} />}>
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
-            复用现有搜索链路，优先走插件 bridge 读取真实页面 state，再回退到浏览器兜底链路，扫描公开高赞笔记。
+            Reuses the existing search flow, preferring the extension bridge to read real page state before falling back to the browser path, scanning public highly-liked notes.
           </div>
           <div style={{ display: "flex", gap: "12px" }}>
             <input
@@ -7180,7 +7180,7 @@ export function XiaohongshuTool() {
                   handleSearch();
                 }
               }}
-              placeholder="输入关键词，搜索小红书公开笔记..."
+              placeholder="Enter keywords to search public Xiaohongshu notes..."
               disabled={!cookieVerified}
               style={{
                 flex: 1,
@@ -7216,12 +7216,12 @@ export function XiaohongshuTool() {
               {searchRunning ? (
                 <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <span className="animate-spin">⟳</span>
-                  扫描中...
+                  Scanning...
                 </span>
               ) : (
                 <>
                   <Search style={{ width: "16px", height: "16px" }} />
-                  扫描
+                  Scan
                 </>
               )}
             </button>
@@ -7229,7 +7229,7 @@ export function XiaohongshuTool() {
 
           <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>排序：</span>
+              <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>Sort:</span>
               <div
                 style={{
                   display: "flex",
@@ -7241,14 +7241,14 @@ export function XiaohongshuTool() {
                 }}
               >
                 <button type="button" disabled style={{ ...segmentedButtonStyle(true), cursor: "default" }}>
-                  综合排序
+                  Default order
                 </button>
               </div>
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <Heart style={{ width: "14px", height: "14px", color: "var(--color-danger)" }} />
-              <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>最低点赞：</span>
+              <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>Min likes：</span>
               <input
                 type="number"
                 value={minLikes}
@@ -7267,7 +7267,7 @@ export function XiaohongshuTool() {
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>搜索上限：</span>
+              <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>Search limit:</span>
               <input
                 type="number"
                 value={searchLimit}
@@ -7284,11 +7284,11 @@ export function XiaohongshuTool() {
                   fontSize: "0.875rem",
                 }}
               />
-              <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>条</span>
+              <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>items</span>
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>只保留最近：</span>
+              <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>Keep only last：</span>
               <input
                 type="number"
                 value={searchRecentDays}
@@ -7305,7 +7305,7 @@ export function XiaohongshuTool() {
                   fontSize: "0.875rem",
                 }}
               />
-              <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>天</span>
+              <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>days</span>
             </div>
           </div>
 
@@ -7316,7 +7316,7 @@ export function XiaohongshuTool() {
                 checked={searchAutoSaveAfterFetch}
                 onChange={(e) => setSearchAutoSaveAfterFetch(e.target.checked)}
               />
-              抓取后自动一键入库
+              Auto-save after crawling
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.875rem", color: "var(--text-main)" }}>
               <input
@@ -7324,10 +7324,10 @@ export function XiaohongshuTool() {
                 checked={searchSaveComments}
                 onChange={(e) => setSearchSaveComments(e.target.checked)}
               />
-              保存时抓评论
+              Fetch comments when saving
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.875rem", color: "var(--text-main)" }}>
-              评论上限
+              Comment limit
               <input
                 type="number"
                 min={1}
@@ -7346,10 +7346,10 @@ export function XiaohongshuTool() {
                   opacity: searchSaveComments ? 1 : 0.5,
                 }}
               />
-              条
+              items
             </label>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>评论排序：</span>
+              <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>Comment sort:</span>
               <div
                 style={{
                   display: "flex",
@@ -7367,7 +7367,7 @@ export function XiaohongshuTool() {
                   disabled={!searchSaveComments}
                   style={segmentedButtonStyle(searchSaveCommentsSortBy === "likes")}
                 >
-                  高赞优先
+                  Most liked first
                 </button>
                 <button
                   type="button"
@@ -7375,12 +7375,12 @@ export function XiaohongshuTool() {
                   disabled={!searchSaveComments}
                   style={segmentedButtonStyle(searchSaveCommentsSortBy === "time")}
                 >
-                  最新优先
+                  Newest first
                 </button>
               </div>
             </div>
             <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-              不勾选时只抓结果不入库。仅单条入库时额外抓评论；批量“全部入库”或自动一键入库默认不抓评论。
+              Unchecked, results are fetched but not saved. Comments are only fetched on single saves; bulk "Save all" and auto-save skip comments by default.
             </span>
           </div>
         </div>
@@ -7392,7 +7392,7 @@ export function XiaohongshuTool() {
       {/* Search Results */}
       {searchResult && (
         <Card
-          title={`关键词扫描结果 (${searchResult.total_found})`}
+          title={`Keyword Scan Results (${searchResult.total_found})`}
           icon={<BookOpen style={{ width: "18px", height: "18px" }} />}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -7410,11 +7410,11 @@ export function XiaohongshuTool() {
               }}
             >
               <span style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>
-                会按统一入库格式保存到当前关键词文件夹；短文本笔记会优先补本地图片。
+                Saved in the unified format under the current keyword folder; short text notes get local images filled in first.
               </span>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
                 <button type="button" onClick={() => setShowSearchResults((value) => !value)} style={segmentedButtonStyle(false)}>
-                  {showSearchResults ? "收起结果" : "展开结果"}
+                  {showSearchResults ? "Collapse results" : "Expand results"}
                 </button>
                 <button
                   onClick={() => void handleSaveSearchResults(searchResult.notes, searchResult.keyword)}
@@ -7435,7 +7435,7 @@ export function XiaohongshuTool() {
                   }}
                 >
                   <FolderDown style={{ width: "14px", height: "14px" }} />
-                  {previewSaveRunning ? "保存中..." : "全部入库"}
+                  {previewSaveRunning ? "Saving..." : "Save all"}
                 </button>
               </div>
             </div>
@@ -7448,17 +7448,17 @@ export function XiaohongshuTool() {
                 expandedIds: expandedNotes,
                 onToggleExpand: toggleNoteExpand,
                 saveSubfolder: () => buildKeywordSaveSubfolder(searchResult.keyword),
-                saveSuccessTitle: "关键词笔记已入库",
+                saveSuccessTitle: "Keyword note saved",
                 saveAllSubfolder: buildKeywordSaveSubfolder(searchResult.keyword),
-                saveAllSuccessTitle: "关键词结果已入库",
+                saveAllSuccessTitle: "Keyword results saved",
                 creatorSourceLabel: () => ({
                   tags: searchResult.keyword ? [searchResult.keyword] : [],
-                  summary: searchResult.keyword ? `来自关键词搜索：${searchResult.keyword}` : "来自关键词搜索",
+                  summary: searchResult.keyword ? `From keyword search: ${searchResult.keyword}` : "From keyword search",
                 }),
               })
             ) : (
               <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                关键词扫描结果已收起。需要继续查看时点上面的“展开结果”。
+                Keyword scan results collapsed. Click "Expand results" above to continue viewing.
               </div>
             )}
           </div>
@@ -7494,10 +7494,10 @@ export function XiaohongshuTool() {
           <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
             <div>
               <div style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--text-main)" }}>
-                主动爬取 / 手动入库工具
+                Manual crawl / manual save tools
               </div>
               <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", marginTop: "4px", lineHeight: 1.6 }}>
-                单条入库、批量入库、评论抓取都收在这里。默认折叠，避免长期占页面空间。
+                Single save, bulk save, and comment crawling all live here. Collapsed by default to save page space.
               </div>
             </div>
             <div
@@ -7515,7 +7515,7 @@ export function XiaohongshuTool() {
               }}
             >
               {showManualCrawlWorkbench ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-              {showManualCrawlWorkbench ? "收起工具" : "展开工具"}
+              {showManualCrawlWorkbench ? "Collapse tools" : "Expand tools"}
             </div>
           </div>
         </button>
@@ -7528,7 +7528,7 @@ export function XiaohongshuTool() {
   const renderCommentsTab = () => (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       {/* Comments Input */}
-      <Card title="获取评论" icon={<MessageCircle style={{ width: "18px", height: "18px" }} />}>
+      <Card title="Fetch Comments" icon={<MessageCircle style={{ width: "18px", height: "18px" }} />}>
         <div style={{ display: "flex", gap: "12px" }}>
           <input
             type="text"
@@ -7540,7 +7540,7 @@ export function XiaohongshuTool() {
                 handleComments();
               }
             }}
-            placeholder="输入小红书笔记 ID 或完整链接..."
+            placeholder="Enter a Xiaohongshu note ID or full link..."
             style={{
               flex: 1,
               padding: "12px 16px",
@@ -7573,12 +7573,12 @@ export function XiaohongshuTool() {
             {commentsRunning ? (
               <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <span className="animate-spin">⟳</span>
-                获取中...
+                Fetching...
               </span>
             ) : (
               <>
                 <MessageCircle style={{ width: "16px", height: "16px" }} />
-                获取评论
+                Fetch comments
               </>
             )}
           </button>
@@ -7588,13 +7588,13 @@ export function XiaohongshuTool() {
       {/* Comments Results */}
       {commentsResult && (
         <Card
-          title={`评论列表 (${commentsResult.total_comments})`}
+          title={`Comments (${commentsResult.total_comments})`}
           icon={<Users style={{ width: "18px", height: "18px" }} />}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {commentsResult.strategy ? (
               <div style={{ color: "var(--text-muted)", fontSize: "0.8125rem" }}>
-                读取链路：{formatStrategyLabel(commentsResult.strategy)}
+                Read path: {formatStrategyLabel(commentsResult.strategy)}
               </div>
             ) : null}
             {commentsResult.comments.map((comment) => (
@@ -7628,7 +7628,7 @@ export function XiaohongshuTool() {
                           fontSize: "0.75rem",
                         }}
                       >
-                        置顶
+                        Pinned
                       </span>
                     )}
                     <span
@@ -7684,12 +7684,12 @@ export function XiaohongshuTool() {
                     {expandedComments.has(comment.id) ? (
                       <>
                         <ChevronUp style={{ width: "14px", height: "14px" }} />
-                        收起
+                        Collapse
                       </>
                     ) : (
                       <>
                         <ChevronDown style={{ width: "14px", height: "14px" }} />
-                        展开
+                        Expand
                       </>
                     )}
                   </button>
@@ -7703,8 +7703,8 @@ export function XiaohongshuTool() {
       {!commentsResult && !commentsRunning && (
         <EmptyState
           icon={MessageCircle}
-          title="获取评论"
-          description="输入笔记 ID 获取小红书评论（按点赞排序）"
+          title="Fetch comments"
+          description="Enter a note ID to fetch Xiaohongshu comments (sorted by likes)"
         />
       )}
     </div>
@@ -7746,8 +7746,8 @@ export function XiaohongshuTool() {
     <PageContainer>
       {renderCookieConfigModal()}
       <PageHeader
-        title="小红书分析工具"
-        subtitle="收藏专辑抓取、主动爬取、关注监控，一键获取 Cookie 并保存到情报库 xhs/主动保存 与 xhs/专辑"
+        title="Xiaohongshu Tools"
+        subtitle="Bookmark album crawls, manual crawls, follow monitors; one-click cookie and saves into the Intel Library under xhs/主动保存 and xhs/专辑"
         icon={Search}
         actions={
           <button
@@ -7768,7 +7768,7 @@ export function XiaohongshuTool() {
             }}
           >
             <Cookie size={16} />
-            {hasCookie ? "Cookie 配置" : "配置 Cookie"}
+            {hasCookie ? "Cookie settings" : "Configure cookie"}
           </button>
         }
       />
@@ -7777,13 +7777,13 @@ export function XiaohongshuTool() {
           {renderTabs()}
 
           {backgroundTask && (
-            <Card title="后台任务" icon={<Zap style={{ width: "18px", height: "18px" }} />}>
+            <Card title="Background Tasks" icon={<Zap style={{ width: "18px", height: "18px" }} />}>
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 <div style={{ fontSize: "0.9375rem", fontWeight: 600, color: "var(--text-main)" }}>
                   {backgroundTask.stage}
                 </div>
                 <div style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                  任务类型：{formatTaskKindLabel(backgroundTask.kind)} · Task ID: {backgroundTask.taskId}
+                  Task type: {formatTaskKindLabel(backgroundTask.kind)} · Task ID: {backgroundTask.taskId}
                 </div>
                 <div
                   style={{
@@ -7804,7 +7804,7 @@ export function XiaohongshuTool() {
                   />
                 </div>
                 <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-                  切换到其他页面也会继续执行，返回后会自动接上结果。
+                  Keeps running when you switch pages; results reattach automatically when you return.
                 </div>
               </div>
             </Card>
@@ -7831,7 +7831,7 @@ export function XiaohongshuTool() {
                   }}
                 >
                   <span style={{ fontSize: "0.875rem", fontWeight: 600 }}>
-                    最近任务 {taskHistory.length} 条
+                    {taskHistory.length} recent tasks
                   </span>
                   <span
                     style={{
@@ -7849,12 +7849,12 @@ export function XiaohongshuTool() {
                     {showTaskHistory ? (
                       <>
                         <ChevronUp style={{ width: "16px", height: "16px" }} />
-                        收起
+                        Collapse
                       </>
                     ) : (
                       <>
                         <ChevronDown style={{ width: "16px", height: "16px" }} />
-                        展开
+                        Expand
                       </>
                     )}
                   </span>
@@ -7870,7 +7870,7 @@ export function XiaohongshuTool() {
                           setTaskHistoryQuery(e.target.value);
                           setTaskHistoryPage(0);
                         }}
-                        placeholder="搜索历史关键词、链接、任务类型..."
+                        placeholder="Search history keywords, links, task types..."
                         style={{
                           flex: "1 1 260px",
                           minWidth: 0,
@@ -7884,7 +7884,7 @@ export function XiaohongshuTool() {
                         }}
                       />
                       <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                        匹配 {filteredTaskHistory.length} 条
+                        {filteredTaskHistory.length} matches
                       </span>
                     </div>
 
@@ -7941,12 +7941,12 @@ export function XiaohongshuTool() {
                                 </span>
                                 <span style={{ color, flexShrink: 0 }}>
                                   {task.status === "completed"
-                                    ? "完成"
+                                    ? "Done"
                                     : task.status === "failed"
-                                      ? "失败"
+                                      ? "Failed"
                                       : task.status === "interrupted"
-                                        ? "中断"
-                                        : "运行"}
+                                        ? "Interrupted"
+                                        : "Running"}
                                 </span>
                               </span>
                               <span
@@ -7980,7 +7980,7 @@ export function XiaohongshuTool() {
                           textAlign: "center",
                         }}
                       >
-                        没有匹配的历史任务
+                        No matching task history
                       </div>
                     )}
 
@@ -8000,10 +8000,10 @@ export function XiaohongshuTool() {
                             opacity: normalizedTaskHistoryPage === 0 ? 0.5 : 1,
                           }}
                         >
-                          上一页
+                          Previous
                         </button>
                         <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                          第 {normalizedTaskHistoryPage + 1} / {taskHistoryPageCount} 页
+                          Page {normalizedTaskHistoryPage + 1} / {taskHistoryPageCount}
                         </span>
                         <button
                           type="button"
@@ -8019,7 +8019,7 @@ export function XiaohongshuTool() {
                             opacity: normalizedTaskHistoryPage >= taskHistoryPageCount - 1 ? 0.5 : 1,
                           }}
                         >
-                          下一页
+                          Next
                         </button>
                       </div>
                     )}

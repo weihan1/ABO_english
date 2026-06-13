@@ -55,10 +55,10 @@ export default function TodaySnapshot({ data }: { data: TodayData }) {
     currentHour < 12 ? "Good Morning" : currentHour < 18 ? "Good Afternoon" : "Good Evening";
 
   const statItems = [
-    { label: "浏览", value: data.activityCounts.views, icon: Eye, color: "#9B7FD4" },
-    { label: "喜欢", value: data.activityCounts.likes, icon: Heart, color: "#FF6B6B" },
-    { label: "收藏", value: data.activityCounts.saves, icon: Bookmark, color: "#F5C88C" },
-    { label: "对话", value: data.activityCounts.chats, icon: MessageCircle, color: "#7DD3C0" },
+    { label: "Views", value: data.activityCounts.views, icon: Eye, color: "#9B7FD4" },
+    { label: "Likes", value: data.activityCounts.likes, icon: Heart, color: "#FF6B6B" },
+    { label: "Saves", value: data.activityCounts.saves, icon: Bookmark, color: "#F5C88C" },
+    { label: "Chats", value: data.activityCounts.chats, icon: MessageCircle, color: "#7DD3C0" },
   ];
 
   return (
@@ -96,7 +96,7 @@ export default function TodaySnapshot({ data }: { data: TodayData }) {
               >
                 {data.activityCounts.total}{" "}
                 <span style={{ fontSize: "0.875rem", fontWeight: 400, color: "var(--text-muted)" }}>
-                  次互动
+                  interactions
                 </span>
               </div>
             </div>
@@ -326,7 +326,7 @@ export default function TodaySnapshot({ data }: { data: TodayData }) {
             return (
               <div
                 key={h.hour}
-                title={`${h.hour}:00 — ${h.count} 次活动`}
+                title={`${h.hour}:00 — ${h.count} activities`}
                 style={{
                   height: `${height}%`,
                   borderRadius: "2px 2px 0 0",
